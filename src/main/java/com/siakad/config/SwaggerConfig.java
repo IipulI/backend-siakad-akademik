@@ -22,9 +22,9 @@ public class SwaggerConfig {
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))
                 .info(new Info()
-                        .title("Sistem Informasi Akademik API")
+                        .title("SIMAKAD API")
                         .version("1.0")
-                        .description("Sistem Informasi Akademik (SIAKAD) API"))
+                        .description("API Sistem Informasi Manajemen Akademik (SIMAKAD) untuk mengelola data mahasiswa, mata kuliah, nilai, dan jadwal"))
                 .servers(List.of(
                         new Server().url("http://localhost:8081/api/v1").description("Localhost Server")
                 ));
