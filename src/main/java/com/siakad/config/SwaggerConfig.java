@@ -22,11 +22,11 @@ public class SwaggerConfig {
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))
                 .info(new Info()
-                        .title("Healthcare-Booking API")
+                        .title("SIMAKAD API")
                         .version("1.0")
-                        .description("Application Healthcare-Booking API"))
+                        .description("API Sistem Informasi Manajemen Akademik (SIMAKAD) untuk mengelola data mahasiswa, mata kuliah, nilai, dan jadwal"))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080/api/v1").description("Localhost Server")
+                        new Server().url("http://localhost:8081/api/v1").description("Localhost Server")
                 ));
     }
 }

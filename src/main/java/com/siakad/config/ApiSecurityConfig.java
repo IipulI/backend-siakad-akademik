@@ -3,7 +3,9 @@ package com.siakad.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,6 +21,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true)
 public class ApiSecurityConfig {
 
     private final AuthenticationProvider authenticationProvider;
@@ -29,13 +32,12 @@ public class ApiSecurityConfig {
 
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(registry ->{
-                    registry.requestMatchers(
-                                    "/auth/**",
-                                    "/v3/api-docs/**",
-                                    "/swagger-ui/**")
-                            .permitAll()
-                            .anyRequest().permitAll();
+                .authorizeHttpRequests(registry -> {
+                    registry.requestMatchers(HttpMethod.GET, "/**").permitAll()
+                            .requestMatchers("/auth/**").permitAll()
+                            .requestMatchers("/swagger-ui/**").permitAll()
+                            .requestMatchers("/v3/api-docs/**").permitAll()
+                            .anyRequest().authenticated();
                 }).sessionManagement(configure -> {
                     configure.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 }).authenticationProvider(authenticationProvider)
@@ -51,7 +53,7 @@ public class ApiSecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://localhost:5173", "https://entirely-dynamic-penguin.ngrok-free.app"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -61,5 +63,4 @@ public class ApiSecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 }

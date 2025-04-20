@@ -10,12 +10,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "roles")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "siak_role")
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Role {
 
     @Id
@@ -25,10 +24,10 @@ public class Role {
 
     @Column(nullable = false, length = 30)
     @Enumerated(EnumType.STRING)
-    private RoleType name;
+    private RoleType nama;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String deskripsi;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -37,7 +36,4 @@ public class Role {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 }
