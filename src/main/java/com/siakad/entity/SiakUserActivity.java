@@ -1,7 +1,6 @@
 package com.siakad.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,42 +9,39 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_user")
+@Table(name = "siak_user_activity")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class SiakUserActivity {
+
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String username;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "siak_user_id", nullable = false)
+    private User siakUser;
 
-    @Email
-    @Column(nullable = false, unique = true, length = 100)
-    private String email;
+    @Column(columnDefinition = "TEXT")
+    private String activity;
 
-    @Column(nullable = false, length = 255)
-    private String password;
+    @Column(name = "ip_address", length = 15)
+    private String ipAddress;
+
+    @Column(name = "waktu", nullable = false, updatable = false)
+    private LocalDateTime waktu;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @OneToOne(mappedBy = "siakUser", cascade = CascadeType.ALL)
-    private Mahasiswa siakMahasiswa;
-
-    @OneToMany(mappedBy = "siakUser", cascade = CascadeType.ALL)
-    private List<SiakUserActivity> siakUserActivities;
 }

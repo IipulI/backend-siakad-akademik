@@ -10,11 +10,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "user_role")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserRole {
 
     @EmbeddedId
@@ -28,18 +27,15 @@ public class UserRole {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
     @Embeddable
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserRoleId implements Serializable {
-        @Column(name = "user_id")
-        private UUID userId;
+        @Column(name = "siak_user_id")
+        private UUID siakUserId;
 
-        @Column(name = "role_id")
-        private UUID roleId;
+        @Column(name = "siak_role_id")
+        private UUID siakRoleId;
     }
 }

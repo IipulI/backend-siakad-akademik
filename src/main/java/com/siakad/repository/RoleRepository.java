@@ -14,13 +14,13 @@ import java.util.UUID;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, UUID> {
 
-    Optional<Role> findByName(RoleType name);
+    Optional<Role> findByNama(RoleType nama);
 
     @Query(value = """
     SELECT r.*
-    FROM roles r
-    JOIN user_role ur ON r.id = ur.role_id
-    JOIN users u ON ur.user_id = u.id
+    FROM siak_role r
+    JOIN user_role ur ON r.id = ur.siak_role_id
+    JOIN siak_user u ON ur.siak_user_id = u.id
     WHERE u.id = :id
     """, nativeQuery = true)
     List<Role> findByUserId(@Param("id") UUID id);
