@@ -9,27 +9,27 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_tahun_ajaran")
+@Table(name = "siak_tahun_kurikulum")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TahunAjaran {
+public class TahunKurikulum {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
-    private String tahun;
-    private String nama;
-    private Date tanggalMulai;
-    private Date tanggalSelesai;
+    @ManyToOne
+    @JoinColumn(name = "siak_periode_akademik_id", nullable = false)
+    private PeriodeAkademik siakPeriodeAkademik;
 
-    @Column(name = "is_deleted")
+    private String tahun;
+
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @CreationTimestamp

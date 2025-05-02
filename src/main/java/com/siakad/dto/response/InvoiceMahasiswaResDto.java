@@ -3,6 +3,7 @@ package com.siakad.dto.response;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -13,11 +14,11 @@ public class InvoiceMahasiswaResDto {
     private UUID siakMahasiswaId;
     private String kodeInvoice;
     private BigDecimal totalTagihan;
-    private Date tanggalTenggat;
+    private LocalDate tanggalTenggat;
     private String status;
     private String tahap;
     private BigDecimal totalBayar;
-    private Date tanggalBayar;
+    private LocalDate tanggalBayar;
     private String metodeBayar;
     private List<InvoiceKomponenResDto> komponen;
 }
