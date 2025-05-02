@@ -1,36 +1,51 @@
 package com.siakad.util;
 
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
-import org.springframework.data.jpa.domain.Specification;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 public abstract class QuerySpecification<T> {
 
-    // String LIKE (case-insensitive)
-    protected Specification<T> attributeContains(String attributeName, String value) {
+    protected Specification<T> attributeEqual(String attribute, Object value) {
+        return (root, query, cb) -> cb.equal(getPath(root, attribute), value);
+    }
+
+    protected Specification<T> attributeEqualString(String attribute, String value) {
+        return (root, query, cb) -> cb.equal(cb.lower(getPath(root, attribute)), value.toLowerCase());
+    }
+
+    protected Specification<T> attributeContains(String attribute, String value) {
         return (root, query, cb) ->
-                cb.like(cb.lower(root.get(attributeName)), "%" + value.toLowerCase() + "%");
+                cb.like(cb.lower(getPath(root, attribute)), "%" + value.toLowerCase() + "%");
     }
 
-    // Boolean EQUAL
-    protected Specification<T> attributeEqualBoolean(String attributeName, boolean value) {
+    protected Specification<T> attributeStartsWith(String attribute, String value) {
         return (root, query, cb) ->
-                cb.equal(root.get(attributeName), value);
+                cb.like(cb.lower(getPath(root, attribute)), value.toLowerCase() + "%");
     }
 
-    // Exact match (case-sensitive by default)
-    protected Specification<T> attributeEqual(String attributeName, Object value) {
-        return (root, query, cb) ->
-                cb.equal(root.get(attributeName), value);
+    protected Specification<T> attributeDateEqual(String attribute, String dateString) {
+        try {
+            LocalDate date = LocalDate.parse(dateString);
+            return (root, query, cb) -> cb.equal(getPath(root, attribute), date);
+        } catch (DateTimeParseException e) {
+            return (root, query, cb) -> cb.conjunction(); // no-op
+        }
     }
 
-    // Attribute IS NULL
-    protected Specification<T> attributeIsNull(String attributeName) {
-        return (root, query, cb) -> cb.isNull(root.get(attributeName));
-    }
-
-    // Attribute IS NOT NULL
-    protected Specification<T> attributeIsNotNull(String attributeName) {
-        return (root, query, cb) -> cb.isNotNull(root.get(attributeName));
+    @SuppressWarnings("unchecked")
+    private <Y> Path<Y> getPath(Root<T> root, String attribute) {
+        if (attribute.contains(".")) {
+            String[] parts = attribute.split("\\.");
+            Path<?> path = root.get(parts[0]);
+            for (int i = 1; i < parts.length; i++) {
+                path = path.get(parts[i]);
+            }
+            return (Path<Y>) path;
+        }
+        return root.get(attribute);
     }
 }

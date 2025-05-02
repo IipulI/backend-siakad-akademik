@@ -42,7 +42,7 @@ public class MahasiswaServiceImpl implements MahasiswaService {
     @Transactional
     public MahasiswaResDto create(MahasiswaReqDto request, HttpServletRequest servletRequest) {
 
-        var programStudi = programStudiRepository.findById(request.getSiakProgramStudiId())
+        var programStudi = programStudiRepository.findByIdAndIsDeletedFalse(request.getSiakProgramStudiId())
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Program Studi tidak ditemukan"));
 
         if (mahasiswaRepository.existsByNpm(request.getNpm())) {
@@ -89,7 +89,7 @@ public class MahasiswaServiceImpl implements MahasiswaService {
     @Transactional
     public MahasiswaResDto update(UUID id, MahasiswaReqDto request, HttpServletRequest servletRequest) {
 
-        var programStudi = programStudiRepository.findById(request.getSiakProgramStudiId())
+        var programStudi = programStudiRepository.findByIdAndIsDeletedFalse(request.getSiakProgramStudiId())
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Program Studi tidak ditemukan"));
 
         Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(id)

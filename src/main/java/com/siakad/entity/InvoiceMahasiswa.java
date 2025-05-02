@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -29,11 +30,11 @@ public class InvoiceMahasiswa {
 
     private String kodeInvoice;
     private BigDecimal totalTagihan;
-    private Date tanggalTenggat;
+    private LocalDate tanggalTenggat;
     private String status;
     private String tahap;
     private BigDecimal totalBayar;
-    private Date tanggalBayar;
+    private LocalDate tanggalBayar;
     private String metodeBayar;
 
     @Column(name = "is_deleted")
