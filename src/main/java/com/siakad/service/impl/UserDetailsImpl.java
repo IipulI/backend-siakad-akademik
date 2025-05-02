@@ -25,7 +25,7 @@ public class UserDetailsImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
         User siakUser = siakUserRepository.findByUsernameOrEmail(usernameOrEmail)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.USER_NOT_FOUND, "User not found with: " + usernameOrEmail
+                .orElseThrow(() -> new ApplicationException(ExceptionType.USER_NOT_FOUND, "Pengguna tidak ditemukan dengan: " + usernameOrEmail
                 ));
         List<Role> siakRoles = siakRoleRepository.findByUserId(siakUser.getId());
 

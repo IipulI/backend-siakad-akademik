@@ -36,23 +36,29 @@ public class MahasiswaServiceImpl implements MahasiswaService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserActivityService service;
+    private final ProgramStudiRepository programStudiRepository;
 
     @Override
     @Transactional
     public MahasiswaResDto create(MahasiswaReqDto request, HttpServletRequest servletRequest) {
+
+        var programStudi = programStudiRepository.findById(request.getSiakProgramStudiId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Program Studi tidak ditemukan"));
+
         if (mahasiswaRepository.existsByNpm(request.getNpm())) {
             throw new ApplicationException(ExceptionType.NPM_ALREADY_EXISTS, "NPM sudah digunakan");
         }
 
-        if (mahasiswaRepository.existsByEmail(request.getEmail())) {
+        if (mahasiswaRepository.existsByEmailPribadi(request.getEmailPribadi())) {
             throw new ApplicationException(ExceptionType.EMAIL_ALREADY_EXISTS, "Email sudah digunakan");
         }
 
         String password = request.getTanggalLahir().toString().replace("-", "");
-        User user = createUserWithRole(request.getNpm(), request.getEmail(), password, RoleType.MAHASISWA);
+        User user = createUserWithRole(request.getNpm(), request.getEmailPribadi(), password, RoleType.MAHASISWA);
 
         Mahasiswa mahasiswa = mapper.toEntity(request);
-        mahasiswa.setEmail(user.getEmail());
+        mahasiswa.setEmailPribadi(user.getEmail());
+        mahasiswa.setSiakProgramStudi(programStudi);
         mahasiswa.setSiakUser(user);
         mahasiswa.setIsDeleted(false);
         mahasiswaRepository.save(mahasiswa);
@@ -82,6 +88,10 @@ public class MahasiswaServiceImpl implements MahasiswaService {
     @Override
     @Transactional
     public MahasiswaResDto update(UUID id, MahasiswaReqDto request, HttpServletRequest servletRequest) {
+
+        var programStudi = programStudiRepository.findById(request.getSiakProgramStudiId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Program Studi tidak ditemukan"));
+
         Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
                         "mahasiswa tidak valid dengan id: " + id));
@@ -91,20 +101,21 @@ public class MahasiswaServiceImpl implements MahasiswaService {
             throw new ApplicationException(ExceptionType.NPM_ALREADY_EXISTS, "NPM sudah digunakan");
         }
 
-        if (!mahasiswa.getEmail().equals(request.getEmail()) &&
-                mahasiswaRepository.existsByEmail(request.getEmail())) {
+        if (!mahasiswa.getEmailPribadi().equals(request.getEmailPribadi()) &&
+                mahasiswaRepository.existsByEmailPribadi(request.getEmailKampus())) {
             throw new ApplicationException(ExceptionType.EMAIL_ALREADY_EXISTS, "Email sudah digunakan");
         }
 
-        if (!mahasiswa.getNpm().equals(request.getNpm()) && !mahasiswa.getEmail().equals(request.getEmail())) {
+        if (!mahasiswa.getNpm().equals(request.getNpm()) && !mahasiswa.getEmailKampus().equals(request.getEmailKampus())) {
             String password = request.getTanggalLahir().toString().replace("-", "");
-            User newUser = createUserWithRole(request.getNpm(), request.getEmail(), password, RoleType.MAHASISWA);
+            User newUser = createUserWithRole(request.getNpm(), request.getEmailKampus(), password, RoleType.MAHASISWA);
             mahasiswa.setSiakUser(newUser);
         }
 
         mapper.toEntity(request, mahasiswa);
         mahasiswa.setUpdatedAt(LocalDateTime.now());
-        mahasiswa.setEmail(request.getEmail());
+        mahasiswa.setSiakProgramStudi(programStudi);
+        mahasiswa.setEmailPribadi(request.getEmailKampus());
         mahasiswaRepository.save(mahasiswa);
 
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_MAHASISWA);

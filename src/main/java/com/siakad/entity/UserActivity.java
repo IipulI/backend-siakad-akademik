@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_activity")
+@Table(name = "siak_user_activity")
 @Data
 @Builder
 @AllArgsConstructor
@@ -25,14 +25,17 @@ public class UserActivity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "siak_user_id", nullable = false)
+    private User siakUser;
 
     @Column(columnDefinition = "TEXT")
     private String activity;
 
     @Column(name = "ip_address", length = 15)
     private String ipAddress;
+
+    @Column(name = "waktu", nullable = false, updatable = false)
+    private LocalDateTime waktu;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -41,7 +44,4 @@ public class UserActivity {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 }

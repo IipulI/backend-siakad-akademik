@@ -7,11 +7,13 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 
 import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
+
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -21,6 +23,7 @@ public class SwaggerConfig {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement().addList("Bearer"))
                 .info(new Info()
                         .title("SIMAKAD API")
                         .version("1.0")

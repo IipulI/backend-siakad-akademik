@@ -8,40 +8,39 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_user_activity")
+@Table(name = "siak_invoice_pembayaran_komponen")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SiakUserActivity {
-
+public class InvoicePembayaranKomponenMahasiswa {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "siak_user_id", nullable = false)
-    private User siakUser;
+    @ManyToOne
+    @JoinColumn(name = "siak_invoice_mahasiswa_id", nullable = false)
+    private InvoiceMahasiswa invoiceMahasiswa;
 
-    @Column(columnDefinition = "TEXT")
-    private String activity;
+    @ManyToOne
+    @JoinColumn(name = "siak_invoice_komponen_id", nullable = false)
+    private InvoiceKomponen invoiceKomponen;
 
-    @Column(name = "ip_address", length = 15)
-    private String ipAddress;
+    private BigDecimal tagihan;
 
-    @Column(name = "waktu", nullable = false, updatable = false)
-    private LocalDateTime waktu;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 }

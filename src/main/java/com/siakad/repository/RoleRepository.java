@@ -19,7 +19,7 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
     @Query(value = """
     SELECT r.*
     FROM siak_role r
-    JOIN user_role ur ON r.id = ur.siak_role_id
+    JOIN siak_user_role ur ON r.id = ur.siak_role_id
     JOIN siak_user u ON ur.siak_user_id = u.id
     WHERE u.id = :id
     """, nativeQuery = true)

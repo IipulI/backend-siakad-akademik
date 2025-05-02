@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_role")
+@Table(name = "siak_user_role")
 @Data
 @Builder
 @AllArgsConstructor
@@ -39,3 +39,6 @@ public class UserRole {
         private UUID siakRoleId;
     }
 }
+
+
+
