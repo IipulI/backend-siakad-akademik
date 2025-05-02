@@ -33,10 +33,9 @@ public class ApiSecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers(HttpMethod.GET, "/**").permitAll()
-                            .requestMatchers("/auth/**").permitAll()
-                            .requestMatchers("/swagger-ui/**").permitAll()
-                            .requestMatchers("/v3/api-docs/**").permitAll()
+                    registry.requestMatchers(
+                                    "/**")
+                            .permitAll()
                             .anyRequest().authenticated();
                 }).sessionManagement(configure -> {
                     configure.sessionCreationPolicy(SessionCreationPolicy.STATELESS);

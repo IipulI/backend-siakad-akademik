@@ -30,35 +30,65 @@ public class Mahasiswa {
     @JoinColumn(name = "siak_user_id", nullable = false, unique = true)
     private User siakUser;
 
+    @ManyToOne
+    @JoinColumn(name = "siak_program_studi_id", nullable = false)
+    private ProgramStudi siakProgramStudi;
+
     private String nama;
     private String npm;
-    private String angkatan;
-    private String status;
+    private String periodeMasuk;
+    private String sistemKuliah;
+    private String kelas;
+    private String jenisPendaftaran;
+    private String jalurPendaftaran;
+    private String gelombang;
     private String jenisKelamin;
     private String tempatLahir;
-    private LocalDate tanggalLahir;
-    @Email
-    private String email;
-    private String noTelepon;
-    private String alamat;
-    private String agama;
-    private String statusNikah;
     private String nik;
     private String noKk;
+    private LocalDate tanggalLahir;
+    private LocalDate tanggalMasuk;
+    private Boolean kebutuhanKhusus;
+    private String statusMahasiswa;
+    private String alamatKtp;
+    private Integer rtKtp;
+    private Integer rwKtp;
+    private String desaKtp;
+    private String provinsiKtp;
+    private String kodePosKtp;
+    private String statusTinggalKtp;
+    private String alamatDomisili;
+    private Integer rtDomisili;
+    private Integer rwDomisili;
+    private String desaDomisili;
+    private String provinsiDomisili;
+    private String kodePosDomisili;
+    private String statusTinggalDomisili;
+    private String noTelepon;
+    private String noHp;
+
+    @Email
+    private String emailPribadi;
+
+    @Email
+    private String emailKampus;
+
+    private String noTerdaftar;
     private String pendidikanAsal;
+    private String provinsiSekolah;
+    private String kotaKabSekolah;
     private String namaPendidikanAsal;
-    private String nisn;
-    private String pekerjaan;
-    private String instansiPekerjaan;
-    private String penghasilan;
+    private String alamatSekolah;
+    private String teleponSekolah;
+    private String noIjazahSekolah;
 
 //    @Lob
-//    @Column(name = "foto_profil", columnDefinition = "BYTEA")
-//    private byte[] fotoProfil;
+//    @Column(columnDefinition = "BYTEA")
+//    private byte[] ijazahSekolah;
 //
 //    @Lob
-//    @Column(name = "ijazah_sekolah", columnDefinition = "BYTEA")
-//    private byte[] ijazahSekolah;
+//    @Column(columnDefinition = "BYTEA")
+//    private byte[] fotoProfil;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
@@ -71,4 +101,7 @@ public class Mahasiswa {
 
     @OneToMany(mappedBy = "siakMahasiswa", cascade = CascadeType.ALL)
     private List<KeluargaMahasiswa> keluarga;
+
+    @OneToMany(mappedBy = "siakMahasiswa", cascade = CascadeType.ALL)
+    private List<InvoiceMahasiswa> invoiceMahasiswa;
 }

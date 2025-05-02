@@ -1,7 +1,7 @@
 package com.siakad.service.impl;
 
-import com.siakad.entity.SiakUserActivity;
 import com.siakad.entity.User;
+import com.siakad.entity.UserActivity;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
@@ -36,7 +36,7 @@ public class UserActivityServiceImpl implements UserActivityService {
         User user = getCurrentUser();
         String ipAddress = getClientIpAddress(servletRequest);
 
-        SiakUserActivity userActivity = SiakUserActivity.builder()
+        UserActivity userActivity = UserActivity.builder()
                 .siakUser(user)
                 .activity(activity.getMessage())
                 .waktu(LocalDateTime.now())

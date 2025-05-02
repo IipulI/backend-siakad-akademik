@@ -5,19 +5,18 @@ import lombok.Getter;
 @Getter
 public enum ExceptionType {
 
-    RESOURCE_NOT_FOUND("Resource not found", 404),
-    USER_NOT_FOUND("User not found", 404),
-    ROLE_NOT_FOUND("Default role not found", 404),
-    BAD_REQUEST("Bad request", 400),
-    EMAIL_ALREADY_EXISTS("Email is already taken", 409),
-    USERNAME_ALREADY_EXISTS("Username is already taken", 409),
-    NPM_ALREADY_EXISTS("NPM is already taken", 409),
-    INVALID_PASSWORD("Current password is incorrect", 401),
-    FORBIDDEN("Access denied", 403),
-    INTERNAL_SERVER_ERROR("Internal server error", 500),
-    APPOINTMENT_CONFLICT("Appointment conflict occurred", 409),
-    RESOURCE_CONFLICT("Resource conflict occurred", 409);
-
+    RESOURCE_NOT_FOUND("Sumber daya tidak ditemukan", 404),
+    USER_NOT_FOUND("Pengguna tidak ditemukan", 404),
+    ROLE_NOT_FOUND("Peran default tidak ditemukan", 404),
+    BAD_REQUEST("Permintaan tidak valid", 400),
+    EMAIL_ALREADY_EXISTS("Email sudah digunakan", 409),
+    USERNAME_ALREADY_EXISTS("Username sudah digunakan", 409),
+    NPM_ALREADY_EXISTS("NPM sudah digunakan", 409),
+    INVALID_PASSWORD("Username atau kata sandi salah", 401),
+    FORBIDDEN("Akses ditolak", 403),
+    INTERNAL_SERVER_ERROR("Terjadi kesalahan pada server", 500),
+    APPOINTMENT_CONFLICT("Terjadi konflik jadwal", 409),
+    RESOURCE_CONFLICT("Terjadi konflik pada sumber daya", 409);
 
     private final String message;
     private final int httpCode;

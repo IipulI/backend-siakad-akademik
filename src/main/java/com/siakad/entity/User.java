@@ -47,5 +47,5 @@ public class User {
     private Mahasiswa siakMahasiswa;
 
     @OneToMany(mappedBy = "siakUser", cascade = CascadeType.ALL)
-    private List<SiakUserActivity> siakUserActivities;
+    private List<UserActivity> siakUserActivities;
 }

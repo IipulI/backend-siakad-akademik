@@ -1,15 +1,16 @@
-package com.siakad.controller;
+package com.siakad.controller.akademik;
 
+import com.siakad.dto.request.KomponenPenilaianReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
 import com.siakad.dto.response.ApiResDto;
+import com.siakad.dto.response.KomponenPenilaianResDto;
 import com.siakad.dto.response.MahasiswaResDto;
 import com.siakad.dto.response.PaginationDto;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.service.MahasiswaService;
+import com.siakad.service.KomponenPenilaianService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -23,27 +24,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Mahasiswa")
+@Tag(name = "Komponen Penilaian")
 @RestController
-@SecurityRequirement(name = "Bearer")
-@RequestMapping("/mahasiswa")
+@RequestMapping("/akademik/komponen-penilaian")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('AKADEMIK_UNIV')")
-public class MahasiswaController {
+public class KomponenPenilaianController {
 
-    private final MahasiswaService service;
+    private final KomponenPenilaianService service;
 
 
-    @Operation(summary = "Add Mahasiswa")
+    @Operation(summary = "Add Komponen Penilaian")
     @PostMapping
-    public ResponseEntity<ApiResDto<MahasiswaResDto>> save(
-            @Valid @RequestBody MahasiswaReqDto request,
+    public ResponseEntity<ApiResDto<KomponenPenilaianResDto>> save(
+            @Valid @RequestBody KomponenPenilaianReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
             service.create(request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<MahasiswaResDto>builder()
+                    ApiResDto.<KomponenPenilaianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.CREATED.getMessage())
                             .build()
@@ -51,42 +51,40 @@ public class MahasiswaController {
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ApplicationException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    ExceptionType.INTERNAL_SERVER_ERROR.getMessage());
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
-    @Operation(summary = "Get One Mahasiswa")
+    @Operation(summary = "Get One Komponen Penilaian")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResDto<MahasiswaResDto>> getOne(@PathVariable UUID id) {
+    public ResponseEntity<ApiResDto<KomponenPenilaianResDto>> getOne(@PathVariable UUID id) {
         try {
-            MahasiswaResDto mahasiswaResDto = service.getOne(id);
+            KomponenPenilaianResDto one = service.getOne(id);
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<MahasiswaResDto>builder()
+                    ApiResDto.<KomponenPenilaianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
-                            .data(mahasiswaResDto)
+                            .data(one)
                             .build()
             );
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ApplicationException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    ExceptionType.INTERNAL_SERVER_ERROR.getMessage());
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
-    @Operation(summary = "Get Mahasiswa By Pagiantion")
+    @Operation(summary = "Get Komponen Penilain By Pagiantion")
     @GetMapping()
-    public ResponseEntity<ApiResDto<List<MahasiswaResDto>>> getPaginated(
+    public ResponseEntity<ApiResDto<List<KomponenPenilaianResDto>>> getPaginated(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         try {
-            Page<MahasiswaResDto> paginated = service.getPaginated(page, size);
+            Page<KomponenPenilaianResDto> paginated = service.getPaginated(page, size);
 
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<List<MahasiswaResDto>>builder()
+                    ApiResDto.<List<KomponenPenilaianResDto>>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(paginated.getContent())
@@ -96,22 +94,21 @@ public class MahasiswaController {
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ApplicationException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    ExceptionType.INTERNAL_SERVER_ERROR.getMessage());
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
-    @Operation(summary = "Update Mahasiswa")
+    @Operation(summary = "Update Komponen Penilaian")
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResDto<MahasiswaResDto>> update(
+    public ResponseEntity<ApiResDto<KomponenPenilaianResDto>> update(
             @PathVariable UUID id,
-            @Valid @RequestBody MahasiswaReqDto request,
+            @Valid @RequestBody KomponenPenilaianReqDto request,
             HttpServletRequest servletRequest
-            ) {
+    ) {
         try {
             service.update(id, request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<MahasiswaResDto>builder()
+                    ApiResDto.<KomponenPenilaianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
                             .build()
@@ -119,18 +116,18 @@ public class MahasiswaController {
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ApplicationException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    ExceptionType.INTERNAL_SERVER_ERROR.getMessage());
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
-    @Operation(summary = "Delete Mahasiswa")
+
+    @Operation(summary = "Delete Komponen Penilaian")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResDto<MahasiswaResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
+    public ResponseEntity<ApiResDto<KomponenPenilaianResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
         try {
             service.delete(id, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<MahasiswaResDto>builder()
+                    ApiResDto.<KomponenPenilaianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.DELETED.getMessage())
                             .build()
@@ -138,9 +135,7 @@ public class MahasiswaController {
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ApplicationException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    ExceptionType.INTERNAL_SERVER_ERROR.getMessage());
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
-
 }

@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS public.siak_role (
    updated_at TIMESTAMP
 );
 
--- USER ROLE JUNCTION TABLE --
-CREATE TABLE IF NOT EXISTS public.user_role (
+-- SIAK USER ROLE JUNCTION TABLE --
+CREATE TABLE IF NOT EXISTS public.siak_user_role (
    siak_user_id UUID NOT NULL,
    siak_role_id UUID NOT NULL,
    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS public.user_role (
    FOREIGN KEY (siak_role_id) REFERENCES siak_role(id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_user_role_user_id ON public.user_role(siak_user_id);
-CREATE INDEX IF NOT EXISTS idx_user_role_role_id ON public.user_role(siak_role_id);
+CREATE INDEX IF NOT EXISTS idx_siak_user_role_user_id ON public.siak_user_role(siak_user_id);
+CREATE INDEX IF NOT EXISTS idx_siak_user_role_role_id ON public.siak_user_role(siak_role_id);
 
 -- INSERT SIAK ROLE TABLE --
 INSERT INTO public.siak_role (id, nama, deskripsi, is_deleted, created_at, updated_at)

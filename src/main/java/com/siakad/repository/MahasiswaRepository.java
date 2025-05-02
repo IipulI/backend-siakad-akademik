@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,9 +17,19 @@ public interface MahasiswaRepository extends JpaRepository<Mahasiswa, UUID> {
 
     Optional<Mahasiswa> findByIdAndIsDeletedFalse(UUID id);
     boolean existsByNpm(String npm);
-    boolean existsByEmail(String email);
-    @Query("SELECT m FROM Mahasiswa m WHERE m.isDeleted = false")
+    boolean existsByEmailPribadi(String email);
+
+    @Query(value = """
+        SELECT * FROM siak_mahasiswa m WHERE m.is_deleted = false
+    """, nativeQuery = true)
     Page<Mahasiswa> findAllNotDeleted(Pageable pageable);
 
-    Optional<Mahasiswa> findByNpmAndIsDeletedFalse(String npm);
+    @Query(value = """
+    SELECT m.* FROM siak_mahasiswa m
+    JOIN siak_program_studi ps ON m.siak_program_studi_id = ps.id
+    JOIN siak_fakultas f ON ps.siak_fakultas_id = f.id
+    WHERE m.is_deleted = false
+""", nativeQuery = true)
+    Page<Mahasiswa> findByWithRelasiNative(Pageable pageable);
+
 }
