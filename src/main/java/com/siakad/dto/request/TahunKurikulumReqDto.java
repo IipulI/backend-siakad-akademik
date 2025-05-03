@@ -1,4 +1,4 @@
-package com.siakad.dto.response;
+package com.siakad.dto.request;
 
 import lombok.Data;
 
@@ -6,12 +6,10 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
-public class PeriodeAkademikResDto {
-    private UUID id;
+public class TahunKurikulumReqDto {
+    private UUID siakPeriodeAkademikId;
     private String tahun;
-    private String namaPeriode;
-    private String kodePeriode;
-    private String jenis;
+    private String keterangan;
     private LocalDate tanggalMulai;
     private LocalDate tanggalSelesai;
 }

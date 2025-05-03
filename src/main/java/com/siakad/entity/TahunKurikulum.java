@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -27,7 +28,10 @@ public class TahunKurikulum {
     @JoinColumn(name = "siak_periode_akademik_id", nullable = false)
     private PeriodeAkademik siakPeriodeAkademik;
 
+    private String keterangan;
     private String tahun;
+    private LocalDate tanggalMulai;
+    private LocalDate tanggalSelesai;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;

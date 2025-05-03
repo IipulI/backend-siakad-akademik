@@ -11,7 +11,7 @@ import org.mapstruct.MappingTarget;
 public interface PeriodeAkademikTransform {
     PeriodeAkademik toEntity(PeriodeAkademikReqDto dto);
 
-    @Mapping(source = "siakTahunAjaran.id", target = "siakTahunAjaranId")
+    @Mapping(source = "siakTahunAjaran.nama", target = "tahun")
     PeriodeAkademikResDto toDto(PeriodeAkademik entity);
     void toEntity(PeriodeAkademikReqDto dto, @MappingTarget PeriodeAkademik entity);
 }
