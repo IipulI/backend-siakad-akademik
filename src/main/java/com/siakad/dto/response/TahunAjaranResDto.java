@@ -11,6 +11,4 @@ public class TahunAjaranResDto {
     private UUID id;
     private String tahun;
     private String nama;
-    private LocalDate tanggalMulai;
-    private LocalDate tanggalSelesai;
 }

@@ -6,6 +6,7 @@ import com.siakad.dto.request.InvoiceMahasiswaReqDto;
 import com.siakad.dto.response.InvoiceKomponenResDto;
 import com.siakad.dto.response.InvoiceMahasiswaResDto;
 import com.siakad.dto.response.MahasiswaKeuanganResDto;
+import com.siakad.dto.response.RiwayatPembayaranResDto;
 import com.siakad.entity.InvoiceKomponen;
 import com.siakad.entity.InvoiceMahasiswa;
 import com.siakad.entity.InvoicePembayaranKomponenMahasiswa;
@@ -54,8 +55,12 @@ public interface InvoiceTransform {
     @Mapping(target = "semester", ignore = true) // karena tidak tersedia di entity
     MahasiswaKeuanganResDto toKeuanganDto(Mahasiswa mahasiswa);
 
-    List<MahasiswaKeuanganResDto> toKeuanganDtoList(List<Mahasiswa> mahasiswaList);
+//    @Mapping(source = "invoiceMahasiswa.siakMahasiswa.nama", target = "nama")
+//    @Mapping(source = "invoiceMahasiswa.metodeBayar", target = "metodeBayar")
+//    @Mapping(source = "")
+//    RiwayatPembayaranResDto toRiwayatTagihan(List<InvoicePembayaranKomponenMahasiswa> entities);
 
+    List<MahasiswaKeuanganResDto> toKeuanganDtoList(List<Mahasiswa> mahasiswaList);
 
     default List<InvoicePembayaranKomponenMahasiswa> toPembayaranList(
             List<InvoiceKomponenReqDto> dtoList,
