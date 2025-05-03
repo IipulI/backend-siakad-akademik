@@ -1,0 +1,22 @@
+-- SIAK TAHUN KURIKULUM TABLE --
+CREATE TABLE IF NOT EXISTS public.siak_mata_kuliah (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    siak_program_studi_id UUID NOT NULL,
+    siak_tahun_kurikulum_id UUID NOT NULL,
+    semester INT NOT NULL,
+    kode_mata_kuliah VARCHAR(15) NOT NULL,
+    nama_mata_kuliah VARCHAR(45) NOT NULL,
+    sks INT NOT NULL,
+    jenis_mata_kuliah VARCHAR(15) NOT NULL,
+    prasyarat_mata_kuliah_1 UUID,
+    prasyarat_mata_kuliah_2 UUID,
+    prasyarat_mata_kuliah_3 UUID,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    FOREIGN KEY (siak_program_studi_id) REFERENCES siak_program_studi(id),
+    FOREIGN KEY (siak_tahun_kurikulum_id) REFERENCES siak_tahun_kurikulum(id),
+    FOREIGN KEY (prasyarat_mata_kuliah_1) REFERENCES siak_mata_kuliah(id) ON DELETE SET NULL,
+    FOREIGN KEY (prasyarat_mata_kuliah_2) REFERENCES siak_mata_kuliah(id) ON DELETE SET NULL,
+    FOREIGN KEY (prasyarat_mata_kuliah_3) REFERENCES siak_mata_kuliah(id) ON DELETE SET NULL
+);
