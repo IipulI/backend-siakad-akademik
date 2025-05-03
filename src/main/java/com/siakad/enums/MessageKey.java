@@ -30,6 +30,18 @@ public enum MessageKey {
     CREATE_KOMPONEN_PENILAIAN("Menambahkan data komponen penilaian"),
     UPDATE_KOMPONEN_PENILAIAN("Mengubah data komponen penilaian"),
     DELETE_KOMPONEN_PENILAIAN("Menghapus data komponen penilaian"),
+
+    CREATE_TAHUN_AJARAN("Menambahkan data tahun ajaran"),
+    UPDATE_TAHUN_AJARAN("Mengubah data tahun ajaran"),
+    DELETE_TAHUN_AJARAN("Menghapus data tahun ajaran"),
+
+    CREATE_PERIODE_AKADEMIK("Menambahkan data periode akademik"),
+    UPDATE_PERIODE_AKADEMIK("Mengubah data periode akademik"),
+    DELETE_PERIODE_AKADEMIK("Menghapus data periode akademik"),
+
+    CREATE_TAHUN_KURIKULUM("Menambahkan data tahun kurikulum"),
+    UPDATE_TAHUN_KURIKULUM("Mengubah data tahun kurikulum"),
+    DELETE_TAHUN_KURIKULUM("Menghapus data tahun kurikulum"),
     ;
 
     private final String message;
