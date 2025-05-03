@@ -42,6 +42,11 @@ public enum MessageKey {
     CREATE_TAHUN_KURIKULUM("Menambahkan data tahun kurikulum"),
     UPDATE_TAHUN_KURIKULUM("Mengubah data tahun kurikulum"),
     DELETE_TAHUN_KURIKULUM("Menghapus data tahun kurikulum"),
+
+    CREATE_MATA_KULIAH("Menambahkan data mata kuliah"),
+    UPDATE_MATA_KULIAH("Mengubah data mata kuliah"),
+    DELETE_MATA_KULIAH("Menghapus data mata kuliah"),
+
     ;
 
     private final String message;
