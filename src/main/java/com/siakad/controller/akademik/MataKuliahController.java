@@ -1,13 +1,13 @@
 package com.siakad.controller.akademik;
 
-import com.siakad.dto.request.PeriodeAkademikReqDto;
+import com.siakad.dto.request.MataKuliahReqDto;
 import com.siakad.dto.response.ApiResDto;
+import com.siakad.dto.response.MataKuliahResDto;
 import com.siakad.dto.response.PaginationDto;
-import com.siakad.dto.response.PeriodeAkademikResDto;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.service.PeriodeAkademikService;
+import com.siakad.service.MataKuliahService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,25 +27,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Periode Akademik")
+@Tag(name = "Mata Kuliah")
 @RestController
-@RequestMapping("/akademik/periode-akademik")
+@RequestMapping("/akademik/mata-kuliah")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('AKADEMIK_UNIV')")
-public class PeriodeAkademikController {
+public class MataKuliahController {
 
-    private final PeriodeAkademikService service;
+    private final MataKuliahService service;
 
-    @Operation(summary = "Add Periode Akademik")
+    @Operation(summary = "Add Mata Kuliah")
     @PostMapping
-    public ResponseEntity<ApiResDto<PeriodeAkademikResDto>> save(
-            @Valid @RequestBody PeriodeAkademikReqDto request,
+    public ResponseEntity<ApiResDto<MataKuliahResDto>> save(
+            @Valid @RequestBody MataKuliahReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
             service.create(request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<PeriodeAkademikResDto>builder()
+                    ApiResDto.<MataKuliahResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.CREATED.getMessage())
                             .build()
@@ -57,13 +57,13 @@ public class PeriodeAkademikController {
         }
     }
 
-    @Operation(summary = "Get One Periode Akademik")
+    @Operation(summary = "Get One Mata Kuliah")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResDto<PeriodeAkademikResDto>> getOne(@PathVariable UUID id) {
+    public ResponseEntity<ApiResDto<MataKuliahResDto>> getOne(@PathVariable UUID id) {
         try {
-            PeriodeAkademikResDto one = service.getOne(id);
+            MataKuliahResDto one = service.getOne(id);
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<PeriodeAkademikResDto>builder()
+                    ApiResDto.<MataKuliahResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(one)
@@ -76,10 +76,13 @@ public class PeriodeAkademikController {
         }
     }
 
-    @Operation(summary = "Get Periode Akademik By Pagiantion")
+    @Operation(summary = "Get Mata Kuliah By Pagiantion")
     @GetMapping()
-    public ResponseEntity<ApiResDto<List<PeriodeAkademikResDto>>> getPaginated(
+    public ResponseEntity<ApiResDto<List<MataKuliahResDto>>> getPaginated(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String programStudi,
+            @RequestParam(required = false) String jenisMataKuliah,
+            @RequestParam(required = false) String tahunKurikulum,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
@@ -93,35 +96,34 @@ public class PeriodeAkademikController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
-            Page<PeriodeAkademikResDto> data = service.search(keyword, pageable);
+            Page<MataKuliahResDto> search = service.search(keyword, programStudi, jenisMataKuliah, tahunKurikulum, pageable);
 
             return ResponseEntity.ok(
-                    ApiResDto.<List<PeriodeAkademikResDto>>builder()
+                    ApiResDto.<List<MataKuliahResDto>>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
-                            .data(data.getContent())
-                            .pagination(PaginationDto.fromPage(data))
+                            .data(search.getContent())
+                            .pagination(PaginationDto.fromPage(search))
                             .build()
             );
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR,
-                    "Failed to get periode akademik");
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
-    @Operation(summary = "Update Periode Akademik")
+    @Operation(summary = "Update Mata Kuliah")
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResDto<PeriodeAkademikResDto>> update(
+    public ResponseEntity<ApiResDto<MataKuliahResDto>> update(
             @PathVariable UUID id,
-            @Valid @RequestBody PeriodeAkademikReqDto request,
+            @Valid @RequestBody MataKuliahReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
-            service.update(id, request, servletRequest);
+            service.update(request, id, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<PeriodeAkademikResDto>builder()
+                    ApiResDto.<MataKuliahResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
                             .build()
@@ -133,13 +135,13 @@ public class PeriodeAkademikController {
         }
     }
 
-    @Operation(summary = "Delete Periode akademik")
+    @Operation(summary = "Delete Mata Kuliah")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResDto<PeriodeAkademikResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
+    public ResponseEntity<ApiResDto<MataKuliahResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
         try {
             service.delete(id, servletRequest);
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<PeriodeAkademikResDto>builder()
+                    ApiResDto.<MataKuliahResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.DELETED.getMessage())
                             .build()
@@ -150,5 +152,4 @@ public class PeriodeAkademikController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
-
 }
