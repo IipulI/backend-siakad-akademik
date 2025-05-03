@@ -6,12 +6,11 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
-public class PeriodeAkademikResDto {
+public class TahunKurikulumResDto {
     private UUID id;
+    private String mulaiBerlaku;
     private String tahun;
-    private String namaPeriode;
-    private String kodePeriode;
-    private String jenis;
+    private String keterangan;
     private LocalDate tanggalMulai;
     private LocalDate tanggalSelesai;
 }
