@@ -66,6 +66,7 @@ public class Mahasiswa {
     private String statusTinggalDomisili;
     private String noTelepon;
     private String noHp;
+    private Integer semester;
 
     @Email
     private String emailPribadi;
@@ -82,13 +83,11 @@ public class Mahasiswa {
     private String teleponSekolah;
     private String noIjazahSekolah;
 
-//    @Lob
-//    @Column(columnDefinition = "BYTEA")
-//    private byte[] ijazahSekolah;
-//
-//    @Lob
-//    @Column(columnDefinition = "BYTEA")
-//    private byte[] fotoProfil;
+    @Column(columnDefinition = "bytea")
+    private byte[] ijazahSekolah;
+
+    @Column(columnDefinition = "bytea")
+    private byte[] fotoProfil;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;

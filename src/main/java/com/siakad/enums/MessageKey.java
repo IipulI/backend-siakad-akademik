@@ -47,6 +47,14 @@ public enum MessageKey {
     UPDATE_MATA_KULIAH("Mengubah data mata kuliah"),
     DELETE_MATA_KULIAH("Menghapus data mata kuliah"),
 
+    CREATE_KELAS_KULIAH("Menambahkan data kelas kuliah"),
+    UPDATE_KELAS_KULIAH("Mengubah data kelas kuliah"),
+    DELETE_KELAS_KULIAH("Menghapus data kelas kuliah"),
+
+    CREATE_JADWAL_KULIAH("Menambahkan data jadwal kuliah"),
+    UPDATE_JADWAL_KULIAH("Mengubah data jadwal kuliah"),
+    DELETE_JADWAL_KULIAH("Menghapus data jadwal kuliah"),
+
     ;
 
     private final String message;

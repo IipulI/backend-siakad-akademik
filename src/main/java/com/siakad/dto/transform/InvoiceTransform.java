@@ -6,7 +6,6 @@ import com.siakad.dto.request.InvoiceMahasiswaReqDto;
 import com.siakad.dto.response.InvoiceKomponenResDto;
 import com.siakad.dto.response.InvoiceMahasiswaResDto;
 import com.siakad.dto.response.MahasiswaKeuanganResDto;
-import com.siakad.dto.response.RiwayatPembayaranResDto;
 import com.siakad.entity.InvoiceKomponen;
 import com.siakad.entity.InvoiceMahasiswa;
 import com.siakad.entity.InvoicePembayaranKomponenMahasiswa;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface InvoiceTransform {
 
-    @Mapping(source = "siakMahasiswaId", target = "siakMahasiswa.id")
+//    @Mapping(source = "siakMahasiswaId", target = "siakMahasiswa.id")
     InvoiceMahasiswa toEntity(InvoiceMahasiswaReqDto requestDto);
 
     @Mapping(source = "komponenId", target = "id")
@@ -52,13 +51,8 @@ public interface InvoiceTransform {
     @Mapping(source = "nama", target = "nama")
     @Mapping(source = "siakProgramStudi.namaProgramStudi", target = "namaProgramStudi")
     @Mapping(source = "siakProgramStudi.siakFakultas.namaFakultas", target = "namaFakultas")
-    @Mapping(target = "semester", ignore = true) // karena tidak tersedia di entity
+    @Mapping(source = "semester", target = "semester")
     MahasiswaKeuanganResDto toKeuanganDto(Mahasiswa mahasiswa);
-
-//    @Mapping(source = "invoiceMahasiswa.siakMahasiswa.nama", target = "nama")
-//    @Mapping(source = "invoiceMahasiswa.metodeBayar", target = "metodeBayar")
-//    @Mapping(source = "")
-//    RiwayatPembayaranResDto toRiwayatTagihan(List<InvoicePembayaranKomponenMahasiswa> entities);
 
     List<MahasiswaKeuanganResDto> toKeuanganDtoList(List<Mahasiswa> mahasiswaList);
 
@@ -73,10 +67,9 @@ public interface InvoiceTransform {
             ent.setInvoiceMahasiswa(invoice);
 
             InvoiceKomponen komponen = new InvoiceKomponen();
-            komponen.setId(dto.getKomponenId());        // ← note getKomponenId()
-            ent.setInvoiceKomponen(komponen);            // ← note setInvoiceKomponen(...)
+            komponen.setId(dto.getKomponenId());
+            ent.setInvoiceKomponen(komponen);
 
-            ent.setTagihan(dto.getTagihan());
             ent.setIsDeleted(false);
             ent.setCreatedAt(java.time.LocalDateTime.now());
             return ent;
