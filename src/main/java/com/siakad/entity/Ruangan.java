@@ -1,6 +1,5 @@
 package com.siakad.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,34 +8,30 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_invoice_pembayaran_komponen")
+@Table(name = "siak_ruangan", schema = "public")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class InvoicePembayaranKomponenMahasiswa {
+public class Ruangan {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "siak_invoice_mahasiswa_id", nullable = false)
-    @JsonIgnore
-    private InvoiceMahasiswa invoiceMahasiswa;
+    @JoinColumn(name = "siak_program_studi_id", nullable = false)
+    private ProgramStudi siakProgramStudi;
 
-    @ManyToOne
-    @JoinColumn(name = "siak_invoice_komponen_mahasiswa_id", nullable = false)
-    private InvoiceKomponen invoiceKomponen;
+    private String namaRuangan;
+    private Integer kapasitas;
+    private String lantai;
 
-    private BigDecimal tagihan;
-
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @CreationTimestamp
@@ -44,5 +39,4 @@ public class InvoicePembayaranKomponenMahasiswa {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
 }

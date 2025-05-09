@@ -11,6 +11,7 @@ import com.siakad.exception.ApplicationException;
 import com.siakad.repository.*;
 import com.siakad.service.MahasiswaService;
 import com.siakad.service.UserActivityService;
+import com.siakad.util.FileUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -40,7 +44,10 @@ public class MahasiswaServiceImpl implements MahasiswaService {
 
     @Override
     @Transactional
-    public MahasiswaResDto create(MahasiswaReqDto request, HttpServletRequest servletRequest) {
+    public MahasiswaResDto create(MahasiswaReqDto request,
+                                  MultipartFile fotoProfil,
+                                  MultipartFile ijazahSekolah,
+                                  HttpServletRequest servletRequest) throws IOException {
 
         var programStudi = programStudiRepository.findByIdAndIsDeletedFalse(request.getSiakProgramStudiId())
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Program Studi tidak ditemukan"));
@@ -57,6 +64,9 @@ public class MahasiswaServiceImpl implements MahasiswaService {
         User user = createUserWithRole(request.getNpm(), request.getEmailPribadi(), password, RoleType.MAHASISWA);
 
         Mahasiswa mahasiswa = mapper.toEntity(request);
+        mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
+        mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
+
         mahasiswa.setEmailPribadi(user.getEmail());
         mahasiswa.setSiakProgramStudi(programStudi);
         mahasiswa.setSiakUser(user);
@@ -78,6 +88,18 @@ public class MahasiswaServiceImpl implements MahasiswaService {
     }
 
     @Override
+    public byte[] getFotoProfil(UUID id) {
+        Optional<Mahasiswa> mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(id);
+        return FileUtils.decompress(mahasiswa.get().getFotoProfil());
+    }
+
+    @Override
+    public byte[] getIjazahSekolah(UUID id) {
+        Optional<Mahasiswa> mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(id);
+        return FileUtils.decompress(mahasiswa.get().getIjazahSekolah());
+    }
+
+    @Override
     public MahasiswaResDto getOne(UUID id) {
         Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.USER_NOT_FOUND, ExceptionType.USER_NOT_FOUND.getFormattedMessage("With id: " + id)));
@@ -87,7 +109,11 @@ public class MahasiswaServiceImpl implements MahasiswaService {
 
     @Override
     @Transactional
-    public MahasiswaResDto update(UUID id, MahasiswaReqDto request, HttpServletRequest servletRequest) {
+    public MahasiswaResDto update(UUID id,
+                                  MultipartFile fotoProfil,
+                                  MultipartFile ijazahSekolah,
+                                  MahasiswaReqDto request,
+                                  HttpServletRequest servletRequest) throws IOException {
 
         var programStudi = programStudiRepository.findByIdAndIsDeletedFalse(request.getSiakProgramStudiId())
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Program Studi tidak ditemukan"));
@@ -114,10 +140,10 @@ public class MahasiswaServiceImpl implements MahasiswaService {
 
         mapper.toEntity(request, mahasiswa);
         mahasiswa.setUpdatedAt(LocalDateTime.now());
+        mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
+        mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
         mahasiswa.setSiakProgramStudi(programStudi);
-        mahasiswa.setEmailPribadi(request.getEmailKampus());
         mahasiswaRepository.save(mahasiswa);
-
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_MAHASISWA);
 
         return mapper.toDto(mahasiswa);
@@ -132,8 +158,6 @@ public class MahasiswaServiceImpl implements MahasiswaService {
 
         mahasiswa.setIsDeleted(true);
         Mahasiswa save = mahasiswaRepository.save(mahasiswa);
-
-        // Tambah Log
         service.saveUserActivity(servletRequest, MessageKey.DELETE_MAHASISWA);
         mapper.toDto(save);
     }

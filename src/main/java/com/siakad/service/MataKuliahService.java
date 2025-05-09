@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface MataKuliahService {
     MataKuliahResDto create(MataKuliahReqDto request, HttpServletRequest servletRequest);
     Page<MataKuliahResDto> search(String keyword,
-                                  String ProgramStudi,
+                                  String programStudi,
                                   String jenisMataKuliah,
                                   String tahunKurikulum,
                                   Pageable pageable);
