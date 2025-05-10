@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface InvoiceTransform {
 
-    @Mapping(source = "siakMahasiswaId", target = "siakMahasiswa.id")
+//    @Mapping(source = "siakMahasiswaId", target = "siakMahasiswa.id")
     InvoiceMahasiswa toEntity(InvoiceMahasiswaReqDto requestDto);
 
     @Mapping(source = "komponenId", target = "id")
@@ -51,11 +51,10 @@ public interface InvoiceTransform {
     @Mapping(source = "nama", target = "nama")
     @Mapping(source = "siakProgramStudi.namaProgramStudi", target = "namaProgramStudi")
     @Mapping(source = "siakProgramStudi.siakFakultas.namaFakultas", target = "namaFakultas")
-    @Mapping(target = "semester", ignore = true) // karena tidak tersedia di entity
+    @Mapping(source = "semester", target = "semester")
     MahasiswaKeuanganResDto toKeuanganDto(Mahasiswa mahasiswa);
 
     List<MahasiswaKeuanganResDto> toKeuanganDtoList(List<Mahasiswa> mahasiswaList);
-
 
     default List<InvoicePembayaranKomponenMahasiswa> toPembayaranList(
             List<InvoiceKomponenReqDto> dtoList,
@@ -68,10 +67,9 @@ public interface InvoiceTransform {
             ent.setInvoiceMahasiswa(invoice);
 
             InvoiceKomponen komponen = new InvoiceKomponen();
-            komponen.setId(dto.getKomponenId());        // ← note getKomponenId()
-            ent.setInvoiceKomponen(komponen);            // ← note setInvoiceKomponen(...)
+            komponen.setId(dto.getKomponenId());
+            ent.setInvoiceKomponen(komponen);
 
-            ent.setTagihan(dto.getTagihan());
             ent.setIsDeleted(false);
             ent.setCreatedAt(java.time.LocalDateTime.now());
             return ent;

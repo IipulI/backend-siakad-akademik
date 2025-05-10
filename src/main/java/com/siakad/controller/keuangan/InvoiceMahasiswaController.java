@@ -78,7 +78,7 @@ public class InvoiceMahasiswaController {
     }
 
 
-    @Operation(summary = "Get Paginate Mapping Tagihan Mahasiswa")
+    @Operation(summary = "Get Data Tagihan Terbaru")
     @GetMapping("/tagihan-mahasiswa")
     public ResponseEntity<ApiResDto<List<TagihanMahasiswaResDto>>> getPaginateTagihanMahasiswa(
             @RequestParam (defaultValue = "1") int page,
@@ -104,7 +104,7 @@ public class InvoiceMahasiswaController {
     }
 
 
-    @Operation(summary = "Get Paginate Mapping Tagihan Ringkasan Mahasiswa")
+    @Operation(summary = "Get Tagihan Ringkasan Mahasiswa untuk dashboard")
     @GetMapping("/tagihan-mahasiswa/ringkasan")
     public ResponseEntity<ApiResDto<RingkasanTagihanResDto>> getTagihanRingkasianMahasiswa() {
         try {

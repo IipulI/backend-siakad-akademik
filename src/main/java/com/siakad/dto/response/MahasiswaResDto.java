@@ -1,6 +1,4 @@
 package com.siakad.dto.response;
-
-import com.siakad.entity.KeluargaMahasiswa;
 import jakarta.validation.constraints.Email;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +11,7 @@ import java.util.UUID;
 @Builder
 public class MahasiswaResDto {
     private UUID id;
-    private UUID siakProgramStudiId;
+    private String namaProgramStudi;
     private String nama;
     private String npm;
     private String periodeMasuk;
@@ -33,6 +31,7 @@ public class MahasiswaResDto {
     private String alamatKtp;
     private Integer rtKtp;
     private Integer rwKtp;
+    private Integer semester;
     private String desaKtp;
     private String provinsiKtp;
     private String kodePosKtp;

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_invoice_komponen")
+@Table(name = "siak_invoice_komponen_mahasiswa")
 @Data
 @Builder
 @AllArgsConstructor

@@ -25,7 +25,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class KeluargaMahasiswaServiceImpl implements KeluargaMahasiswaService {
 
-
     private final KeluargaMahasiswaRepository keluargaMahasiswaRepository;
     private final MahasiswaRepository mahasiswaRepository;
     private final MahasiswaTransform mapper;

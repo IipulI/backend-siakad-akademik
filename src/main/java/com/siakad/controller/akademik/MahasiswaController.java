@@ -1,5 +1,7 @@
 package com.siakad.controller.akademik;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
 import com.siakad.dto.response.ApiResDto;
@@ -16,11 +18,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,26 +42,76 @@ public class MahasiswaController {
 
     private final KeluargaMahasiswaService keluargaService;
 
+    private final ObjectMapper objectMapper;
+
     @Operation(summary = "Add Mahasiswa")
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResDto<MahasiswaResDto>> save(
-            @Valid @RequestBody MahasiswaReqDto request,
-            HttpServletRequest servletRequest
-    ) {
+            @RequestPart(value = "fotoProfil", required = false) MultipartFile fotoProfil,
+            @RequestPart(value = "ijazahSekolah", required = false) MultipartFile ijazahSekolah,
+            @RequestPart("request") String requestJson,
+            HttpServletRequest servletRequest) {
+
         try {
-            service.create(request, servletRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<MahasiswaResDto>builder()
+            MahasiswaReqDto request = objectMapper.readValue(requestJson, MahasiswaReqDto.class);
+            service.create(request, fotoProfil, ijazahSekolah, servletRequest);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResDto.<MahasiswaResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.CREATED.getMessage())
-                            .build()
-            );
+                            .build());
+        } catch (JsonProcessingException e) {
+            throw new ApplicationException(ExceptionType.BAD_REQUEST, "Invalid JSON format in 'request'");
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR,e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Foto Profil")
+    @GetMapping("/{id}/foto-profil")
+    public ResponseEntity<byte[]> getFotoProfil(@PathVariable UUID id) {
+        try {
+            byte[] fotoProfil = service.getFotoProfil(id);
+            if (fotoProfil == null || fotoProfil.length == 0) {
+                throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND);
+            }
+            Tika tika = new Tika();
+            String mimeType = tika.detect(fotoProfil);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(mimeType));
+
+            return new ResponseEntity<>(fotoProfil, headers, HttpStatus.OK);
+
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
+    @Operation(summary = "Get Ijazah Sekolah")
+    @GetMapping("/{id}/ijazah-sekolah")
+    public ResponseEntity<byte[]> getIjazahSekolah(@PathVariable UUID id) {
+        try {
+            byte[] ijazahSekolah = service.getIjazahSekolah(id);
+            if (ijazahSekolah == null || ijazahSekolah.length == 0) {
+                throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND);
+            }
+            Tika tika = new Tika();
+            String mimeType = tika.detect(ijazahSekolah);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(mimeType));
+            return new ResponseEntity<>(ijazahSekolah, headers, HttpStatus.OK);
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
 
     @Operation(summary = "Get One Mahasiswa")
     @GetMapping("/{id}")
@@ -101,20 +157,25 @@ public class MahasiswaController {
     }
 
     @Operation(summary = "Update Mahasiswa")
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResDto<MahasiswaResDto>> update(
             @PathVariable UUID id,
-            @Valid @RequestBody MahasiswaReqDto request,
+            @RequestPart(value = "fotoProfil", required = false) MultipartFile fotoProfil,
+            @RequestPart(value = "ijazahSekolah", required = false) MultipartFile ijazahSekolah,
+            @RequestPart("request") String requestJson,
             HttpServletRequest servletRequest
             ) {
         try {
-            service.update(id, request, servletRequest);
+            MahasiswaReqDto request = objectMapper.readValue(requestJson, MahasiswaReqDto.class);
+            service.update(id,fotoProfil, ijazahSekolah, request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiResDto.<MahasiswaResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
                             .build()
             );
+        } catch (JsonProcessingException e) {
+            throw new ApplicationException(ExceptionType.BAD_REQUEST, "Invalid JSON format in 'request'");
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {

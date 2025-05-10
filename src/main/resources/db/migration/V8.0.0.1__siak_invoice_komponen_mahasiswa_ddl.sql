@@ -1,5 +1,5 @@
--- SIAK INVOICE KOMPONEN TABLE --
-CREATE TABLE IF NOT EXISTS public.siak_invoice_komponen (
+-- SIAK INVOICE KOMPONEN MAHASISWA TABLE --
+CREATE TABLE IF NOT EXISTS public.siak_invoice_komponen_mahasiswa (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     kode_komponen VARCHAR(10) NOT NULL,
     nama VARCHAR(40),

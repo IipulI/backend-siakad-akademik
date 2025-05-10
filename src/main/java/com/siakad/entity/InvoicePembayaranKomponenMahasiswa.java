@@ -1,5 +1,6 @@
 package com.siakad.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,10 +27,11 @@ public class InvoicePembayaranKomponenMahasiswa {
 
     @ManyToOne
     @JoinColumn(name = "siak_invoice_mahasiswa_id", nullable = false)
+    @JsonIgnore
     private InvoiceMahasiswa invoiceMahasiswa;
 
     @ManyToOne
-    @JoinColumn(name = "siak_invoice_komponen_id", nullable = false)
+    @JoinColumn(name = "siak_invoice_komponen_mahasiswa_id", nullable = false)
     private InvoiceKomponen invoiceKomponen;
 
     private BigDecimal tagihan;

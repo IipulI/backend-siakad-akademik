@@ -9,6 +9,4 @@ import java.util.Date;
 public class TahunAjaranReqDto {
     private String tahun;
     private String nama;
-    private LocalDate tanggalMulai;
-    private LocalDate tanggalSelesai;
 }

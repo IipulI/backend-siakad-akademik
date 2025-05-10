@@ -26,8 +26,6 @@ public class TahunAjaran {
 
     private String tahun;
     private String nama;
-    private Date tanggalMulai;
-    private Date tanggalSelesai;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;

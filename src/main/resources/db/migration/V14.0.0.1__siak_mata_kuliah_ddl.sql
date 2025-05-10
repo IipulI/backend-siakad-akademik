@@ -1,4 +1,4 @@
--- SIAK TAHUN KURIKULUM TABLE --
+-- SIAK MATA KULIAH TABLE --
 CREATE TABLE IF NOT EXISTS public.siak_mata_kuliah (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     siak_program_studi_id UUID NOT NULL,
