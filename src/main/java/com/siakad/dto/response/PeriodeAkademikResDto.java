@@ -1,5 +1,4 @@
 package com.siakad.dto.response;
-
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,7 +10,7 @@ public class PeriodeAkademikResDto {
     private String tahun;
     private String namaPeriode;
     private String kodePeriode;
-    private String jenis;
+    private String status;
     private LocalDate tanggalMulai;
     private LocalDate tanggalSelesai;
 }

@@ -7,6 +7,7 @@ import com.siakad.entity.PeriodeAkademik;
 import com.siakad.entity.service.PeriodeAkademikSpecification;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
+import com.siakad.enums.PeriodeAkademikStatus;
 import com.siakad.exception.ApplicationException;
 import com.siakad.repository.PeriodeAkademikRepository;
 import com.siakad.repository.TahunAjaranRepository;
@@ -36,10 +37,12 @@ public class PeriodeAkademikServiceImpl implements PeriodeAkademikService {
     @Override
     public PeriodeAkademikResDto create(PeriodeAkademikReqDto request, HttpServletRequest servletRequest) {
         var tahunAjaran = tahunAjaranRepository.findByIdAndIsDeletedFalse(request.getSiakTahunAjaranId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tahun Ajaran tidak ditemukan : " + request.getSiakTahunAjaranId()));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
+                        "Tahun Ajaran tidak ditemukan : " + request.getSiakTahunAjaranId()));
 
         PeriodeAkademik periodeAkademik = mapper.toEntity(request);
         periodeAkademik.setSiakTahunAjaran(tahunAjaran);
+        periodeAkademik.setStatus(PeriodeAkademikStatus.NONAKTIF.getLabel());
         periodeAkademik.setIsDeleted(false);
         periodeAkademikRepository.save(periodeAkademik);
 
@@ -58,16 +61,19 @@ public class PeriodeAkademikServiceImpl implements PeriodeAkademikService {
     @Override
     public PeriodeAkademikResDto getOne(UUID id) {
         PeriodeAkademik periodeAkademik = periodeAkademikRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode akademik tidak ditemukan : " + id));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
+                        "Periode akademik tidak ditemukan : " + id));
         return mapper.toDto(periodeAkademik);
     }
 
     @Override
     public PeriodeAkademikResDto update(UUID id, PeriodeAkademikReqDto request, HttpServletRequest servletRequest) {
         PeriodeAkademik periodeAkademik = periodeAkademikRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode akademik tidak ditemukan : " + id));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
+                        "Periode akademik tidak ditemukan : " + id));
 
         mapper.toEntity(request, periodeAkademik);
+        periodeAkademik.setStatus(PeriodeAkademikStatus.NONAKTIF.getLabel());
         periodeAkademik.setUpdatedAt(LocalDateTime.now());
         periodeAkademikRepository.save(periodeAkademik);
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_PERIODE_AKADEMIK);
@@ -77,7 +83,8 @@ public class PeriodeAkademikServiceImpl implements PeriodeAkademikService {
     @Override
     public void delete(UUID id, HttpServletRequest servletRequest) {
         PeriodeAkademik periodeAkademik = periodeAkademikRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode akademik tidak ditemukan : " + id));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
+                        "Periode akademik tidak ditemukan : " + id));
 
         periodeAkademik.setIsDeleted(true);
         PeriodeAkademik saved = periodeAkademikRepository.save(periodeAkademik);

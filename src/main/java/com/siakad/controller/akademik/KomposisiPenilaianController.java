@@ -1,24 +1,17 @@
 package com.siakad.controller.akademik;
 
-import com.siakad.dto.request.KelasKuliahReqDto;
+import com.siakad.dto.request.KomposisiPenilaianReqDto;
 import com.siakad.dto.response.ApiResDto;
-import com.siakad.dto.response.KelasKuliahResDto;
-import com.siakad.dto.response.PaginationDto;
+import com.siakad.dto.response.KomposisiPenilaianResDto;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.service.KelasKuliahService;
+import com.siakad.service.KomposisiPenilaianService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,25 +20,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Kelas Kuliah")
+@Tag(name = "Komposisi Penilaian")
 @RestController
-@RequestMapping("/akademik/kelas-kuliah")
+@RequestMapping("/akademik/komposisi-nilai")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('AKADEMIK_UNIV')")
-public class KelasKuliahController {
+public class KomposisiPenilaianController {
 
-    private final KelasKuliahService service;
+    private final KomposisiPenilaianService service;
 
-    @Operation(summary = "Add Kelas Kuliah")
+    @Operation(summary = "Add Komposisi nilai")
     @PostMapping
-    public ResponseEntity<ApiResDto<KelasKuliahResDto>> save(
-            @Valid @RequestBody KelasKuliahReqDto request,
+    public ResponseEntity<ApiResDto<KomposisiPenilaianResDto>> save(
+            @Valid @RequestBody KomposisiPenilaianReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
-            service.create(request, servletRequest);
+            service.save(request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<KelasKuliahResDto>builder()
+                    ApiResDto.<KomposisiPenilaianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.CREATED.getMessage())
                             .build()
@@ -57,19 +50,19 @@ public class KelasKuliahController {
         }
     }
 
-    @Operation(summary = "Update Kelas Kuliah")
+    @Operation(summary = "Update Komposisi nilai")
     @PutMapping(value = "/{id}")
-    public ResponseEntity<ApiResDto<KelasKuliahResDto>> update(
+    public ResponseEntity<ApiResDto<KomposisiPenilaianResDto>> save(
             @PathVariable UUID id,
-            @Valid @RequestBody KelasKuliahReqDto request,
+            @Valid @RequestBody KomposisiPenilaianReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
             service.update(request, id, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<KelasKuliahResDto>builder()
+                    ApiResDto.<KomposisiPenilaianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.UPDATED.getMessage())
+                            .message(MessageKey.CREATED.getMessage())
                             .build()
             );
         } catch (ApplicationException e) {
@@ -79,13 +72,13 @@ public class KelasKuliahController {
         }
     }
 
-    @Operation(summary = "Get One Kelas Kuliah")
+    @Operation(summary = "Get One Komposisi nilai")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResDto<KelasKuliahResDto>> getOne(@PathVariable UUID id) {
+    public ResponseEntity<ApiResDto<KomposisiPenilaianResDto>> getOne(@PathVariable UUID id) {
         try {
-            KelasKuliahResDto one = service.getOne(id);
+            KomposisiPenilaianResDto one = service.getOne(id);
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<KelasKuliahResDto>builder()
+                    ApiResDto.<KomposisiPenilaianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(one)
@@ -98,35 +91,16 @@ public class KelasKuliahController {
         }
     }
 
-    @Operation(summary = "Get Kelas Kuliah By Pagination")
+    @Operation(summary = "Get All Komposisi nilai")
     @GetMapping()
-    public ResponseEntity<ApiResDto<List<KelasKuliahResDto>>> getPaginated(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String periodeAkademik,
-            @RequestParam(required = false) String tahunKuriKulum,
-            @RequestParam(required = false) String programStudi,
-            @RequestParam(required = false) String sistemKuliah,
-            @RequestParam(defaultValue = "1") @Min(1) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort) {
-
+    public ResponseEntity<ApiResDto<List<KomposisiPenilaianResDto>>> getAll() {
         try {
-            // Parse sort parameter
-            String[] sortParams = sort.split(",");
-            Sort.Direction direction = sortParams.length > 1 ?
-                    Sort.Direction.fromString(sortParams[1]) : Sort.Direction.DESC;
-            Sort sortObj = Sort.by(direction, sortParams[0]);
-
-            Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
-
-            Page<KelasKuliahResDto> search = service.search(keyword, periodeAkademik, tahunKuriKulum, programStudi, sistemKuliah, pageable);
-
-            return ResponseEntity.ok(
-                    ApiResDto.<List<KelasKuliahResDto>>builder()
+            List<KomposisiPenilaianResDto> all = service.getAll();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<KomposisiPenilaianResDto>>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
-                            .data(search.getContent())
-                            .pagination(PaginationDto.fromPage(search))
+                            .data(all)
                             .build()
             );
         } catch (ApplicationException e) {
@@ -136,13 +110,13 @@ public class KelasKuliahController {
         }
     }
 
-    @Operation(summary = "Delete Kelas Kuliah")
+    @Operation(summary = "Delete Komposisi nilai")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResDto<KelasKuliahResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
+    public ResponseEntity<ApiResDto<KomposisiPenilaianResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
         try {
             service.delete(id, servletRequest);
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<KelasKuliahResDto>builder()
+                    ApiResDto.<KomposisiPenilaianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.DELETED.getMessage())
                             .build()
@@ -153,5 +127,6 @@ public class KelasKuliahController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
 
 }

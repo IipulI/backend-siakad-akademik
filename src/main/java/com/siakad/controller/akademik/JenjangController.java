@@ -1,21 +1,17 @@
 package com.siakad.controller.akademik;
 
-import com.siakad.dto.request.KomponenPenilaianReqDto;
-import com.siakad.dto.request.MahasiswaReqDto;
+import com.siakad.dto.request.JenjangReqDto;
 import com.siakad.dto.response.ApiResDto;
-import com.siakad.dto.response.KomponenPenilaianResDto;
-import com.siakad.dto.response.MahasiswaResDto;
-import com.siakad.dto.response.PaginationDto;
+import com.siakad.dto.response.JenjangResDto;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.service.KomponenPenilaianService;
+import com.siakad.service.JenjangService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,26 +20,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Komponen Penilaian")
+@Tag(name = "Jenjang")
 @RestController
-@RequestMapping("/akademik/komponen-penilaian")
+@RequestMapping("/akademik/jenjang")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('AKADEMIK_UNIV')")
-public class KomponenPenilaianController {
+public class JenjangController {
 
-    private final KomponenPenilaianService service;
+    private final JenjangService service;
 
-
-    @Operation(summary = "Add Komponen Penilaian")
+    @Operation(summary = "Add Jenjang")
     @PostMapping
-    public ResponseEntity<ApiResDto<KomponenPenilaianResDto>> save(
-            @Valid @RequestBody KomponenPenilaianReqDto request,
+    public ResponseEntity<ApiResDto<JenjangResDto>> save(
+            @Valid @RequestBody JenjangReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
-            service.create(request, servletRequest);
+            service.save(request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<KomponenPenilaianResDto>builder()
+                    ApiResDto.<JenjangResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.CREATED.getMessage())
                             .build()
@@ -55,13 +50,13 @@ public class KomponenPenilaianController {
         }
     }
 
-    @Operation(summary = "Get One Komponen Penilaian")
+    @Operation(summary = "Get One Jenjang")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResDto<KomponenPenilaianResDto>> getOne(@PathVariable UUID id) {
+    public ResponseEntity<ApiResDto<JenjangResDto>> getOne(@PathVariable UUID id) {
         try {
-            KomponenPenilaianResDto one = service.getOne(id);
+            JenjangResDto one = service.getOne(id);
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<KomponenPenilaianResDto>builder()
+                    ApiResDto.<JenjangResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(one)
@@ -74,21 +69,16 @@ public class KomponenPenilaianController {
         }
     }
 
-    @Operation(summary = "Get Komponen Penilain By Pagiantion")
+    @Operation(summary = "Get All Jenjang")
     @GetMapping()
-    public ResponseEntity<ApiResDto<List<KomponenPenilaianResDto>>> getPaginated(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+    public ResponseEntity<ApiResDto<List<JenjangResDto>>> getAll() {
         try {
-            Page<KomponenPenilaianResDto> paginated = service.getPaginated(page, size);
-
+            List<JenjangResDto> all = service.getAll();
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<List<KomponenPenilaianResDto>>builder()
+                    ApiResDto.<List<JenjangResDto>>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
-                            .data(paginated.getContent())
-                            .pagination(PaginationDto.fromPage(paginated))
+                            .data(all)
                             .build()
             );
         } catch (ApplicationException e) {
@@ -98,17 +88,17 @@ public class KomponenPenilaianController {
         }
     }
 
-    @Operation(summary = "Update Komponen Penilaian")
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResDto<KomponenPenilaianResDto>> update(
+    @Operation(summary = "Update Jenjang")
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<ApiResDto<JenjangResDto>> save(
             @PathVariable UUID id,
-            @Valid @RequestBody KomponenPenilaianReqDto request,
+            @Valid @RequestBody JenjangReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
             service.update(id, request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<KomponenPenilaianResDto>builder()
+                    ApiResDto.<JenjangResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
                             .build()
@@ -120,14 +110,13 @@ public class KomponenPenilaianController {
         }
     }
 
-
-    @Operation(summary = "Delete Komponen Penilaian")
+    @Operation(summary = "Delete jenjang")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResDto<KomponenPenilaianResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
+    public ResponseEntity<ApiResDto<JenjangResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
         try {
             service.delete(id, servletRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<KomponenPenilaianResDto>builder()
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<JenjangResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.DELETED.getMessage())
                             .build()
@@ -138,4 +127,7 @@ public class KomponenPenilaianController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
+
+
 }

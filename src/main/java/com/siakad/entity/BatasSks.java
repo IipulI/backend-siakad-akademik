@@ -1,4 +1,5 @@
 package com.siakad.entity;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,33 +8,31 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_periode_akademik")
+@Table(name = "siak_batas_sks")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PeriodeAkademik {
+public class BatasSks {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "siak_tahun_ajaran_id", nullable = false)
-    private TahunAjaran siakTahunAjaran;
+    @JoinColumn(name = "siak_jenjang_id", nullable = false)
+    private Jenjang siakJenjang;
 
-    private String namaPeriode;
-    private String kodePeriode;
-    private String status;
-    private LocalDate tanggalMulai;
-    private LocalDate tanggalSelesai;
+    private BigDecimal ipsMin;
+    private BigDecimal ipsMax;
+    private Integer batasSks;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
     @CreationTimestamp
