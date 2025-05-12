@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum MessageKey {
-    SUCCESS("berhasil"),
+    SUCCESS("success"),
     LOGIN_SUCCESS("Berhasil masuk"),
     CREATED("Berhasil tambah data"),
     UPDATED("Berhasil memperbarui data"),
@@ -55,6 +55,19 @@ public enum MessageKey {
     UPDATE_JADWAL_KULIAH("Mengubah data jadwal kuliah"),
     DELETE_JADWAL_KULIAH("Menghapus data jadwal kuliah"),
 
+    CREATE_KOMPOSISI_PENILAIAN("Menambahkan data komposisi penilaian"),
+    UPDATE_KOMPOSISI_PENILAIAN("Mengubah data komposisi penilaian"),
+    DELETE_KOMPOSISI_PENILAIAN("Menghapus data komposisi penilaian"),
+
+    CREATE_KOMPOSISI_NILAI_MATA_KULIAH("Menambahkan data komposisi nilai mata kuliah"),
+
+    CREATE_JENJANG("Menambahkan data jenjang"),
+    UPDATE_JENJANG("Mengubah data jenjang"),
+    DELETE_JENJANG("Menghapus data jenjang"),
+
+    CREATE_BATAS_SKS("Menambahkan data batas sks"),
+    UPDATE_BATAS_SKS("Mengubah data batas sks"),
+    DELETE_BATAS_SKS("Menghapus data batas sks"),
     ;
 
     private final String message;
