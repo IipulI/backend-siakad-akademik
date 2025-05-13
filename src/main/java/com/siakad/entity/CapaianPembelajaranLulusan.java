@@ -8,18 +8,18 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_rps")
+@Table(name = "siak_capaian_pembelajaran_lulusan")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Rps {
+public class CapaianPembelajaranLulusan {
+
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
@@ -33,41 +33,19 @@ public class Rps {
     @JoinColumn(name = "siak_tahun_kurikulum_id", nullable = false)
     private TahunKurikulum siakTahunKurikulum;
 
-    @ManyToOne
-    @JoinColumn(name = "siak_mata_kuliah_id", nullable = false)
-    private TahunKurikulum siakMataKuliah;
-
-    @ManyToOne
-    @JoinColumn(name = "siak_periode_akademik_id", nullable = false)
-    private PeriodeAkademik siakPeriodeAkademik;
-
-    private LocalDate tanggalPenyusun;
-
+    private String kodeCpl;
+    private String kategoriCpl;
     @Column(columnDefinition = "TEXT")
-    private String deskripsiMataKuliah;
-
-    @Column(columnDefinition = "TEXT")
-    private String tujuanMataKuliah;
-
-    @Column(columnDefinition = "TEXT")
-    private String materiPembelajaran;
-
-    @Column(columnDefinition = "TEXT")
-    private String pustakaUtama;
-
-    @Column(columnDefinition = "TEXT")
-    private String pustakaPendukung;
-
-    @Column(columnDefinition = "bytea")
-    private byte[] dokumenRps;
+    private String deskripsiCpl;
 
     @ManyToMany
     @JoinTable(
-            name = "siak_tim_penyusun_rps",
-            joinColumns = @JoinColumn(name = "siak_rps_id"),
-            inverseJoinColumns = @JoinColumn(name = "siak_dosen_id")
+            name = "siak_pemetaan_pl_cpl",
+            joinColumns = @JoinColumn(name = "siak_capaian_pembelajaran_id"),
+            inverseJoinColumns = @JoinColumn(name = "siak_profil_lulusan_id")
     )
-    private List<Dosen> dosenList;
+    private List<ProfilLulusan> profilLulusanList;
+
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;

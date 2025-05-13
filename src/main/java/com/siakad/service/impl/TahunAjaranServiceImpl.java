@@ -55,7 +55,7 @@ public class TahunAjaranServiceImpl implements TahunAjaranService {
     public TahunAjaranResDto getOne(UUID id) {
         TahunAjaran tahunAjaran = repository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(
-                        ExceptionType.RESOURCE_NOT_FOUND, "Tahun ajaran tidak ditemukan"+ id));
+                        ExceptionType.RESOURCE_NOT_FOUND, "Tahun ajaran tidak ditemukan : "+ id));
 
         return mapper.toDto(tahunAjaran);
     }

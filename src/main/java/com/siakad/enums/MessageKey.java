@@ -68,6 +68,23 @@ public enum MessageKey {
     CREATE_BATAS_SKS("Menambahkan data batas sks"),
     UPDATE_BATAS_SKS("Mengubah data batas sks"),
     DELETE_BATAS_SKS("Menghapus data batas sks"),
+
+    UPDATE_SKALA_PENILAIAN("Mengubah data skala penilaian"),
+    CREATE_SKALA_PENILAIAN("Menambahkan data skala penilaian"),
+    DELETE_SKALA_PENILAIAN("Menghapus data skala penilaian"),
+
+    CREATE_PROFIL_LULUSAN("Menambahkan data profil lulusan"),
+    UPDATE_PROFIL_LULUSAN("Mengubah data profil lulusan"),
+    DELETE_PROFIL_LULUSAN("Menghapus data profil lulusan"),
+
+    CREATE_CAPAIAN_PEMBELAJARAN_LULUSAN("Menambahkan data capaian pembelajaran lulusan"),
+    UPDATE_CAPAIAN_PEMBELAJARAN_LULUSAN("Mengubah data capaian pembelajaran lulusan"),
+    DELETE_CAPAIAN_PEMBELAJARAN_LULUSAN("Menghapus data capaian pembelajaran lulusan"),
+
+    CREATE_CAPAIAN_MATA_KULIAH("Menambahkan data capaian mata kuliah"),
+    UPDATE_CAPAIAN_MATA_KULIAH("Mengubah data capaian mata kuliah"),
+    DELETE_CAPAIAN_MATA_KULIAH("Menghapus data capaian mata kuliah"),
+
     ;
 
     private final String message;
