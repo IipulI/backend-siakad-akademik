@@ -1,4 +1,4 @@
--- SIAK PRDFIL LULUSAN --
+-- SIAK PRDFIL LULUSAN TABLE --
 CREATE TABLE IF NOT EXISTS public.siak_profil_lulusan (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     siak_program_studi_id UUID NOT NULL,

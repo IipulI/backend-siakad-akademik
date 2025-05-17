@@ -1,4 +1,4 @@
--- SIAK KELAS KULIAH  --
+-- SIAK KELAS KULIAH TABLE --
 CREATE TABLE IF NOT EXISTS public.siak_kelas_kuliah (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   siak_mata_kuliah_id UUID NOT NULL,

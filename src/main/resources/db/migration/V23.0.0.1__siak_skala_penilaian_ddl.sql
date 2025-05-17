@@ -1,4 +1,4 @@
--- SIAK SKALA PENILAIAN TABLE
+-- SIAK SKALA PENILAIAN TABLE --
 CREATE TABLE IF NOT EXISTS public.siak_skala_penilaian (
    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
    siak_program_studi_id UUID NOT NULL,
