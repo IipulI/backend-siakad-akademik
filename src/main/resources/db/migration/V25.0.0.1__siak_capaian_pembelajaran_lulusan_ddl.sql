@@ -1,4 +1,4 @@
--- SIAK CAPAIAN PEMBELJARAN LULUSAN  --
+-- SIAK CAPAIAN PEMBELJARAN LULUSAN TABLE --
 CREATE TABLE IF NOT EXISTS public.siak_capaian_pembelajaran_lulusan (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     siak_program_studi_id UUID NOT NULL,

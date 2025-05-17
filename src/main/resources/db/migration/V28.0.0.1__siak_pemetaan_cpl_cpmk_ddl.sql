@@ -1,4 +1,4 @@
--- SIAK PEMETAAN PL CPL --
+-- SIAK PEMETAAN PL CPL TABLE --
 CREATE TABLE IF NOT EXISTS public.siak_pemetaan_cpl_cpmk (
    siak_capaian_mata_kuliah_id UUID NOT NULL,
    siak_capaian_pembelajaran_id UUID NOT NULL,

@@ -20,5 +20,4 @@ public class RpsResDto {
     private String pustakaPendukung;
     private List<RpsDosenResDto> dosenPenyusun;
     private List<MataKuliahResDto> mataKuliah;
-    private List<KelasKuliahResDto> kelas;
 }
