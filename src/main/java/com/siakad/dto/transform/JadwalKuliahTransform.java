@@ -18,7 +18,6 @@ public interface JadwalKuliahTransform {
 
     JadwalKuliah toEntity(JadwalKuliahReqDto dto);
 
-    @Mapping(source = "siakRuangan.namaRuangan", target = "namaRuangan")
     JadwalKuliahResDto toDto(JadwalKuliah entity);
 
     List<JadwalKuliahResDto> toDtoList(List<JadwalKuliah> entities);

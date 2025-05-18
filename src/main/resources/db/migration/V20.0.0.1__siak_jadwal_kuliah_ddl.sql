@@ -1,7 +1,7 @@
 -- SIAK JADWAL KULIAH TABLE --
 CREATE TABLE IF NOT EXISTS public.siak_jadwal_kuliah (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    siak_dosen_id UUID NOT NULL,
+    siak_dosen_id UUID NULL,
     siak_kelas_kuliah_id UUID NOT NULL,
     siak_ruangan_id UUID NOT NULL,
     jam_mulai TIME NOT NULL,

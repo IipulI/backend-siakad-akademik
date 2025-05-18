@@ -20,4 +20,6 @@ public interface JadwalKuliahRepository extends JpaRepository<JadwalKuliah, UUID
     @Query("SELECT j FROM JadwalKuliah j WHERE j.siakKelasKuliah.id = :id AND j.isDeleted = false")
     List<JadwalKuliah> findAllByKelasKuliahIdAndIsDeletedFalse(@Param("id") UUID kelasKuliahId);
 
+    List<JadwalKuliah> findBySiakKelasKuliahId(UUID siakKelasKuliahId);
+
 }

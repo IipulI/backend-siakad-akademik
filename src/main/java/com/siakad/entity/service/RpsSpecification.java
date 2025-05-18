@@ -19,13 +19,26 @@ public class RpsSpecification extends QuerySpecification<Rps> {
         return attributeContains("siakPeriodeAkdemik.namaPeriodeAkademik", param);
     }
 
+    private Specification<Rps> byHasKelas(Boolean hasKelas) {
+        return (root, query, cb) -> {
+            if (Boolean.TRUE.equals(hasKelas)) {
+                return cb.isNotEmpty(root.get("kelasKuliahList"));
+            } else {
+                return cb.isEmpty(root.get("kelasKuliahList"));
+            }
+        };
+    }
+
+
     private Specification<Rps> byIsDeleted() {
         return attributeEqual("isDeleted", false);
     }
 
     public Specification<Rps> entitySearch(String tahunKurikulum,
                                            String programStudi,
-                                           String periodeAkademik) {
+                                           String periodeAkademik,
+                                           Boolean hasKelas
+                                           ) {
 
         Specification<Rps> spec = byIsDeleted();
 
@@ -39,6 +52,10 @@ public class RpsSpecification extends QuerySpecification<Rps> {
 
         if (!Strings.isBlank(periodeAkademik)){
             spec = spec.and(byPeriodeAkademik(periodeAkademik));
+        }
+
+        if (hasKelas != null) {
+            spec = spec.and(byHasKelas(hasKelas));
         }
 
         return spec;

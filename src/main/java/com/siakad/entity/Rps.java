@@ -35,7 +35,7 @@ public class Rps {
 
     @ManyToOne
     @JoinColumn(name = "siak_mata_kuliah_id", nullable = false)
-    private TahunKurikulum siakMataKuliah;
+    private MataKuliah siakMataKuliah;
 
     @ManyToOne
     @JoinColumn(name = "siak_periode_akademik_id", nullable = false)
@@ -63,11 +63,19 @@ public class Rps {
 
     @ManyToMany
     @JoinTable(
-            name = "siak_tim_penyusun_rps",
+            name = "siak_team_penyusun_rps",
             joinColumns = @JoinColumn(name = "siak_rps_id"),
             inverseJoinColumns = @JoinColumn(name = "siak_dosen_id")
     )
     private List<Dosen> dosenList;
+
+    @ManyToMany
+    @JoinTable(
+            name = "siak_kelas_rps",
+            joinColumns = @JoinColumn(name = "siak_rps_id"),
+            inverseJoinColumns = @JoinColumn(name = "siak_kelas_kuliah_id")
+    )
+    private List<KelasKuliah> kelasKuliahList;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;

@@ -1,7 +1,10 @@
 package com.siakad.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -9,12 +12,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_program_studi")
+@Table(name = "siak_pengumuman")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProgramStudi {
+public class Pengumuman {
 
     @Id
     @GeneratedValue
@@ -22,24 +25,27 @@ public class ProgramStudi {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "siak_fakultas_id", nullable = false)
-    private Fakultas siakFakultas;
+    @JoinColumn(name = "siak_user_id", nullable = false)
+    private User siakUser;
 
-    @ManyToOne
-    @JoinColumn(name = "siak_jenjang_id", nullable = false)
-    private Jenjang siakJenjang;
+    private String judul;
 
-    @Column(name = "nama_program_studi", nullable = false)
-    private String namaProgramStudi;
+    @Column(columnDefinition = "TEXT")
+    private String isi;
+
+    private Boolean isActive;
+
+    private Boolean isPriority;
+
+    @Column(columnDefinition = "bytea")
+    private byte[] banner;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

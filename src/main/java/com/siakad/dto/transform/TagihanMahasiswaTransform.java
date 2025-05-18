@@ -24,7 +24,6 @@ public interface TagihanMahasiswaTransform {
 
     List<TagihanMahasiswaResDto> toDtoList(List<InvoicePembayaranKomponenMahasiswa> entities);
 
-
     @Mapping(target = "totalBelumBayar", expression = "java(source.getTotalTagihan().subtract(source.getTotalTerbayar()))")
     RingkasanTagihanResDto toDto(RingkasanTagihanSourceDto source);
 }

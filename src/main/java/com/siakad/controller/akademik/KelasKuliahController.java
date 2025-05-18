@@ -1,12 +1,12 @@
 package com.siakad.controller.akademik;
 
+import com.siakad.dto.request.JadwalDosenReqDto;
 import com.siakad.dto.request.KelasKuliahReqDto;
-import com.siakad.dto.response.ApiResDto;
-import com.siakad.dto.response.KelasKuliahResDto;
-import com.siakad.dto.response.PaginationDto;
+import com.siakad.dto.response.*;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
+import com.siakad.service.JadwalDosenService;
 import com.siakad.service.KelasKuliahService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +35,8 @@ import java.util.UUID;
 public class KelasKuliahController {
 
     private final KelasKuliahService service;
+
+    private final JadwalDosenService jadwalDosenService;
 
     @Operation(summary = "Add Kelas Kuliah")
     @PostMapping
@@ -154,4 +156,25 @@ public class KelasKuliahController {
         }
     }
 
+    @Operation(summary = "Update Jadwal Dosen")
+    @PutMapping(value = "/{id}/jadwal-dosen")
+    public ResponseEntity<ApiResDto<JadwalKuliahResDto>> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody JadwalDosenReqDto request,
+            HttpServletRequest servletRequest
+    ) {
+        try {
+            jadwalDosenService.save(id,request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<JadwalKuliahResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 }

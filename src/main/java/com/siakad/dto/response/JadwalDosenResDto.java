@@ -1,7 +1,10 @@
 package com.siakad.dto.response;
 
+import lombok.Data;
+
 import java.util.UUID;
 
-public class JadwalKuliahResDto {
+@Data
+public class JadwalDosenResDto {
     private UUID kelasKuliahId;
 }
