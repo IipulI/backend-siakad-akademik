@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -40,25 +39,8 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
     private final UserActivityService service;
 
     @Override
-    public JadwalKuliahResDto create(JadwalKuliahReqDto request, HttpServletRequest httpServletRequest) {
-        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(request.getSiakKelasKuliahId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan : " + request.getSiakKelasKuliahId()));
-
-        Dosen dosen = dosenRepository.findByIdAndIsDeletedFalse(request.getSiakDosenId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Dosen tidak ditemukan : " + request.getSiakDosenId()));
-
-        Ruangan ruangan = ruanganRepository.findByIdAndIsDeletedFalse(request.getSiakRuanganId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Ruangan tidak ditemukan : " + request.getSiakRuanganId()));
-
-        JadwalKuliah jadwalKuliah = mapper.toEntity(request);
-        jadwalKuliah.setSiakKelasKuliah(kelasKuliah);
-        jadwalKuliah.setSiakDosen(dosen);
-        jadwalKuliah.setSiakRuangan(ruangan);
-        jadwalKuliah.setIsDeleted(false);
-        jadwalKuliahRepository.save(jadwalKuliah);
-
-        service.saveUserActivity(httpServletRequest, MessageKey.CREATE_JADWAL_KULIAH);
-        return mapper.toDto(jadwalKuliah);
+    public void create(JadwalKuliahReqDto request, HttpServletRequest httpServletRequest) {
+        
     }
 
     @Override
@@ -99,27 +81,28 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
 
     @Override
     public JadwalKuliahResDto update(JadwalKuliahReqDto request, UUID id, HttpServletRequest httpServletRequest) {
-        JadwalKuliah jadwalKuliah = jadwalKuliahRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan : " + id));
-
-        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(request.getSiakKelasKuliahId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan : " + request.getSiakKelasKuliahId()));
-
-        Dosen dosen = dosenRepository.findByIdAndIsDeletedFalse(request.getSiakDosenId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Dosen tidak ditemukan : " + request.getSiakDosenId()));
-
-        Ruangan ruangan = ruanganRepository.findByIdAndIsDeletedFalse(request.getSiakRuanganId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Ruangan tidak ditemukan : " + request.getSiakRuanganId()));
-
-        mapper.toEntity(request, jadwalKuliah);
-        jadwalKuliah.setSiakDosen(dosen);
-        jadwalKuliah.setSiakRuangan(ruangan);
-        jadwalKuliah.setSiakKelasKuliah(kelasKuliah);
-        jadwalKuliah.setUpdatedAt(LocalDateTime.now());
-        jadwalKuliahRepository.save(jadwalKuliah);
-
-        service.saveUserActivity(httpServletRequest, MessageKey.UPDATE_JADWAL_KULIAH);
-        return mapper.toDto(jadwalKuliah);
+//        JadwalKuliah jadwalKuliah = jadwalKuliahRepository.findByIdAndIsDeletedFalse(id)
+//                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan : " + id));
+//
+//        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(request.getSiakKelasKuliahId())
+//                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan : " + request.getSiakKelasKuliahId()));
+//
+//        Dosen dosen = dosenRepository.findByIdAndIsDeletedFalse(request.getSiakDosenId())
+//                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Dosen tidak ditemukan : " + request.getSiakDosenId()));
+//
+//        Ruangan ruangan = ruanganRepository.findByIdAndIsDeletedFalse(request.getSiakRuanganId())
+//                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Ruangan tidak ditemukan : " + request.getSiakRuanganId()));
+//
+//        mapper.toEntity(request, jadwalKuliah);
+//        jadwalKuliah.setSiakDosen(dosen);
+//        jadwalKuliah.setSiakRuangan(ruangan);
+//        jadwalKuliah.setSiakKelasKuliah(kelasKuliah);
+//        jadwalKuliah.setUpdatedAt(LocalDateTime.now());
+//        jadwalKuliahRepository.save(jadwalKuliah);
+//
+//        service.saveUserActivity(httpServletRequest, MessageKey.UPDATE_JADWAL_KULIAH);
+//        return mapper.toDto(jadwalKuliah);
+        return null;
     }
 
     @Override

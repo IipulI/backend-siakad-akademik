@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 public class KelasKuliahSpecification extends QuerySpecification<KelasKuliah> {
 
     private Specification<KelasKuliah> byPeriodeAkademik(String param) {
-        return attributeContains("siakPeriodeAkademik.namaPeriodeAkademik", param);
+        return attributeContains("siakPeriodeAkademik.namaPeriode", param);
     }
 
     private Specification<KelasKuliah> byKurikulum(String param) {

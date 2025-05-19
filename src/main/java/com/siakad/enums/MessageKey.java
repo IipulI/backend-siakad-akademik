@@ -85,6 +85,14 @@ public enum MessageKey {
     UPDATE_CAPAIAN_MATA_KULIAH("Mengubah data capaian mata kuliah"),
     DELETE_CAPAIAN_MATA_KULIAH("Menghapus data capaian mata kuliah"),
 
+    CREATE_RPS("Menambahkan data rps"),
+    UPDATE_RPS("Mengubah data rps"),
+    DELETE_RPS("Menghapus data rps"),
+
+    CREATE_PENGUMUMAN("Menambahkan data penguman"),
+    UPDATE_PENGUMUMAN("Mengubah data penguman"),
+    DELETE_PENGUMUMAN("Menghapus data penguman"),
+
     ;
 
     private final String message;

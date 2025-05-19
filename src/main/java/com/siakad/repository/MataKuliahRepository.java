@@ -37,9 +37,4 @@ public interface MataKuliahRepository extends JpaRepository<MataKuliah, UUID>,
     GROUP BY mk.id, mk.kode_mata_kuliah, mk.nama_mata_kuliah, t.tahun
     """, nativeQuery = true)
     List<MataKuliahCpmkMappingDto> findAllMataKuliahWithCpmkStatus(@Param("tahunKurikulum") String tahunKurikulum);
-
-
-
-
-
 }

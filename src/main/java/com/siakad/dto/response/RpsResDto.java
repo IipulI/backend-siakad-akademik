@@ -9,9 +9,9 @@ import java.util.UUID;
 @Data
 public class RpsResDto {
     private UUID id;
-    private String tahunKurikulum;
-    private String periodeAkademik;
-    private String programStudi;
+    private TahunKurikulumDto tahunKurikulum;
+    private PeriodeAkademikDto periodeAkademik;
+    private ProgramStudiDto programStudi;
     private LocalDate tanggalPenyusun;
     private String deskripsiMataKuliah;
     private String tujuanMataKuliah;
@@ -19,5 +19,6 @@ public class RpsResDto {
     private String pustakaUtama;
     private String pustakaPendukung;
     private List<RpsDosenResDto> dosenPenyusun;
-    private List<MataKuliahResDto> mataKuliah;
+    private MataKuliahRpsResDto mataKuliah;
+    private List<KelasKuliahDto> kelas;
 }
