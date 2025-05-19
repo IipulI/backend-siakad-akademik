@@ -156,7 +156,7 @@ public class KelasKuliahController {
         }
     }
 
-    @Operation(summary = "Update Jadwal Dosen")
+    @Operation(summary = "Assign Dosen to Jadwal Kelas Kuliah")
     @PutMapping(value = "/{id}/jadwal-dosen")
     public ResponseEntity<ApiResDto<JadwalKuliahResDto>> update(
             @PathVariable UUID id,
@@ -169,6 +169,25 @@ public class KelasKuliahController {
                     ApiResDto.<JadwalKuliahResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Jadwal Dosen by kelas kuliah ID")
+    @GetMapping("/{id}/jadwal-dosen")
+    public ResponseEntity<ApiResDto<List<JadwalDto>>> getAll(@PathVariable UUID id) {
+        try {
+            List<JadwalDto> all = jadwalDosenService.getAll(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<JadwalDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(all)
                             .build()
             );
         } catch (ApplicationException e) {

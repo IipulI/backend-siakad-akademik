@@ -21,5 +21,4 @@ public interface JadwalKuliahRepository extends JpaRepository<JadwalKuliah, UUID
     List<JadwalKuliah> findAllByKelasKuliahIdAndIsDeletedFalse(@Param("id") UUID kelasKuliahId);
 
     List<JadwalKuliah> findBySiakKelasKuliahId(UUID siakKelasKuliahId);
-
 }
