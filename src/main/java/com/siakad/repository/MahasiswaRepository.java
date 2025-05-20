@@ -3,7 +3,9 @@ package com.siakad.repository;
 import com.siakad.entity.Mahasiswa;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +13,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface MahasiswaRepository extends JpaRepository<Mahasiswa, UUID> {
+public interface MahasiswaRepository extends JpaRepository<Mahasiswa, UUID>,
+        JpaSpecificationExecutor<Mahasiswa> {
 
     Optional<Mahasiswa> findByIdAndIsDeletedFalse(UUID id);
     boolean existsByNpm(String npm);
@@ -28,6 +31,6 @@ public interface MahasiswaRepository extends JpaRepository<Mahasiswa, UUID> {
     JOIN siak_fakultas f ON ps.siak_fakultas_id = f.id
     WHERE m.is_deleted = false
 """, nativeQuery = true)
-    Page<Mahasiswa> findByWithRelasiNative(Pageable pageable);
+    Page<Mahasiswa> findByWithRelasiNative(Specification<Mahasiswa> spec,Pageable pageable);
 
 }

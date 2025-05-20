@@ -24,6 +24,4 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
     WHERE u.id = :id
     """, nativeQuery = true)
     List<Role> findByUserId(@Param("id") UUID id);
-
-
 }

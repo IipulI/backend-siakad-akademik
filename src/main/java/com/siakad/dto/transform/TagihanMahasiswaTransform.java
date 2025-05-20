@@ -12,14 +12,26 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface TagihanMahasiswaTransform {
 
+    @Mapping(target = "id", source = "invoiceMahasiswa.id")
     @Mapping(target = "tanggal", source = "invoiceMahasiswa.createdAt", dateFormat = "yyyy-MM-dd")
     @Mapping(target = "kodeTagihan", source = "invoiceMahasiswa.kodeInvoice")
     @Mapping(target = "npm", source = "invoiceMahasiswa.siakMahasiswa.npm")
     @Mapping(target = "nama", source = "invoiceMahasiswa.siakMahasiswa.nama")
     @Mapping(target = "jenisTagihan", source = "invoiceKomponen.nama")
-    @Mapping(target = "nominal", source = "invoiceKomponen.nominal")
-    @Mapping(target = "bayar", source = "tagihan") // asumsi ini jumlah yang dibayar
-    @Mapping(target = "lunas", expression = "java(entity.getTagihan().compareTo(entity.getInvoiceKomponen().getNominal()) == 0)")
+    @Mapping(target = "nominal", source = "invoiceMahasiswa.totalTagihan")
+    @Mapping(target = "bayar", source = "invoiceMahasiswa.totalBayar")
+    @Mapping(target = "tanggalBayar", source = "invoiceMahasiswa.tanggalBayar")
+    @Mapping(target = "tanggalTenggat", source = "invoiceMahasiswa.tanggalTenggat")
+    @Mapping(
+            target = "lunas",
+            expression = "java(entity.getTagihan() != null && entity.getTagihan().compareTo(java.math.BigDecimal.ZERO) == 0)"
+    )
+    @Mapping(target = "semester", source = "invoiceMahasiswa.siakMahasiswa.semester")
+    @Mapping(target = "angkatan", source = "invoiceMahasiswa.siakMahasiswa.angkatan")
+    @Mapping(target = "programStudi", source = "invoiceMahasiswa.siakMahasiswa.siakProgramStudi.namaProgramStudi")
+    @Mapping(target = "periodeAkademik", source = "invoiceMahasiswa.siakPeriodeAkademik.namaPeriode")
+    @Mapping(target = "fakultas", source = "invoiceMahasiswa.siakMahasiswa.siakProgramStudi.siakFakultas.namaFakultas")
+    @Mapping(target = "kelasKuliah", source = "rincianKrsMahasiswa.siakKelasKuliah.nama")
     TagihanMahasiswaResDto toDto(InvoicePembayaranKomponenMahasiswa entity);
 
     List<TagihanMahasiswaResDto> toDtoList(List<InvoicePembayaranKomponenMahasiswa> entities);

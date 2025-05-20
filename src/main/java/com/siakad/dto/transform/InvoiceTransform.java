@@ -47,11 +47,13 @@ public interface InvoiceTransform {
     InvoiceKomponenResDto toDto(InvoiceKomponen entity);
     void toEntity(InvoiceKomponenMahasiswaReqDto requestDto, @MappingTarget InvoiceKomponen entity);
 
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "npm", target = "npm")
     @Mapping(source = "nama", target = "nama")
     @Mapping(source = "siakProgramStudi.namaProgramStudi", target = "namaProgramStudi")
     @Mapping(source = "siakProgramStudi.siakFakultas.namaFakultas", target = "namaFakultas")
     @Mapping(source = "semester", target = "semester")
+    @Mapping(source = "angkatan", target = "angkatan")
     MahasiswaKeuanganResDto toKeuanganDto(Mahasiswa mahasiswa);
 
     List<MahasiswaKeuanganResDto> toKeuanganDtoList(List<Mahasiswa> mahasiswaList);
