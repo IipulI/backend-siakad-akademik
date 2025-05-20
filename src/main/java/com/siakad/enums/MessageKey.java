@@ -22,6 +22,8 @@ public enum MessageKey {
     DELETE_KELUARGA_MAHASISWA("Menghapus data keluarga mahasiswa"),
 
     CREATE_INVOICE_MAHASISWA("Menambahkan data invoice mahasiswa"),
+    UPDATE_INVOICE_MAHASISWA("Mengubah data invoice mahasiswa"),
+    DELETE_INVOICE_MAHASISWA("Menghapus data invoice mahasiswa"),
 
     CREATE_INVOICE_KOMPONEN_MAHASISWA("Menambahkan data invoice komponen mahasiswa"),
     UPDATE_INVOICE_KOMPONEN_MAHASISWA("Mengubah data invoice komponen mahasiswa"),

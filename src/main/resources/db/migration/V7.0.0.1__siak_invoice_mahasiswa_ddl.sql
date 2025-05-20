@@ -2,10 +2,10 @@
 CREATE TABLE IF NOT EXISTS public.siak_invoice_mahasiswa (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     siak_mahasiswa_id UUID NOT NULL,
-    kode_invoice VARCHAR(15) NOT NULL,
+    kode_invoice VARCHAR(50) NOT NULL,
     total_tagihan NUMERIC(20, 2) NOT NULL,
     tanggal_tenggat DATE NOT NULL,
-    status VARCHAR(10) NOT NULL,
+    status VARCHAR(20) NOT NULL,
     tahap VARCHAR(10) NOT NULL,
     total_bayar NUMERIC(20, 2),
     tanggal_bayar DATE,

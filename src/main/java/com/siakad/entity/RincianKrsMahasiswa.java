@@ -1,6 +1,5 @@
 package com.siakad.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,40 +13,35 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "siak_invoice_pembayaran_komponen",
-        uniqueConstraints = @UniqueConstraint(
-                columnNames = {"siak_invoice_mahasiswa_id", "siak_invoice_komponen_mahasiswa_id"}
-        )
-)
+@Table(name = "siak_rincian_krs_mahasiswa")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class InvoicePembayaranKomponenMahasiswa {
+public class RincianKrsMahasiswa {
+
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "siak_invoice_mahasiswa_id", nullable = false)
-    @JsonIgnore
-    private InvoiceMahasiswa invoiceMahasiswa;
-
-    @ManyToOne
-    @JoinColumn(name = "siak_invoice_komponen_mahasiswa_id", nullable = false)
-    private InvoiceKomponen invoiceKomponen;
-
-    @ManyToOne
     @JoinColumn(name = "siak_krs_mahasiswa_id", nullable = false)
-    private KrsMahasiswa krsMahasiswa;
+    private KrsMahasiswa siakKrsMahasiswa;
 
     @ManyToOne
-    @JoinColumn(name = "siak_rincian_krs_mahasiswa_id", nullable = false)
-    private RincianKrsMahasiswa rincianKrsMahasiswa;
+    @JoinColumn(name = "siak_kelas_kuliah_id", nullable = false)
+    private KelasKuliah siakKelasKuliah;
 
-    private BigDecimal tagihan;
+    private String status;
+    private BigDecimal kehadiran;
+    private BigDecimal tugas;
+    private BigDecimal uas;
+    private BigDecimal uts;
+    private BigDecimal nilai;
+    private String hurufMutu;
+    private BigDecimal angkaMutu;
+    private BigDecimal nilaiAkhir;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;

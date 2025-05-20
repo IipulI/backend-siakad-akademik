@@ -46,6 +46,7 @@ public class Mahasiswa {
     private String tempatLahir;
     private String nik;
     private String noKk;
+    private String angkatan;
     private LocalDate tanggalLahir;
     private LocalDate tanggalMasuk;
     private Boolean kebutuhanKhusus;
