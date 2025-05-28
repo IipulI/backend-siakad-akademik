@@ -17,6 +17,8 @@ public interface MataKuliahRepository extends JpaRepository<MataKuliah, UUID>,
         JpaSpecificationExecutor<MataKuliah> {
     Optional<MataKuliah> findByIdAndIsDeletedFalse(UUID id);
 
+    List<MataKuliah> findAllByIsDeletedFalse();
+
     @Query(value = """
     SELECT 
         mk.id AS mataKuliahId,
@@ -37,4 +39,7 @@ public interface MataKuliahRepository extends JpaRepository<MataKuliah, UUID>,
     GROUP BY mk.id, mk.kode_mata_kuliah, mk.nama_mata_kuliah, t.tahun
     """, nativeQuery = true)
     List<MataKuliahCpmkMappingDto> findAllMataKuliahWithCpmkStatus(@Param("tahunKurikulum") String tahunKurikulum);
+
+    List<MataKuliah> findBySiakProgramStudiIdAndSiakTahunKurikulumId(UUID siakProgramStudiId, UUID siakTahunKurikulumId);
+
 }

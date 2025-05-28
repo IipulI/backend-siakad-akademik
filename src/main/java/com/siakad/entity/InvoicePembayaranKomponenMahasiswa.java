@@ -45,7 +45,7 @@ public class InvoicePembayaranKomponenMahasiswa {
 
     @ManyToOne
     @JoinColumn(name = "siak_rincian_krs_mahasiswa_id", nullable = false)
-    private RincianKrsMahasiswa rincianKrsMahasiswa;
+    private KrsRincianMahasiswa rincianKrsMahasiswa;
 
     private BigDecimal tagihan;
 

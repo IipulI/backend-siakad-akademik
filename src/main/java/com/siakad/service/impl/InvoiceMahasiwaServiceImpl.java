@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class    InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
+public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
 
     private final InvoiceMahasiswaRepository invoiceMahasiswaRepository;
     private final FakultasRepository fakultasRepository;
@@ -266,7 +266,8 @@ public class    InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
         var invoice = mapper.toEntity(dto);
 
 
-        PeriodeAkademik periodeAkademik = periodeAkademikRepository.findFirstByStatusActive();
+        PeriodeAkademik periodeAkademik = periodeAkademikRepository.findFirstByStatusActive()
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode Akademik ACTIVE tidak ditemukan"));
         List<InvoiceMahasiswa> invoiceSebelumnya = invoiceMahasiswaRepository.findBySiakPeriodeAkademikAndSiakMahasiswa(periodeAkademik, mahasiswa);
 
         int nomorUrut = invoiceSebelumnya.size() + 1;

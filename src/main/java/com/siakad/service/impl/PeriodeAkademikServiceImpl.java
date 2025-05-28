@@ -7,7 +7,7 @@ import com.siakad.entity.PeriodeAkademik;
 import com.siakad.entity.service.PeriodeAkademikSpecification;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
-import com.siakad.enums.PeriodeAkademikStatus;
+import com.siakad.enums.StatusPeriode;
 import com.siakad.exception.ApplicationException;
 import com.siakad.repository.PeriodeAkademikRepository;
 import com.siakad.repository.TahunAjaranRepository;
@@ -42,7 +42,7 @@ public class PeriodeAkademikServiceImpl implements PeriodeAkademikService {
 
         PeriodeAkademik periodeAkademik = mapper.toEntity(request);
         periodeAkademik.setSiakTahunAjaran(tahunAjaran);
-        periodeAkademik.setStatus(PeriodeAkademikStatus.NONAKTIF.getLabel());
+        periodeAkademik.setStatus(StatusPeriode.PLANNED.name());
         periodeAkademik.setIsDeleted(false);
         periodeAkademikRepository.save(periodeAkademik);
 
@@ -73,7 +73,7 @@ public class PeriodeAkademikServiceImpl implements PeriodeAkademikService {
                         "Periode akademik tidak ditemukan : " + id));
 
         mapper.toEntity(request, periodeAkademik);
-        periodeAkademik.setStatus(PeriodeAkademikStatus.NONAKTIF.getLabel());
+        periodeAkademik.setStatus(StatusPeriode.PLANNED.name());
         periodeAkademik.setUpdatedAt(LocalDateTime.now());
         periodeAkademikRepository.save(periodeAkademik);
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_PERIODE_AKADEMIK);

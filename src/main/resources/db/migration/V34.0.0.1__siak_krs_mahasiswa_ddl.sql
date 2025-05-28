@@ -27,6 +27,9 @@ CREATE TABLE IF NOT EXISTS public.siak_rincian_krs_mahasiswa (
     huruf_mutu VARCHAR(5),
     angka_mutu NUMERIC(5,2),
     nilai_akhir NUMERIC(5,2),
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
     FOREIGN KEY (siak_krs_mahasiswa_id) REFERENCES siak_krs_mahasiswa(id),
     FOREIGN KEY (siak_kelas_kuliah_id) REFERENCES siak_kelas_kuliah(id)
 );

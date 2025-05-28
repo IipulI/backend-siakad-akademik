@@ -18,9 +18,7 @@ public interface RpsService {
     RpsResDto getOne(UUID id);
     RpsResDto update(UUID id, RpsReqDto reqDto, MultipartFile dokumenRps, HttpServletRequest servletRequest) throws IOException;
     byte[] getDokumenRps(UUID id);
-
     Page<RpsResDto> getPaginate(String tahunKurikulum, String programStudi, String periodeAkademik, Boolean hasKelas, Pageable pageable);
-
     void delete(UUID id, HttpServletRequest servletRequest);
     KelasRpsResponseDto createKelas(KelasRpsReqDto reqDto, HttpServletRequest request);
 

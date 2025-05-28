@@ -25,6 +25,7 @@ public class MahasiswaResDto {
     private LocalDate tanggalLahir;
     private String noKk;
     private String nik;
+    private String angkatan;
     private LocalDate tanggalMasuk;
     private Boolean kebutuhanKhusus;
     private String statusMahasiswa;

@@ -17,6 +17,7 @@
         private String jenisPendaftaran;
         private String jalurPendaftaran;
         private String gelombang;
+        private String angkatan;
         private String jenisKelamin;
         private String tempatLahir;
         private LocalDate tanggalLahir;
