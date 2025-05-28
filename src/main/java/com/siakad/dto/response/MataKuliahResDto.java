@@ -1,20 +1,24 @@
-package com.siakad.dto.response;
+    package com.siakad.dto.response;
 
-import lombok.Data;
+    import lombok.Data;
 
-import java.util.UUID;
+    import java.util.UUID;
 
-@Data
-public class MataKuliahResDto {
-    private UUID id;
-    private String programStudi;
-    private String tahunKurikulum;
-    private String semester;
-    private String kodeMataKuliah;
-    private String namaMataKuliah;
-    private Integer sks;
-    private String jenisMataKuliah;
-    private String prasyaratMataKuliah1;
-    private String prasyaratMataKuliah2;
-    private String prasyaratMataKuliah3;
-}
+    @Data
+    public class MataKuliahResDto {
+        private UUID id;
+        private String programStudi;
+        private String tahunKurikulum;
+        private String semester;
+        private String nilaiMin;
+        private Integer sksTatapMuka;
+        private Integer sksPraktikum;
+        private Boolean adaPraktikum;
+        private Boolean opsiMataKuliah;
+        private String kodeMataKuliah;
+        private String namaMataKuliah;
+        private String jenisMataKuliah;
+        private PrasyaratMataKuliahDto prasyaratMataKuliah1;
+        private PrasyaratMataKuliahDto prasyaratMataKuliah2;
+        private PrasyaratMataKuliahDto prasyaratMataKuliah3;
+    }

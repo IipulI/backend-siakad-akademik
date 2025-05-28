@@ -36,7 +36,7 @@ import java.util.UUID;
 @RequestMapping("/akademik/mahasiswa")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('AKADEMIK_UNIV')")
-public class        MahasiswaController {
+public class MahasiswaController {
 
     private final MahasiswaService service;
 

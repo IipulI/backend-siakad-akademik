@@ -11,13 +11,7 @@ import java.util.UUID;
 
 public interface KelasKuliahService {
     KelasKuliahResDto create(KelasKuliahReqDto request, HttpServletRequest servletRequest);
-    Page<KelasKuliahResDto> search(
-            String keyword,
-            String periodeAkademik,
-            String tahunKurikulum,
-            String programStudi,
-            String sistemKuliah,
-            Pageable pageable);
+    Page<KelasKuliahResDto> search(String keyword, String periodeAkademik, String tahunKurikulum, String programStudi, String sistemKuliah, Pageable pageable);
     KelasKuliahResDto getOne(UUID id);
     KelasKuliahResDto update(KelasKuliahReqDto request, UUID id, HttpServletRequest servletRequest);
     void delete(UUID id, HttpServletRequest servletRequest);

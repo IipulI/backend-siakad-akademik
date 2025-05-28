@@ -21,6 +21,6 @@ public interface PeriodeAkademikRepository extends JpaRepository<PeriodeAkademik
     WHERE p.status = 'ACTIVE' AND p.isDeleted = false
     ORDER BY p.tanggalMulai DESC
 """)
-    PeriodeAkademik findFirstByStatusActive();
+    Optional<PeriodeAkademik> findFirstByStatusActive();
 
 }

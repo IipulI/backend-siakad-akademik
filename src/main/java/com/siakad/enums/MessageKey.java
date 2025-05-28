@@ -95,6 +95,14 @@ public enum MessageKey {
     UPDATE_PENGUMUMAN("Mengubah data penguman"),
     DELETE_PENGUMUMAN("Menghapus data penguman"),
 
+    CREATE_PEMBIMBING_AKADEMIK("Menambahkan data pembimbing akademik"),
+    UPDATE_PEMBIMBING_AKADEMIK("Mengubah data pembimbing akademik"),
+    DELETE_PEMBIMBING_AKADEMIK("Menghapus data pembimbing akademik"),
+
+    CREATE_KRS("Menambahkan data krs mahasiswa"),
+    UPDATE_KRS("Mengubah data krs mahasiswa"),
+    DELETE_KRS("Menghapus data krs mahasiswa"),
+
     ;
 
     private final String message;

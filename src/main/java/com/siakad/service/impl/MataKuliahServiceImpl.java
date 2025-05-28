@@ -1,6 +1,8 @@
 package com.siakad.service.impl;
 
+import com.siakad.dto.request.KurikulumProdiReqDto;
 import com.siakad.dto.request.MataKuliahReqDto;
+import com.siakad.dto.response.KurikulumProdiResDto;
 import com.siakad.dto.response.MataKuliahResDto;
 import com.siakad.dto.transform.MataKuliahTransform;
 import com.siakad.entity.MataKuliah;
@@ -24,13 +26,17 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MataKuliahServiceImpl implements MataKuliahService {
+
 
     private final MataKuliahRepository mataKuliahRepository;
     private final TahunKurikulumRepository tahunKurikulumRepository;
@@ -52,7 +58,6 @@ public class MataKuliahServiceImpl implements MataKuliahService {
                     .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
                             "Prasyarat Mata Kuliah 1 tidak ditemukan : " + request.getPrasyaratMataKuliah1Id()));
         }
-
 
         MataKuliah prasyaratMatakuliah2 = null;
         if (request.getPrasyaratMataKuliah2Id() != null) {
@@ -116,7 +121,6 @@ public class MataKuliahServiceImpl implements MataKuliahService {
                             "Prasyarat Mata Kuliah 1 tidak ditemukan : " + request.getPrasyaratMataKuliah1Id()));
         }
 
-
         MataKuliah prasyaratMatakuliah2 = null;
         if (request.getPrasyaratMataKuliah2Id() != null) {
             prasyaratMatakuliah2 = mataKuliahRepository.findByIdAndIsDeletedFalse(request.getPrasyaratMataKuliah2Id())
@@ -154,5 +158,50 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         MataKuliah saved = mataKuliahRepository.save(mataKuliah);
         service.saveUserActivity(servletRequest, MessageKey.DELETE_MATA_KULIAH);
         mapper.toDto(saved);
+    }
+
+    @Override
+    public void updateKurikulum(UUID id, KurikulumProdiReqDto request, HttpServletRequest servletRequest) {
+        MataKuliah mataKuliah = mataKuliahRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Mata Kuliah tidak ditemukan : " + id));
+
+        TahunKurikulum tahunKurikulum = tahunKurikulumRepository.findByIdAndIsDeletedFalse(request.getSiakTahunKurikulumId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tahun Kurikulum tidak ditemukan : " + request.getSiakTahunKurikulumId()));
+
+        ProgramStudi programStudi = programStudiRepository.findByIdAndIsDeletedFalse(request.getSiakProgramStudiId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Program Studi tidak ditemukan : " + request.getSiakProgramStudiId()));
+
+        mapper.toEntity(request, mataKuliah);
+        mataKuliah.setSiakTahunKurikulum(tahunKurikulum);
+        mataKuliah.setSiakProgramStudi(programStudi);
+        mataKuliah.setSemester(request.getSemester());
+        mataKuliah.setOpsiMataKuliah(request.getOpsiMataKuliah());
+        mataKuliah.setUpdatedAt(LocalDateTime.now());
+        mataKuliahRepository.save(mataKuliah);
+
+        service.saveUserActivity(servletRequest, MessageKey.UPDATE_MATA_KULIAH);
+        mapper.toDto(mataKuliah);
+    }
+
+    @Override
+    public List<KurikulumProdiResDto> getKurikulumPerSemester(String programStudi, String tahunKurikulum) {
+
+        MataKuliahSpecification specBuilder = new MataKuliahSpecification();
+        Specification<MataKuliah> spec = specBuilder.entitySearchKurikulum(programStudi, tahunKurikulum);
+
+        List<MataKuliah> mataKuliahList = mataKuliahRepository.findAll(spec);
+
+        List<MataKuliahResDto> mataKuliahResDtos = mapper.toDtoList(mataKuliahList);
+
+        Map<String, List<MataKuliahResDto>> grouped = mataKuliahResDtos.stream()
+                .filter(mk -> mk.getSemester() != null)
+                .collect(Collectors.groupingBy(MataKuliahResDto::getSemester));
+
+        return grouped.entrySet().stream().map(entry -> {
+            KurikulumProdiResDto dto = new KurikulumProdiResDto();
+            dto.setSemester(entry.getKey());
+            dto.setMataKuliah(entry.getValue());
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

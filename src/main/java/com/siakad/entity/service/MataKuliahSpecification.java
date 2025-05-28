@@ -54,4 +54,21 @@ public class MataKuliahSpecification extends QuerySpecification<MataKuliah> {
 
         return spec;
     }
+
+    public Specification<MataKuliah> entitySearchKurikulum(
+                                                  String programStudi,
+                                                  String tahunKurikulum
+    ) {
+        Specification<MataKuliah> spec = notDeleted();
+
+        if (!Strings.isBlank(programStudi)){
+            spec = spec.and(byProgramStudi(programStudi));
+        }
+
+        if (!Strings.isBlank(tahunKurikulum)){
+            spec = spec.and(byTahunKurikulum(tahunKurikulum));
+        }
+
+        return spec;
+    }
 }

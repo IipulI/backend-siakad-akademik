@@ -18,7 +18,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RincianKrsMahasiswa {
+public class KrsRincianMahasiswa {
 
     @Id
     @GeneratedValue
@@ -26,13 +26,14 @@ public class RincianKrsMahasiswa {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "siak_krs_mahasiswa_id", nullable = false)
-    private KrsMahasiswa siakKrsMahasiswa;
-
-    @ManyToOne
     @JoinColumn(name = "siak_kelas_kuliah_id", nullable = false)
     private KelasKuliah siakKelasKuliah;
 
+    @ManyToOne
+    @JoinColumn(name = "siak_krs_mahasiswa_id", nullable = false)
+    private KrsMahasiswa siakKrsMahasiswa;
+
+    private String kategori;
     private String status;
     private BigDecimal kehadiran;
     private BigDecimal tugas;
