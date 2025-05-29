@@ -29,7 +29,7 @@ public class PeriodeAkademik {
 
     private String namaPeriode;
     private String kodePeriode;
-    private String jenis;
+    private String status;
     private LocalDate tanggalMulai;
     private LocalDate tanggalSelesai;
 

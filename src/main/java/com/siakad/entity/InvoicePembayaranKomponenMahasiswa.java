@@ -14,7 +14,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "siak_invoice_pembayaran_komponen")
+@Table(
+        name = "siak_invoice_pembayaran_komponen",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"siak_invoice_mahasiswa_id", "siak_invoice_komponen_mahasiswa_id"}
+        )
+)
 @Data
 @Builder
 @AllArgsConstructor
@@ -34,6 +39,14 @@ public class InvoicePembayaranKomponenMahasiswa {
     @JoinColumn(name = "siak_invoice_komponen_mahasiswa_id", nullable = false)
     private InvoiceKomponen invoiceKomponen;
 
+    @ManyToOne
+    @JoinColumn(name = "siak_krs_mahasiswa_id", nullable = false)
+    private KrsMahasiswa krsMahasiswa;
+
+    @ManyToOne
+    @JoinColumn(name = "siak_rincian_krs_mahasiswa_id", nullable = false)
+    private KrsRincianMahasiswa rincianKrsMahasiswa;
+
     private BigDecimal tagihan;
 
     @Column(name = "is_deleted")
@@ -44,5 +57,4 @@ public class InvoicePembayaranKomponenMahasiswa {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
 }

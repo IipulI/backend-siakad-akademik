@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS public.siak_mahasiswa (
     no_hp VARCHAR(15) NOT NULL,
     email_pribadi VARCHAR(255) NOT NULL,
     email_kampus VARCHAR(255) NOT NULL,
+    angkatan VARCHAR(15) NOT NULL,
     no_terdaftar VARCHAR(20) NOT NULL,
     pendidikan_asal VARCHAR(100) NOT NULL,
     provinsi_sekolah VARCHAR(100) NOT NULL,

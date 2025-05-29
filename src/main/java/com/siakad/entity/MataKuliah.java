@@ -35,7 +35,11 @@ public class MataKuliah {
     private String kodeMataKuliah;
     private String namaMataKuliah;
     private String jenisMataKuliah;
-    private Integer sks;
+    private String nilaiMin;
+    private Integer sksTatapMuka;
+    private Integer sksPraktikum;
+    private Boolean adaPraktikum;
+    private Boolean opsiMataKuliah;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prasyarat_mata_kuliah_1", nullable = true)

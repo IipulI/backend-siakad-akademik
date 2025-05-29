@@ -20,5 +20,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     """, nativeQuery = true)
     Optional<User> findByUsernameOrEmail(@Param("usernameOrEmail") String usernameOrEmail);
 
-
+    Optional<User> findByIdAndIsDeletedFalse(UUID id)   ;
 }

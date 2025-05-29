@@ -2,21 +2,19 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.request.InvoiceKomponenReqDto;
 import com.siakad.dto.request.InvoiceMahasiswaReqDto;
+import com.siakad.dto.request.TandaiLunasReqDto;
+import com.siakad.dto.request.TanggalTenggatReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.dto.transform.InvoiceTransform;
 import com.siakad.dto.transform.TagihanMahasiswaTransform;
-import com.siakad.entity.InvoiceKomponen;
-import com.siakad.entity.InvoiceMahasiswa;
-import com.siakad.entity.InvoicePembayaranKomponenMahasiswa;
-import com.siakad.entity.Mahasiswa;
+import com.siakad.entity.*;
+import com.siakad.entity.service.InvoicePembayaranSpecification;
+import com.siakad.entity.service.MahasiswaSpecification;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.InvoiceKey;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.repository.InvoiceKomponenRepository;
-import com.siakad.repository.InvoiceMahasiswaRepository;
-import com.siakad.repository.InvoicePembayaranKomponenMahasiswaRepository;
-import com.siakad.repository.MahasiswaRepository;
+import com.siakad.repository.*;
 import com.siakad.service.InvoiceMahasiwaService;
 import com.siakad.service.UserActivityService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,15 +22,16 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -40,49 +39,51 @@ import java.util.UUID;
 public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
 
     private final InvoiceMahasiswaRepository invoiceMahasiswaRepository;
+    private final FakultasRepository fakultasRepository;
     private final InvoiceTransform mapper;
     private final TagihanMahasiswaTransform mapperTagihanMahasiswa;
     private final UserActivityService service;
     private final InvoiceKomponenRepository invoiceKomponenRepository;
+    private final KrsMahasiswaRepository krsMahasiswaRepository;
     private final MahasiswaRepository mahasiswaRepository;
     private final InvoicePembayaranKomponenMahasiswaRepository invoicePembayaranKomponenMahasiswaRepository;
+    private final PeriodeAkademikRepository periodeAkademikRepository;
 
     @Transactional
     @Override
     public List<InvoiceMahasiswaResDto> create(InvoiceMahasiswaReqDto dto, HttpServletRequest servletRequest) {
         List<InvoiceMahasiswaResDto> results = new ArrayList<>();
 
-        List<KomponenInfo> komponenInfoList = validateAndGetKomponenInfo(dto.getKomponen());
-        BigDecimal totalTagihanPerInvoice = calculateTotalTagihan(komponenInfoList);
-
         for (UUID mahasiswaId : dto.getSiakMahasiswaIds()) {
             Mahasiswa mahasiswa = mahasiswaRepository.findById(mahasiswaId)
                     .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
                             "Mahasiswa tidak ditemukan: " + mahasiswaId));
 
+            List<KomponenInfo> komponenInfoList = validateAndGetKomponenInfo(dto.getKomponen(), mahasiswa);
+            BigDecimal totalTagihanPerInvoice = calculateTotalTagihan(komponenInfoList);
+
             var invoice = createInvoiceForMahasiswa(dto, mahasiswa, komponenInfoList, totalTagihanPerInvoice);
             results.add(mapper.toResDto(invoice));
         }
-
         service.saveUserActivity(servletRequest, MessageKey.CREATE_INVOICE_MAHASISWA);
         return results;
     }
 
     @Override
-    public Page<MahasiswaKeuanganResDto> getPaginateMahasiswa(int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, 10);
+    public Page<MahasiswaKeuanganResDto> getPaginateMahasiswa(String keyword, String fakultas, String angkatan, Integer semester, String programStudi, String npm, Pageable pageable) {
+        MahasiswaSpecification specBuilder = new MahasiswaSpecification();
+        Specification<Mahasiswa> spec = specBuilder.entitySearch(keyword, fakultas, angkatan, semester, programStudi, npm);
 
-        Page<Mahasiswa> all = mahasiswaRepository.findByWithRelasiNative(pageable);
+        Page<Mahasiswa> all = mahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toKeuanganDto);
-
     }
 
     @Override
-    public Page<TagihanMahasiswaResDto> getPaginateTagihanMahasiswa(int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, 10);
+    public Page<TagihanMahasiswaResDto> getPaginateTagihanMahasiswa(String keyword, String npm, String nama, Integer semester, String angkatan, String programStudi, String fakultas, String periodeAkademik, Pageable pageable) {
+        InvoicePembayaranSpecification specBuilder = new InvoicePembayaranSpecification();
+        Specification<InvoicePembayaranKomponenMahasiswa> spec = specBuilder.entitySearch(keyword, npm, nama, semester, angkatan, programStudi, fakultas, periodeAkademik);
 
-        Page<InvoicePembayaranKomponenMahasiswa> all =
-                invoicePembayaranKomponenMahasiswaRepository.findByIsDeletedFalse(pageable);
+        Page<InvoicePembayaranKomponenMahasiswa> all = invoicePembayaranKomponenMahasiswaRepository.findAll(spec, pageable);
         return all.map(mapperTagihanMahasiswa::toDto);
     }
 
@@ -91,14 +92,12 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
         List<InvoicePembayaranKomponenMahasiswa> data = invoicePembayaranKomponenMahasiswaRepository.findAllByIsDeletedFalse();
 
         BigDecimal totalTagihan = data.stream()
-                .map(e -> e.getInvoiceKomponen().getNominal())
+                .map(InvoicePembayaranKomponenMahasiswa::getTagihan)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalTerbayar = data.stream()
                 .map(e -> e.getInvoiceMahasiswa().getTotalBayar())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-
 
         RingkasanTagihanSourceDto source = new RingkasanTagihanSourceDto();
         source.setTotalTagihan(totalTagihan);
@@ -107,6 +106,117 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
         return mapperTagihanMahasiswa.toDto(source);
     }
 
+    @Override
+    public void updateTanggalTenggatTagihan(UUID id, TanggalTenggatReqDto reqDto, HttpServletRequest servletRequest) {
+        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Invoice tidak ditemukan : " + id));
+
+        invoiceMahasiswa.setId(id);
+        invoiceMahasiswa.setTanggalTenggat(reqDto.getTanggalTenggat());
+        invoiceMahasiswa.setUpdatedAt(LocalDateTime.now());
+        invoiceMahasiswaRepository.save(invoiceMahasiswa);
+        service.saveUserActivity(servletRequest, MessageKey.UPDATE_INVOICE_MAHASISWA);
+    }
+
+    @Override
+    public void deleteInvoiceMahasiswa(UUID id, HttpServletRequest servletRequest) {
+        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Invoice tidak ditemukan : " + id));
+        invoiceMahasiswa.setIsDeleted(true);
+        invoiceMahasiswaRepository.save(invoiceMahasiswa);
+
+        InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository.findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tagihan tidak ditemukan : " + invoiceMahasiswa.getId()));
+        invoicePembayaranKomponenMahasiswa.setIsDeleted(true);
+        invoicePembayaranKomponenMahasiswaRepository.save(invoicePembayaranKomponenMahasiswa);
+        service.saveUserActivity(servletRequest, MessageKey.DELETE_INVOICE_MAHASISWA);
+    }
+
+    @Override
+    public TagihanMahasiswaResDto getOne(UUID id) {
+        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Invoice tidak ditemukan : " + id));
+
+        InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository.findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
+                        .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tagihan tidak ditemukan : " + invoiceMahasiswa.getId()));
+
+        return mapperTagihanMahasiswa.toDto(invoicePembayaranKomponenMahasiswa);
+    }
+
+    @Override
+        public void tandaiLunas(TandaiLunasReqDto reqDto, HttpServletRequest servletRequest) {
+
+            for (UUID mahasiswaId : reqDto.getMahasiswaIds() ) {
+                Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(mahasiswaId)
+                        .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
+                                "Mahasiswa tidak ditemukan: " + mahasiswaId));
+
+
+                InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository.findBySiakMahasiswa_IdAndIsDeletedFalse(mahasiswaId)
+                                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Mahasiswa tidak ditemukan : " + mahasiswaId));
+
+                invoiceMahasiswa.setSiakMahasiswa(mahasiswa);
+                invoiceMahasiswa.setTanggalBayar(LocalDate.now());
+                invoiceMahasiswa.setTotalBayar(invoiceMahasiswa.getTotalTagihan());
+                invoiceMahasiswa.setMetodeBayar(InvoiceKey.MANUAL.getLabel());
+                invoiceMahasiswa.setTahap(InvoiceKey.TAHAP2.getLabel());
+                invoiceMahasiswa.setStatus(InvoiceKey.LUNAS.getLabel());
+                invoiceMahasiswa.setCreatedAt(LocalDateTime.now());
+                invoiceMahasiswaRepository.save(invoiceMahasiswa);
+
+                InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository.findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
+                                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tagihan tidak ditemukan : " + invoiceMahasiswa.getId()));
+                invoicePembayaranKomponenMahasiswa.setInvoiceMahasiswa(invoiceMahasiswa);
+                invoicePembayaranKomponenMahasiswa.setTagihan(BigDecimal.ZERO);
+
+                invoicePembayaranKomponenMahasiswaRepository.save(invoicePembayaranKomponenMahasiswa);
+            }
+            service.saveUserActivity(servletRequest, MessageKey.UPDATE_INVOICE_MAHASISWA);
+        }
+
+    @Override
+    public List<TransaksiLunasDto> getAllTagihanLunas() {
+        List<InvoiceMahasiswa> invoiceMahasiswaList = invoiceMahasiswaRepository.findAllByTanggalBayarIsNotNullAndIsDeletedFalse();
+        return invoiceMahasiswaList.stream()
+                .map(invoice -> new TransaksiLunasDto(
+                        invoice.getId(),
+                        invoice.getSiakMahasiswa().getNama(),
+                        invoice.getMetodeBayar(),
+                        invoice.getTanggalBayar(),
+                        invoice.getTotalBayar()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<StatistikTagihanFakultasDto> getAllStatikTagihanFakultas() {
+        BigDecimal totalTagihanSemua = invoiceMahasiswaRepository.sumTotalTagihanAktif();
+
+        if (totalTagihanSemua.compareTo(BigDecimal.ZERO) == 0) {
+            return Collections.emptyList();
+        }
+
+        // Dapatkan data per fakultas
+        List<Fakultas> fakultasList = fakultasRepository.findAllByIsDeletedFalse();
+
+        return fakultasList.stream()
+                .map(fakultas -> {
+                    BigDecimal totalTagihanFakultas = invoiceMahasiswaRepository
+                            .sumTotalTagihanByFakultas(fakultas.getId());
+
+                    double persentase = totalTagihanFakultas
+                            .divide(totalTagihanSemua, 4, RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(100))
+                            .doubleValue();
+
+                    return new StatistikTagihanFakultasDto(
+                            fakultas.getNamaFakultas(),
+                            persentase
+                    );
+                })
+                .sorted(Comparator.comparingDouble(StatistikTagihanFakultasDto::getPersentase).reversed())
+                .collect(Collectors.toList());
+    }
     private static class KomponenInfo {
         InvoiceKomponen komponen;
         BigDecimal nominal;
@@ -117,19 +227,30 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
         }
     }
 
-    private List<KomponenInfo> validateAndGetKomponenInfo(List<InvoiceKomponenReqDto> komponenDtos) {
+    private List<KomponenInfo> validateAndGetKomponenInfo(List<InvoiceKomponenReqDto> komponenDtos, Mahasiswa mahasiswa) {
         List<KomponenInfo> komponenInfoList = new ArrayList<>();
         for (InvoiceKomponenReqDto komponenDto : komponenDtos) {
             InvoiceKomponen komponen = invoiceKomponenRepository.findById(komponenDto.getKomponenId())
                     .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
                             "Komponen tidak ditemukan: " + komponenDto.getKomponenId()));
 
-            if (komponen.getNominal() == null) {
-                throw new ApplicationException(ExceptionType.BAD_REQUEST,
-                        "Nominal komponen tidak boleh kosong untuk komponen ID: " + komponen.getId());
-            }
+            BigDecimal nominal;
+            if("SKS".equalsIgnoreCase(komponen.getNama())){
+                Integer totalSks = krsMahasiswaRepository.getJumlahSksDiambilByMahasiswaId(mahasiswa.getId());
+                if (totalSks == null || komponen.getNominal() == null) {
+                    throw new ApplicationException(ExceptionType.BAD_REQUEST,
+                            "Total SKS tidak boleh kosong untuk komponen ID: " + komponen.getId());
+                }
 
-            komponenInfoList.add(new KomponenInfo(komponen, komponen.getNominal()));
+                nominal = komponen.getNominal().multiply(BigDecimal.valueOf(totalSks));
+            } else {
+                if (komponen.getNominal() == null) {
+                    throw new ApplicationException(ExceptionType.BAD_REQUEST,
+                            "Nominal komponen tidak boleh kosong untuk komponen ID: " + komponen.getId());
+                }
+                nominal = komponen.getNominal();
+            }
+            komponenInfoList.add(new KomponenInfo(komponen, nominal ));
         }
         return komponenInfoList;
     }
@@ -142,14 +263,28 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
 
     private InvoiceMahasiswa createInvoiceForMahasiswa(InvoiceMahasiswaReqDto dto, Mahasiswa mahasiswa,
                                                        List<KomponenInfo> komponenInfoList, BigDecimal totalTagihan) {
-
         var invoice = mapper.toEntity(dto);
+
+
+        PeriodeAkademik periodeAkademik = periodeAkademikRepository.findFirstByStatusActive()
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode Akademik ACTIVE tidak ditemukan"));
+        List<InvoiceMahasiswa> invoiceSebelumnya = invoiceMahasiswaRepository.findBySiakPeriodeAkademikAndSiakMahasiswa(periodeAkademik, mahasiswa);
+
+        int nomorUrut = invoiceSebelumnya.size() + 1;
+        String formattedUrut = String.format("%03d", nomorUrut);
+
+        String generateKodeInvoice = "INV/" +
+                periodeAkademik.getKodePeriode() + "/" +
+                dto.getTanggalTenggat() + "-" +
+                formattedUrut + "/" + mahasiswa.getNpm();
+
         invoice.setSiakMahasiswa(mahasiswa);
         invoice.setIsDeleted(false);
+        invoice.setSiakPeriodeAkademik(periodeAkademik);
         invoice.setCreatedAt(LocalDateTime.now());
         invoice.setTotalTagihan(totalTagihan);
         invoice.setTotalBayar(BigDecimal.ZERO);
-        invoice.setKodeInvoice("kode");
+        invoice.setKodeInvoice(generateKodeInvoice);
         invoice.setStatus(InvoiceKey.BELUM_LUNAS.getLabel());
 
         List<InvoicePembayaranKomponenMahasiswa> pembayaranList = createPembayaranList(komponenInfoList, invoice);

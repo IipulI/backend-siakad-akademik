@@ -25,6 +25,10 @@ public class ProgramStudi {
     @JoinColumn(name = "siak_fakultas_id", nullable = false)
     private Fakultas siakFakultas;
 
+    @ManyToOne
+    @JoinColumn(name = "siak_jenjang_id", nullable = false)
+    private Jenjang siakJenjang;
+
     @Column(name = "nama_program_studi", nullable = false)
     private String namaProgramStudi;
 

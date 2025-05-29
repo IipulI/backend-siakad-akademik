@@ -35,6 +35,9 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime created_at;
@@ -45,6 +48,9 @@ public class User {
 
     @OneToOne(mappedBy = "siakUser", cascade = CascadeType.ALL)
     private Mahasiswa siakMahasiswa;
+
+    @OneToOne(mappedBy = "siakUser", cascade = CascadeType.ALL)
+    private Dosen siakDosen;
 
     @OneToMany(mappedBy = "siakUser", cascade = CascadeType.ALL)
     private List<UserActivity> siakUserActivities;

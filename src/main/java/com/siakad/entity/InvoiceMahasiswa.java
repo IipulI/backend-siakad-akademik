@@ -27,6 +27,10 @@ public class InvoiceMahasiswa {
     @JoinColumn(name = "siak_mahasiswa_id", nullable = false)
     private Mahasiswa siakMahasiswa;
 
+    @ManyToOne
+    @JoinColumn(name = "siak_periode_akademik_id", nullable = false)
+    private PeriodeAkademik siakPeriodeAkademik;
+
     private String kodeInvoice;
     private BigDecimal totalTagihan;
     private LocalDate tanggalTenggat;

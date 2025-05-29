@@ -15,4 +15,12 @@ import java.util.UUID;
 public interface PeriodeAkademikRepository extends JpaRepository<PeriodeAkademik, UUID>,
         JpaSpecificationExecutor<PeriodeAkademik> {
     Optional<PeriodeAkademik> findByIdAndIsDeletedFalse(UUID id);
+
+    @Query("""
+    SELECT p FROM PeriodeAkademik p
+    WHERE p.status = 'ACTIVE' AND p.isDeleted = false
+    ORDER BY p.tanggalMulai DESC
+""")
+    Optional<PeriodeAkademik> findFirstByStatusActive();
+
 }

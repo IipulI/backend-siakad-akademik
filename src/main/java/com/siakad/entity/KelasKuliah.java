@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -35,6 +36,9 @@ public class KelasKuliah {
     @ManyToOne
     @JoinColumn(name = "siak_periode_akademik_id", nullable = false)
     private PeriodeAkademik siakPeriodeAkademik;
+
+    @OneToMany(mappedBy = "siakKelasKuliah", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<JadwalKuliah> siakJadwalKuliah;
 
     private String nama;
     private Integer kapasitas;
