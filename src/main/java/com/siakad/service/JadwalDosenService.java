@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface JadwalDosenService {
     void save(UUID id, JadwalDosenReqDto request, HttpServletRequest servletRequest);
     List<JadwalDto> getAll(UUID id);
+
+    List<JadwalDto> getByDosenId(UUID id, UUID dosenId);
 }

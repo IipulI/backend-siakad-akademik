@@ -1,12 +1,17 @@
 package com.siakad.service.impl;
 
 import com.siakad.dto.request.KrsReqDto;
+import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.response.KrsResDto;
+import com.siakad.dto.response.PesertaKelas;
 import com.siakad.dto.transform.KrsTransform;
+import com.siakad.dto.transform.PesertaKelasTransform;
 import com.siakad.entity.*;
 import com.siakad.entity.service.KrsSpecification;
+import com.siakad.enums.ExceptionType;
 import com.siakad.enums.KrsKey;
 import com.siakad.enums.MessageKey;
+import com.siakad.exception.ApplicationException;
 import com.siakad.repository.*;
 import com.siakad.service.KrsService;
 import com.siakad.service.UserActivityService;
@@ -36,6 +41,8 @@ public class KrsServiceImpl implements KrsService {
     private final KelasKuliahRepository kelasKuliahRepository;
     private final KrsTransform mapper;
     private final UserActivityService service;
+    private final PesertaKelasTransform mapperPesertaKelas;
+    private final MahasiswaRepository mahasiswaRepository;
 
     @Transactional
     @Override
@@ -200,4 +207,29 @@ public class KrsServiceImpl implements KrsService {
         krsMahasiswaRepository.save(entity);
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_KRS);
     }
+
+    @Override
+    public List<PesertaKelas> getPesertaKelas(UUID kelasId) { // Example method
+        kelasKuliahRepository.findByIdAndIsDeletedFalse(kelasId)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
+
+        List<KrsRincianMahasiswa> krsRincianMahasiswaList = krsRincianMahasiswaRepository.findPesertaByKelasIdAndIsDeletedFalse(kelasId);
+
+        return mapperPesertaKelas.toDtoList(krsRincianMahasiswaList); // Use the mapper to convert the list
+    }
+
+//    @Override
+//    public void addPesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest){
+//        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(id)
+//                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
+//
+//        List<UUID> newMahasiswaList = new ArrayList<>();
+//
+//        for (UUID mahasiswaId : request.getMahasiswaIds()){
+//            Mahasiswa mahasiswa = mahasiswaRepository.findMahasiswaByIdAndIsDeletedFalse(mahasiswaId).orElseThrow(() -> new RuntimeException("Mahaiswa tidak ditemukan:" + mahasiswaId));
+//
+//            KrsRincianMahasiswa rincianKrs =
+//        }
+//    }
+
 }

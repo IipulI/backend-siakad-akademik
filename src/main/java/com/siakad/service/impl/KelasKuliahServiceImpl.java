@@ -76,9 +76,9 @@ public class KelasKuliahServiceImpl implements KelasKuliahService {
     }
 
     @Override
-    public Page<KelasKuliahResDto> search(String keyword, String periodeAkademik, String tahunKurikulum, String programStudi, String sistemKuliah, Pageable pageable) {
+    public Page<KelasKuliahResDto> search(String keyword, String periodeAkademik, String tahunKurikulum, String programStudi, String sistemKuliah, String dosen, Pageable pageable) {
         KelasKuliahSpecification specBuilder = new KelasKuliahSpecification();
-        Specification<KelasKuliah> spec = specBuilder.entitySearch(keyword, periodeAkademik, tahunKurikulum, programStudi, sistemKuliah);
+        Specification<KelasKuliah> spec = specBuilder.entitySearch(keyword, periodeAkademik, tahunKurikulum, programStudi, dosen, sistemKuliah);
         Page<KelasKuliah> all = kelasKuliahRepository.findAll(spec, pageable);
         KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository);
         return all.map(entity -> mapper.toDto(entity, helper));

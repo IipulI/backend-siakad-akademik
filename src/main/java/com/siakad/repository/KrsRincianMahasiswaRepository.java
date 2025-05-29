@@ -1,5 +1,6 @@
 package com.siakad.repository;
 
+import com.siakad.dto.response.PesertaKelas;
 import com.siakad.entity.JadwalKuliah;
 import com.siakad.entity.KrsRincianMahasiswa;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,6 +32,8 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
     """, nativeQuery = true)
     List<JadwalKuliah> findJadwalByKrsIdNative(@Param("krsId") UUID krsRincianId);
 
+    @Query("SELECT k FROM KrsRincianMahasiswa k where k.siakKelasKuliah.id=:kelasId AND k.isDeleted=false")
+    List<KrsRincianMahasiswa> findPesertaByKelasIdAndIsDeletedFalse(@Param("kelasId") UUID kelasId);
 
     @Query("SELECT k FROM KrsRincianMahasiswa k WHERE k.siakKrsMahasiswa.id = :krsMahasiswaId AND k.siakKelasKuliah.id = :kelasId AND k.isDeleted = false AND (k.status IS NULL OR k.status = '' OR k.status = 'Tidak Lulus')")
     Optional<KrsRincianMahasiswa> findFirstByKrsMahasiswaIdAndKelasIdAndStatusNullOrEmpty(@Param("krsMahasiswaId") UUID krsMahasiswaId, @Param("kelasId") UUID kelasId);

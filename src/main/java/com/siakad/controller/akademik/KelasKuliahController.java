@@ -2,12 +2,14 @@ package com.siakad.controller.akademik;
 
 import com.siakad.dto.request.JadwalDosenReqDto;
 import com.siakad.dto.request.KelasKuliahReqDto;
+import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
 import com.siakad.service.JadwalDosenService;
 import com.siakad.service.KelasKuliahService;
+import com.siakad.service.KrsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +39,7 @@ public class KelasKuliahController {
     private final KelasKuliahService service;
 
     private final JadwalDosenService jadwalDosenService;
+    private final KrsService krsService;
 
     @Operation(summary = "Add Kelas Kuliah")
     @PostMapping
@@ -121,7 +124,7 @@ public class KelasKuliahController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
-            Page<KelasKuliahResDto> search = service.search(keyword, periodeAkademik, tahunKuriKulum, programStudi, sistemKuliah, pageable);
+            Page<KelasKuliahResDto> search = service.search(keyword, periodeAkademik, tahunKuriKulum, programStudi, sistemKuliah, null, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<KelasKuliahResDto>>builder()
@@ -196,4 +199,43 @@ public class KelasKuliahController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
+    @Operation(summary = "Get Peserta Kelas by Kelas Kuliah ID")
+    @GetMapping("/{id}/peserta-kelas")
+    public ResponseEntity<ApiResDto<List<PesertaKelas>>> getPesertaKelas(@PathVariable UUID id) {
+        try {
+            List<PesertaKelas> all = krsService.getPesertaKelas(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<PesertaKelas>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(all)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+//    public ResponseEntity<ApiResDto<JadwalKuliahResDto>> updatePesertaKelas(
+//            @PathVariable UUID id,
+//            @Valid @RequestBody PesertaKelasReqDto request,
+//            HttpServletRequest serletRequest
+//            ) {
+//        try {
+//            krsService.updatePeserta(id, request, serletRequest);
+//            return ResponseEntity.status(HttpStatus.CREATED).body(
+//                    ApiResDto.<JadwalKuliahResDto>builder()
+//                            .status(MessageKey.SUCCESS.getMessage())
+//                            .message(MessageKey.UPDATED.getMessage())
+//                            .build()
+//            );
+//        } catch (ApplicationException e) {
+//            throw e;
+//        } catch (Exception e){
+//            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+//        }
+//    }
 }

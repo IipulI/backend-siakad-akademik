@@ -78,4 +78,14 @@ public class JadwalDosenServiceImpl implements JadwalDosenService {
         return mapper.toDto(all);
     }
 
+    @Override
+    public List<JadwalDto> getByDosenId(UUID id, UUID dosenId) {
+        kelasKuliahRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
+
+        List<JadwalKuliah> byDosen = jadwalKuliahRepository.findJadwalKuliahBySiakDosenIdAndIsDeletedFalse(id, dosenId);
+
+        return mapper.toDto(byDosen);
+    }
+
 }

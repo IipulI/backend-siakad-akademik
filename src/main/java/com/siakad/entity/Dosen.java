@@ -25,7 +25,7 @@ public class Dosen {
 
     @OneToOne
     @JoinColumn(name = "siak_user_id", nullable = false, unique = true)
-    private User user;
+    private User siakUser;
 
     private String nama;
     private String nidn;
