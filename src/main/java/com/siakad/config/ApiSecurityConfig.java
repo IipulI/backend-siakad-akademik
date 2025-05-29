@@ -41,12 +41,10 @@ public class ApiSecurityConfig {
                     registry
                             // Allow access to CAPTCHA static files
                             .requestMatchers(mvcMatcherBuilder.pattern("/captcha/**")).permitAll()
-                            // Allow access to CAPTCHA API endpoints
-                            .requestMatchers(mvcMatcherBuilder.pattern("/api/captcha/**")).permitAll()
                             // Allow access to Swagger UI and OpenAPI docs
+                            .requestMatchers(mvcMatcherBuilder.pattern("/api-docs/**")).permitAll() // Corrected path
                             .requestMatchers(mvcMatcherBuilder.pattern("/swagger-ui.html")).permitAll()
                             .requestMatchers(mvcMatcherBuilder.pattern("/swagger-ui/**")).permitAll()
-                            .requestMatchers(mvcMatcherBuilder.pattern("/v3/api-docs/**")).permitAll()
                             // Your existing public API endpoints (e.g., authentication)
                             .requestMatchers(
                                     mvcMatcherBuilder.pattern("/auth/**"), // Example: your login/register endpoints
