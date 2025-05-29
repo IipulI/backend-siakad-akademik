@@ -8,4 +8,6 @@ import java.util.UUID;
 public class RuanganResDto {
     private UUID id;
     private String namaRuangan;
+    private String kapasitas;
+    private String lantai;
 }

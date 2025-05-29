@@ -49,6 +49,9 @@ public class User {
     @OneToOne(mappedBy = "siakUser", cascade = CascadeType.ALL)
     private Mahasiswa siakMahasiswa;
 
+    @OneToOne(mappedBy = "siakUser", cascade = CascadeType.ALL)
+    private Dosen siakDosen;
+
     @OneToMany(mappedBy = "siakUser", cascade = CascadeType.ALL)
     private List<UserActivity> siakUserActivities;
 }

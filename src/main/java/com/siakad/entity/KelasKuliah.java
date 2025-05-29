@@ -37,6 +37,9 @@ public class KelasKuliah {
     @JoinColumn(name = "siak_periode_akademik_id", nullable = false)
     private PeriodeAkademik siakPeriodeAkademik;
 
+    @OneToMany(mappedBy = "siakKelasKuliah", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<JadwalKuliah> siakJadwalKuliah;
+
     private String nama;
     private Integer kapasitas;
     private String sistemKuliah;
