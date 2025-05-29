@@ -30,7 +30,8 @@ public class SwaggerConfig {
                         .description("API Sistem Informasi Manajemen Akademik (SIMAKAD) untuk mengelola data mahasiswa, mata kuliah, nilai, dan jadwal"))
                 .servers(List.of(
                         new Server().url("http://localhost:8081/api/v1").description("Localhost Server"),
-                        new Server().url("https://backend-simakad.azurewebsites.net/api/v1").description("Production Server")
+                        new Server().url("https://backend-simakad.azurewebsites.net/api/v1").description("Production Server"),
+                        new Server().url("http://103.158.196.106/spring/api/v1").description("Siakad Server")
                 ));
     }
 }
