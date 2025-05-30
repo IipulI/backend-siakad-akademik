@@ -29,7 +29,7 @@ import java.util.UUID;
 
 @Tag(name = "KRS")
 @RestController
-@RequestMapping("/akademik/krs")
+@RequestMapping("/mahasiswa/krs")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('MAHASISWA')")
 public class KrsController {
@@ -123,6 +123,26 @@ public class KrsController {
                     ApiResDto.<KrsResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+
+    @Operation(summary = "Get all krs by status Menunggu")
+    @GetMapping("/status-menunggu")
+    public ResponseEntity<ApiResDto<KrsMenungguResDto>> getAllStatusMenunggu() {
+        try {
+            KrsMenungguResDto allKrsByStatusMenunggu = service.getAllKrsByStatusMenunggu();
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<KrsMenungguResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .data(allKrsByStatusMenunggu)
                             .build()
             );
         } catch (ApplicationException e) {

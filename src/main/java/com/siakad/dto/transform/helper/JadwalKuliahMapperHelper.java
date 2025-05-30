@@ -24,7 +24,13 @@ public class JadwalKuliahMapperHelper {
             dto.setHari(jadwal.getHari());
             dto.setJamMulai(jadwal.getJamMulai().toString());
             dto.setJamSelesai(jadwal.getJamSelesai().toString());
-            dto.setDosenPengajar(jadwal.getSiakDosen().getNama());
+
+            if (jadwal.getSiakDosen() != null) {
+                dto.setDosenPengajar(jadwal.getSiakDosen().getNama());
+            } else {
+                dto.setDosenPengajar("Belum ada dosen");
+            }
         }
+
     }
 }

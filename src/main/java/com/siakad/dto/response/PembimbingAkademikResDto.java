@@ -17,6 +17,5 @@ public class PembimbingAkademikResDto {
     private Boolean statusDiajukan = false;
     private Boolean statusDisetujiu = false;
     private String pembimbingAkademik;
-    private String programStudi;
     private String unitKerja;
 }

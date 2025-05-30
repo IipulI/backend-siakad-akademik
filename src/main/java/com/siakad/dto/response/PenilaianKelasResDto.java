@@ -6,5 +6,6 @@ import java.util.List;
 
 @Data
 public class PenilaianKelasResDto {
-    private List<KomponenPenilaianResDto> komponenPenilaian;
+    private List<KomponenPenilaianResDto> komposisiPenilaian;
+    private List<MahasiswaDto> mahasiswa;
 }
