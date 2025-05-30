@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive CAPTCHA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .captcha-container {
+            position: relative;
+            background-color: #ffffff;
+            padding: 1.5rem; /* This padding affects the canvas's visual start position */
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        canvas {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            display: block;
+            margin: 1rem auto; /* This margin accounts for vertical spacing */
+            background-color: #f8fafc;
+        }
+        .puzzle-piece {
+            position: absolute;
+            border: 1px solid #a0aec0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            left: 0;
+            top: 0;
+            transition: left 0.05s ease-out;
+        }
+        .message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+        }
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .slider-container {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0 1rem;
+            box-sizing: border-box;
+        }
+        .puzzle-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 10px;
+            background: #d1d5db;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            border-radius: 5px;
+        }
+        .puzzle-slider:hover {
+            opacity: 1;
+        }
+        .puzzle-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .puzzle-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+<div class="captcha-container">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Solve the Puzzle</h2>
+    <p class="text-gray-600 mb-4">Drag the slider to complete the image.</p>
+
+    <canvas id="captchaCanvas"></canvas>
+    <img id="puzzlePiece" class="puzzle-piece hidden" alt="Puzzle Piece">
+
+    <div class="slider-container">
+        <input type="range" id="puzzleSlider" class="puzzle-slider" min="0" value="0">
+    </div>
+
+    <button id="refreshButton" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-150 ease-in-out mt-4">
+        Refresh CAPTCHA
+    </button>
+
+    <div id="messageBox" class="message hidden"></div>
+</div>
+
+<script>
+    const captchaCanvas = document.getElementById('captchaCanvas');
+    const ctx = captchaCanvas.getContext('2d');
+    const puzzlePieceImg = document.getElementById('puzzlePiece');
+    const puzzleSlider = document.getElementById('puzzleSlider');
+    const refreshButton = document.getElementById('refreshButton');
+    const messageBox = document.getElementById('messageBox');
+
+    let holedImage = new Image();
+    let currentPuzzlePieceX = 0;
+    let puzzlePieceYOffset = 0; // Renamed for clarity, stores Y with canvas offset
+    let puzzlePieceWidth = 0;
+    let puzzlePieceHeight = 0;
+
+    async function loadCaptcha() {
+        messageBox.classList.add('hidden');
+        messageBox.textContent = '';
+        puzzlePieceImg.classList.add('hidden');
+
+        try {
+            const response = await fetch('/api/v1/captcha/generate');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            // Log values for debugging
+            console.log("Frontend (Received): Correct X from backend:", data.correctPuzzlePieceX);
+            console.log("Frontend (Received): Initial Puzzle Piece X (internal):", data.initialPuzzlePieceX);
+            console.log("Frontend (Received): Puzzle Piece Y (internal):", data.puzzlePieceY);
+
+            holedImage.onload = () => {
+                captchaCanvas.width = data.imageWidth;
+                captchaCanvas.height = data.imageHeight;
+                ctx.clearRect(0, 0, captchaCanvas.width, captchaCanvas.height);
+                ctx.drawImage(holedImage, 0, 0);
+
+                puzzleSlider.max = data.imageWidth - data.puzzlePieceWidth;
+                puzzleSlider.value = data.initialPuzzlePieceX; // Set initial slider position
+
+                currentPuzzlePieceX = data.initialPuzzlePieceX; // Store internal X value
+                // ⭐ FIXED Y-POSITION: Calculate puzzlePieceYOffset by adding canvas.offsetTop ⭐
+                puzzlePieceYOffset = data.puzzlePieceY + captchaCanvas.offsetTop;
+
+                // ⭐ FIXED X-POSITION: Add captchaCanvas.offsetLeft to align with canvas content area ⭐
+                puzzlePieceImg.style.left = `${currentPuzzlePieceX + captchaCanvas.offsetLeft}px`;
+                puzzlePieceImg.style.top = `${puzzlePieceYOffset}px`;
+
+                puzzlePieceImg.classList.remove('hidden');
+            };
+            holedImage.src = `data:image/png;base64,${data.holedImageBase64}`;
+
+            puzzlePieceImg.onload = () => {
+                puzzlePieceImg.src = `data:image/png;base64,${data.puzzlePieceBase64}`;
+                puzzlePieceImg.style.width = `${data.puzzlePieceWidth}px`;
+                puzzlePieceImg.style.height = `${data.puzzlePieceHeight}px`;
+
+                puzzlePieceWidth = data.puzzlePieceWidth; // Store dimensions
+                puzzlePieceHeight = data.puzzlePieceHeight;
+            };
+            puzzlePieceImg.src = `data:image/png;base64,${data.puzzlePieceBase64}`;
+
+        } catch (error) {
+            console.error('Failed to load CAPTCHA:', error);
+            displayMessage('Failed to load CAPTCHA. Please try again.', 'error');
+        }
+    }
+
+    puzzleSlider.addEventListener('input', (e) => {
+        currentPuzzlePieceX = parseInt(e.target.value, 10); // This is the internal X value
+        // ⭐ FIXED X-POSITION: Add captchaCanvas.offsetLeft for visual positioning ⭐
+        puzzlePieceImg.style.left = `${currentPuzzlePieceX + captchaCanvas.offsetLeft}px`;
+    });
+
+    puzzleSlider.addEventListener('change', () => {
+        verifyCaptcha();
+    });
+
+    async function verifyCaptcha() {
+        // Frontend sends the internal X value (currentPuzzlePieceX)
+        console.log("Frontend: Sending userPuzzlePieceX:", Math.round(currentPuzzlePieceX));
+
+        try {
+            const response = await fetch('/api/v1/captcha/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userPuzzlePieceX: Math.round(currentPuzzlePieceX) })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const isCorrect = await response.json();
+
+            if (isCorrect) {
+                displayMessage('CAPTCHA solved successfully!', 'success');
+            } else {
+                displayMessage('Incorrect puzzle position. Please try again.', 'error');
+                setTimeout(loadCaptcha, 1500);
+            }
+        } catch (error) {
+            console.error('Failed to verify CAPTCHA:', error);
+            displayMessage('Verification failed. Please try again.', 'error');
+            setTimeout(loadCaptcha, 1500);
+        }
+    }
+
+    function displayMessage(message, type) {
+        messageBox.textContent = message;
+        messageBox.className = `message ${type}`;
+        messageBox.classList.remove('hidden');
+    }
+
+    refreshButton.addEventListener('click', loadCaptcha);
+
+    window.onload = loadCaptcha;
+</script>
+</body>
+</html>

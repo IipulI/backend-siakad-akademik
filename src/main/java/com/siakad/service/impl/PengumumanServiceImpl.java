@@ -5,6 +5,7 @@ import com.siakad.dto.response.PengumumanResDto;
 import com.siakad.dto.transform.PengumumanTransform;
 import com.siakad.entity.Pengumuman;
 import com.siakad.entity.User;
+import com.siakad.entity.service.PengumumanSpecifications;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
@@ -16,11 +17,15 @@ import com.siakad.util.FileUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,6 +38,7 @@ public class PengumumanServiceImpl implements PengumumanService {
     private final UserActivityService service;
     private final PengumumanRepository pengumumanRepository;
     private final PengumumanTransform mapper;
+
 
     @Override
     public PengumumanResDto save(PengumumanReqDto dto, MultipartFile file, HttpServletRequest servletRequest) throws IOException {
@@ -47,6 +53,14 @@ public class PengumumanServiceImpl implements PengumumanService {
         Pengumuman saved = pengumumanRepository.save(entity);
         service.saveUserActivity(servletRequest, MessageKey.CREATE_PENGUMUMAN);
         return mapper.toDto(saved);
+    }
+
+    @Override
+    public Page<PengumumanResDto> search(String keyword, String status, Pageable pageable) {
+        PengumumanSpecifications specBuilder = new PengumumanSpecifications();
+        Specification<Pengumuman> spec = specBuilder.entitySearch(keyword, status, null);
+        Page<Pengumuman> all = pengumumanRepository.findAll(spec, pageable);
+        return all.map(mapper::toDto);
     }
 
     @Override
