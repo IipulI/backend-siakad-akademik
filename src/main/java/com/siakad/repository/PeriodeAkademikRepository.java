@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,5 +23,8 @@ public interface PeriodeAkademikRepository extends JpaRepository<PeriodeAkademik
     ORDER BY p.tanggalMulai DESC
 """)
     Optional<PeriodeAkademik> findFirstByStatusActive();
+
+
+    List<PeriodeAkademik> findAllByIsDeletedFalse();
 
 }

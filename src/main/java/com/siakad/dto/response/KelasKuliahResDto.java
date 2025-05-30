@@ -19,4 +19,6 @@ public class KelasKuliahResDto {
     private ProgramStudiResDto programStudi;
     private List<String> dosen;
     private List<String> jadwalMingguan;
+    private Integer peserta;
+    private String statusPenilaian;
 }

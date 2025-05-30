@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,4 +34,8 @@ public interface MahasiswaRepository extends JpaRepository<Mahasiswa, UUID>,
 """, nativeQuery = true)
     Page<Mahasiswa> findByWithRelasiNative(Specification<Mahasiswa> spec,Pageable pageable);
 
+    @Query("""
+        SELECT m FROM Mahasiswa m WHERE m.statusMahasiswa = 'Aktif' 
+    """)
+    List<Mahasiswa> findAllByStatusMahasiswa();
 }

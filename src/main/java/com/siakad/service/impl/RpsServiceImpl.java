@@ -2,7 +2,6 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.request.KelasRpsReqDto;
 import com.siakad.dto.request.RpsReqDto;
-import com.siakad.dto.response.KelasRpsResponseDto;
 import com.siakad.dto.response.RpsResDto;
 import com.siakad.dto.transform.RpsTransform;
 import com.siakad.entity.*;
@@ -43,9 +42,10 @@ public class RpsServiceImpl implements RpsService {
     private final KelasKuliahRepository kelasKuliahRepository;
     private final UserActivityService service;
     private final RpsTransform mapper;
+    private final KelasRpsRepository kelasRpsRepository;
 
     @Override
-    public RpsResDto create(RpsReqDto reqDto, MultipartFile dokumenRps, HttpServletRequest request) throws IOException {
+    public void create(RpsReqDto reqDto, MultipartFile dokumenRps, HttpServletRequest request) throws IOException {
         ProgramStudi programStudi = programStudiRepository.findByIdAndIsDeletedFalse(reqDto.getSiakProgramStudiId())
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Program Studi tidak ditemukan : " + reqDto.getSiakProgramStudiId()));
 
@@ -71,9 +71,8 @@ public class RpsServiceImpl implements RpsService {
             entity.setDosenList(dosenList);
         }
 
-        Rps saved = rpsRepository.save(entity);
+        rpsRepository.save(entity);
         service.saveUserActivity(request, MessageKey.CREATE_RPS);
-        return mapper.toDto(saved);
     }
 
     @Override
@@ -147,7 +146,7 @@ public class RpsServiceImpl implements RpsService {
     }
 
     @Override
-    public KelasRpsResponseDto createKelas(KelasRpsReqDto reqDto, HttpServletRequest request) {
+    public void createKelas(KelasRpsReqDto reqDto, HttpServletRequest request) {
         Rps rps = rpsRepository.findByIdAndIsDeletedFalse(reqDto.getRpsId())
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Rps tidak ditemukan : " + reqDto.getRpsId()));
 
@@ -159,7 +158,15 @@ public class RpsServiceImpl implements RpsService {
         Rps saved = rpsRepository.save(rps);
 
         service.saveUserActivity(request, MessageKey.UPDATE_RPS);
-        return mapper.toDtoKelas(saved);
+        mapper.toDtoKelas(saved);
+    }
+
+    @Override
+    public RpsResDto getRpsByKelas(UUID kelasId) {
+        KelasRps kelasRps = kelasRpsRepository.findSiakRps_idBySiakKelasKuliah_IdAndIsDeletedFalse(kelasId)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Rps tidak ditemukan : " + kelasId));
+
+        return mapper.toDto(kelasRps);
     }
 
 }
