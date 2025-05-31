@@ -2,7 +2,9 @@ package com.siakad.repository;
 
 import com.siakad.dto.response.PesertaKelas;
 import com.siakad.entity.JadwalKuliah;
+import com.siakad.entity.KelasKuliah;
 import com.siakad.entity.KrsRincianMahasiswa;
+import com.siakad.entity.Mahasiswa;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -46,11 +48,41 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
     """, nativeQuery = true)
     List<JadwalKuliah> findJadwalByKrsIdNative(@Param("krsId") UUID krsRincianId);
 
+    List<KrsRincianMahasiswa> findAllBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdInAndIsDeletedFalse(UUID kelas, List<UUID> mahasiswaIds);
+
     @Query("SELECT k FROM KrsRincianMahasiswa k where k.siakKelasKuliah.id=:kelasId AND k.isDeleted=false")
     List<KrsRincianMahasiswa> findPesertaByKelasIdAndIsDeletedFalse(@Param("kelasId") UUID kelasId);
 
-    @Query("SELECT k FROM KrsRincianMahasiswa k WHERE k.siakKrsMahasiswa.id = :krsMahasiswaId AND k.siakKelasKuliah.id = :kelasId AND k.isDeleted = false AND (k.status IS NULL OR k.status = '' OR k.status = 'Tidak Lulus')")
-    Optional<KrsRincianMahasiswa> findFirstByKrsMahasiswaIdAndKelasIdAndStatusNullOrEmpty(@Param("krsMahasiswaId") UUID krsMahasiswaId, @Param("kelasId") UUID kelasId);
+    @Query("""
+    SELECT k FROM KrsRincianMahasiswa k 
+    WHERE k.siakKrsMahasiswa.id = :krsMahasiswaId 
+      AND k.siakKelasKuliah.id = :kelasId 
+      AND k.siakKrsMahasiswa.siakPeriodeAkademik.status = 'ACTIVE'
+      AND k.isDeleted = false 
+      AND (k.status IS NULL OR k.status = '' OR k.status = 'Tidak Lulus')
+""")
+    Optional<KrsRincianMahasiswa> findFirstByKrsMahasiswaIdAndKelasIdAndPeriodeStatusActive(
+            @Param("krsMahasiswaId") UUID krsMahasiswaId,
+            @Param("kelasId") UUID kelasId
+    );
 
-    boolean existsByStatus(String status);
+    List<KrsRincianMahasiswa> findBySiakKelasKuliahAndIsDeletedFalse(KelasKuliah kelas);
+    int countBySiakKelasKuliahAndIsDeletedFalse(KelasKuliah kelas);
+
+    Optional<KrsRincianMahasiswa> findBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdAndIsDeletedFalse(UUID kelasId, UUID mahasiswaId);
+
+    @Query("""
+    SELECT DISTINCT r.siakKrsMahasiswa.siakMahasiswa 
+    FROM KrsRincianMahasiswa r 
+    WHERE r.siakKelasKuliah.id = :kelasKuliahId
+      AND r.isDeleted = false
+      AND r.siakKrsMahasiswa.isDeleted = false
+""")
+    List<Mahasiswa> findMahasiswaByKelasKuliahId(@Param("kelasKuliahId") UUID kelasKuliahId);
+
+
+    List<KrsRincianMahasiswa> findAllByIsDeletedFalse();
+
+    List<KrsRincianMahasiswa> findAllBySiakKrsMahasiswa_SiakMahasiswa_IdAndSiakKrsMahasiswa_SiakPeriodeAkademik_IdAndIsDeletedFalse(UUID mahasiswaId, UUID kelasId);
+
 }

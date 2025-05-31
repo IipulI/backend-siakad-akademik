@@ -1,10 +1,8 @@
 package com.siakad.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,10 +13,13 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "siak_rps")
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"dosenList", "kelasKuliahList"})
+@ToString(exclude = {"dosenList", "kelasKuliahList"})
 public class Rps {
     @Id
     @GeneratedValue
@@ -75,6 +76,7 @@ public class Rps {
             joinColumns = @JoinColumn(name = "siak_rps_id"),
             inverseJoinColumns = @JoinColumn(name = "siak_kelas_kuliah_id")
     )
+    @JsonIgnore
     private List<KelasKuliah> kelasKuliahList;
 
     @Column(name = "is_deleted", nullable = false)

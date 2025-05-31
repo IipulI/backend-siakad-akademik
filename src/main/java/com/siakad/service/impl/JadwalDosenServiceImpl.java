@@ -1,8 +1,6 @@
 package com.siakad.service.impl;
 
-import com.siakad.dto.request.JadwalDosenDto;
-import com.siakad.dto.request.JadwalDosenReqDto;
-import com.siakad.dto.request.JadwalKuliahReqDto;
+import com.siakad.dto.request.*;
 import com.siakad.dto.response.JadwalDosenResDto;
 import com.siakad.dto.response.JadwalDto;
 import com.siakad.dto.response.JadwalKuliahResDto;
@@ -23,8 +21,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Slf4j
@@ -87,5 +88,15 @@ public class JadwalDosenServiceImpl implements JadwalDosenService {
 
         return mapper.toDto(byDosen);
     }
+
+    @Override
+    public List<GetJadwalResDto> getJadwalHarian(GetJadwalReqDto reqDto) {
+        LocalDate tanggal = reqDto.getTanggal();
+        String hari = tanggal.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("id", "ID"));
+        List<JadwalKuliah> jadwalKuliahList = jadwalKuliahRepository
+                .findByHariIgnoreCaseAndSiakKelasKuliah_SiakPeriodeAkademik_IdAndIsDeletedFalse(hari, reqDto.getSiakPeriodeAkademikId());
+        return mapper.toGetJadwalResDtoList(jadwalKuliahList);
+    }
+
 
 }

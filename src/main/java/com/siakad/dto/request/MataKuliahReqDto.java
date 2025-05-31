@@ -10,6 +10,7 @@ public class MataKuliahReqDto {
     private UUID siakTahunKurikulumId;
     private Integer sksTatapMuka;
     private Integer sksPraktikum;
+    private Integer semester;
     private Boolean adaPraktikum;
     private String nilaiMin;
     private String kodeMataKuliah;

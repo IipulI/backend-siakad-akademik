@@ -33,8 +33,8 @@ public class SkalaPenilaian {
     @JoinColumn(name = "siak_program_studi_id")
     private ProgramStudi siakProgramStudi;
 
-    private String angkaMutu;
-    private BigDecimal nilaiMutu;
+    private String hurufMutu;
+    private BigDecimal angkaMutu;
     private BigDecimal nilaiMin;
     private BigDecimal nilaiMax;
 

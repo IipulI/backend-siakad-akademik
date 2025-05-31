@@ -25,6 +25,10 @@ public interface JadwalKuliahRepository extends JpaRepository<JadwalKuliah, UUID
 
     List<JadwalKuliah> findBySiakKelasKuliahId(UUID siakKelasKuliahId);
 
+    List<JadwalKuliah> findByHariIgnoreCaseAndSiakKelasKuliah_SiakPeriodeAkademik_IdAndIsDeletedFalse(
+            String hari, UUID siakPeriodeAkademikId);
+
+
     @Query("SELECT j FROM JadwalKuliah j " +
             "JOIN FETCH j.siakKelasKuliah skk " +
             "JOIN FETCH skk.siakMataKuliah " +

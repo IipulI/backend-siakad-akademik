@@ -5,6 +5,8 @@ import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.response.KrsResDto;
 import com.siakad.dto.response.MengulangResDto;
 import com.siakad.dto.response.PeriodeResDto;
+import com.siakad.dto.request.PindahKelasReqDto;
+import com.siakad.dto.response.KrsMenungguResDto;
 import com.siakad.dto.response.PesertaKelas;
 import com.siakad.dto.transform.KrsTransform;
 import com.siakad.dto.transform.PesertaKelasTransform;
@@ -27,6 +29,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +50,8 @@ public class KrsServiceImpl implements KrsService {
     private final UserActivityService service;
     private final PesertaKelasTransform mapperPesertaKelas;
     private final MahasiswaRepository mahasiswaRepository;
+    private final BatasSksRepository batasSksRepository;
+    private final HasilStudiRepository hasilStudiRepository;
 
     @Transactional
     @Override
@@ -92,6 +101,12 @@ public class KrsServiceImpl implements KrsService {
                     + kelasKuliah.getSiakMataKuliah().getSksPraktikum();
         }
 
+        Integer maxSksYangDiizinkan = getMaxSksYangDiizinkan(user);
+
+        if (totalSks > maxSksYangDiizinkan) {
+            throw new RuntimeException("Total SKS yang diambil melebihi batas maksimum: " + maxSksYangDiizinkan);
+        }
+
         krsRincianMahasiswaRepository.saveAll(rincianMahasiswaList);
 
         entity.setJumlahSksDiambil(totalSks);
@@ -99,6 +114,22 @@ public class KrsServiceImpl implements KrsService {
 
         service.saveUserActivity(servletRequest, MessageKey.CREATE_KRS);
     }
+
+        private Integer getMaxSksYangDiizinkan(User user) {
+            BigDecimal ipsTerakhir = hasilStudiRepository
+                    .findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(user.getSiakMahasiswa().getId())
+                    .map(HasilStudi::getIps)
+                    .orElse(BigDecimal.ZERO);
+
+            Jenjang jenjang = user.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang();
+
+            BatasSks batasSks = batasSksRepository
+                    .findFirstBySiakJenjangAndIpsMinLessThanEqualAndIpsMaxGreaterThanEqualAndIsDeletedFalse(
+                            jenjang, ipsTerakhir, ipsTerakhir
+                    ).orElseThrow(() -> new RuntimeException("Batas SKS belum diatur untuk IPS: " + ipsTerakhir));
+
+            return batasSks.getBatasSks();
+        }
 
 
     @Transactional
@@ -123,7 +154,6 @@ public class KrsServiceImpl implements KrsService {
         krs.setUpdatedAt(now);
         krsMahasiswaRepository.save(krs);
 
-        // Soft delete semua rincian lama
         List<KrsRincianMahasiswa> existingRincians = krsRincianMahasiswaRepository
                 .findAllBySiakKrsMahasiswa_IdAndIsDeletedFalse(krs.getId());
         for (KrsRincianMahasiswa rincian : existingRincians) {
@@ -131,7 +161,6 @@ public class KrsServiceImpl implements KrsService {
         }
         krsRincianMahasiswaRepository.saveAll(existingRincians);
 
-        // Buat atau aktifkan kembali rincian baru
         List<KrsRincianMahasiswa> updatedRincians = new ArrayList<>();
         int totalSks = 0;
 
@@ -144,11 +173,10 @@ public class KrsServiceImpl implements KrsService {
 
             KrsRincianMahasiswa rincian;
             if (existingRincianOpt.isPresent()) {
-                // Sudah pernah diambil di KRS ini, tinggal aktifkan dan update timestamp
                 rincian = existingRincianOpt.get();
                 rincian.setIsDeleted(false);
                 rincian.setUpdatedAt(now);
-                rincian.setKategori(KrsKey.BARU.getLabel()); // ✅ Tetap BARU
+                rincian.setKategori(KrsKey.BARU.getLabel());
             } else {
                 rincian = new KrsRincianMahasiswa();
                 rincian.setSiakKrsMahasiswa(krs);
@@ -156,7 +184,6 @@ public class KrsServiceImpl implements KrsService {
                 rincian.setCreatedAt(now);
                 rincian.setIsDeleted(false);
 
-                // ✅ Baru ditambahkan, cek apakah sebelumnya pernah diambil di KRS lain
                 boolean pernahAmbil = krsRincianMahasiswaRepository
                         .existsBySiakKelasKuliah_SiakMataKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdAndSiakKrsMahasiswa_IdNotAndIsDeletedFalse(
                                 kelas.getSiakMataKuliah().getId(), user.getSiakMahasiswa().getId(), krs.getId());
@@ -168,6 +195,12 @@ public class KrsServiceImpl implements KrsService {
 
             totalSks += kelas.getSiakMataKuliah().getSksTatapMuka()
                     + kelas.getSiakMataKuliah().getSksPraktikum();
+
+            Integer maxSksYangDiizinkan = getMaxSksYangDiizinkan(user);
+
+            if (totalSks > maxSksYangDiizinkan) {
+                throw new RuntimeException("Total SKS yang diambil melebihi batas maksimum: " + maxSksYangDiizinkan);
+            }
         }
 
 
@@ -189,6 +222,15 @@ public class KrsServiceImpl implements KrsService {
         Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toDto);
     }
+
+    @Override
+    public KrsMenungguResDto getAllKrsByStatusMenunggu() {
+        User user = service.getCurrentUser();
+        List<KrsRincianMahasiswa> all = krsMahasiswaRepository.findAllRincianByStatusMenungguAndPeriodeAktifAndMahasiswa(user.getSiakMahasiswa().getId());
+        log.info("All Rincians: {}", all.size());
+        return mapper.toDtoMenunggu(all);
+    }
+
 
     @Override
     public void updateStatus(HttpServletRequest servletRequest) {
@@ -218,6 +260,101 @@ public class KrsServiceImpl implements KrsService {
         return mapperPesertaKelas.toDtoList(krsRincianMahasiswaList); // Use the mapper to convert the list
     }
 
+            @Override
+            public void addPesertaKelas(UUID kelasId, PesertaKelasReqDto request, HttpServletRequest servletRequest){
+                KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(kelasId)
+                        .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
+
+                PeriodeAkademik activePeriode = periodeAkademikRepository.findFirstByStatusActive()
+                        .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada periode aktif"));
+
+                List<KrsRincianMahasiswa> rincianMahasiswaList = new ArrayList<>();
+
+                for (UUID mahasiswaId : request.getMahasiswaIds()){
+                    Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(mahasiswaId).orElseThrow(() -> new RuntimeException("Mahaiswa tidak ditemukan:" + mahasiswaId));
+
+                    KrsMahasiswa entity = mapper.toEntity(request);
+
+                    entity.setSiakMahasiswa(mahasiswa);
+                    entity.setSiakPeriodeAkademik(activePeriode);
+                    entity.setStatus(KrsKey.DRAFT.getLabel());
+                    entity.setUpdatedAt(LocalDateTime.now());
+                    entity.setIsDeleted(false);
+                    int totalSks = kelasKuliah.getSiakMataKuliah().getSksTatapMuka()
+                            + kelasKuliah.getSiakMataKuliah().getSksPraktikum();
+
+                    entity.setJumlahSksDiambil(totalSks);
+                    krsMahasiswaRepository.save(entity);
+
+                    KrsRincianMahasiswa rincianMahasiswa = mapper.toEntityRincianPeserta(request);
+                    rincianMahasiswa.setSiakKelasKuliah(kelasKuliah);
+                    rincianMahasiswa.setSiakKrsMahasiswa(entity);
+                    rincianMahasiswa.setCreatedAt(LocalDateTime.now());
+
+                    boolean isUlang = krsRincianMahasiswaRepository
+                            .existsBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdAndIsDeletedFalse(
+                                    kelasId, mahasiswa.getId());
+
+                    rincianMahasiswa.setKategori(isUlang ? KrsKey.ULANG.getLabel() : KrsKey.BARU.getLabel());
+                    rincianMahasiswa.setIsDeleted(false);
+
+                    rincianMahasiswaList.add(rincianMahasiswa);
+                }
+                krsRincianMahasiswaRepository.saveAll(rincianMahasiswaList);
+                service.saveUserActivity(servletRequest, MessageKey.CREATE_KRS);
+            }
+
+        @Override
+        public void deletePesertaKelas(UUID kelasId, PesertaKelasReqDto request, HttpServletRequest servletRequest) {
+            List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
+                    .findAllBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdInAndIsDeletedFalse(kelasId, request.getMahasiswaIds());
+
+            if (rincianList.isEmpty()) {
+                throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada peserta yang ditemukan untuk dihapus");
+            }
+
+            for (KrsRincianMahasiswa rincian : rincianList) {
+                rincian.setIsDeleted(true);
+                rincian.setUpdatedAt(LocalDateTime.now());
+                KrsMahasiswa krsMahasiswa = rincian.getSiakKrsMahasiswa();
+                if (krsMahasiswa != null) {
+                    krsMahasiswa.setIsDeleted(true);
+                    krsMahasiswa.setUpdatedAt(LocalDateTime.now());
+                    krsMahasiswaRepository.save(krsMahasiswa);
+                }
+            }
+            krsRincianMahasiswaRepository.saveAll(rincianList);
+            service.saveUserActivity(servletRequest, MessageKey.DELETE_KRS);
+        }
+
+        @Override
+        public void pindahKelasPeserta(UUID kelasId, PindahKelasReqDto request, HttpServletRequest servletRequest) {
+            List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
+                    .findAllBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdInAndIsDeletedFalse(kelasId, request.getMahasiswaIds());
+
+            KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(request.getKelasId())
+                    .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas tidak ditemukan"));
+
+            if (rincianList.isEmpty()) {
+                throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada peserta yang ditemukan untuk dipindahkan ke kelas : " + kelasId);
+            }
+
+            for (KrsRincianMahasiswa rincian : rincianList) {
+                rincian.setIsDeleted(true);
+                rincian.setSiakKelasKuliah(kelasKuliah);
+                rincian.setUpdatedAt(LocalDateTime.now());
+                KrsMahasiswa krsMahasiswa = rincian.getSiakKrsMahasiswa();
+                if (krsMahasiswa != null) {
+                    krsMahasiswa.setIsDeleted(true);
+                    krsMahasiswa.setUpdatedAt(LocalDateTime.now());
+                    krsMahasiswaRepository.save(krsMahasiswa);
+                }
+            }
+            krsRincianMahasiswaRepository.saveAll(rincianList);
+            service.saveUserActivity(servletRequest, MessageKey.DELETE_KRS);
+        }
+
+
     @Override
     public List<MengulangResDto> getAllMengulang(UUID mahasiswaId) {
         List<KrsRincianMahasiswa> allRincianKrsMahasiswa = krsRincianMahasiswaRepository
@@ -227,7 +364,6 @@ public class KrsServiceImpl implements KrsService {
             return Collections.emptyList();
         }
 
-        // Group all KrsRincianMahasiswa entities by MataKuliah
         Map<MataKuliah, List<KrsRincianMahasiswa>> attemptsByCourse = allRincianKrsMahasiswa.stream()
                 .filter(rincian -> rincian.getSiakKelasKuliah() != null && rincian.getSiakKelasKuliah().getSiakMataKuliah() != null)
                 .collect(Collectors.groupingBy(rincian -> rincian.getSiakKelasKuliah().getSiakMataKuliah()));
@@ -242,26 +378,22 @@ public class KrsServiceImpl implements KrsService {
                 continue;
             }
 
-            // Sort attempts by PeriodeAkademik's start date to find the latest one
             courseAttempts.sort((r1, r2) -> {
                 PeriodeAkademik pa1 = r1.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
                 PeriodeAkademik pa2 = r2.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
                 if (pa1 != null && pa1.getTanggalMulai() != null && pa2 != null && pa2.getTanggalMulai() != null) {
                     return pa2.getTanggalMulai().compareTo(pa1.getTanggalMulai()); // Descending for latest first
                 }
-                return 0; // Fallback
+                return 0;
             });
 
             KrsRincianMahasiswa latestAttemptEntity = courseAttempts.get(0); // Get the most recent attempt
 
-            // **Check if the latest attempt's status is "tidak lulus"**
-            // Assuming KrsRincianMahasiswa has a getStatus() method returning String
             if ("tidak lulus".equalsIgnoreCase(latestAttemptEntity.getStatus())) {
                 MengulangResDto mengulangDto = new MengulangResDto();
                 mengulangDto.setNamaMataKuliah(mataKuliahEntity.getNamaMataKuliah());
                 mengulangDto.setKodeMataKuliah(mataKuliahEntity.getKodeMataKuliah());
 
-                // Convert all KrsRincianMahasiswa attempts for this course to PeriodeResDto
                 List<PeriodeResDto> periodeResDtoList = courseAttempts.stream()
                         .sorted((r1, r2) -> { // Sort back to chronological for display
                             PeriodeAkademik pa1 = r1.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
@@ -299,8 +431,6 @@ public class KrsServiceImpl implements KrsService {
         return kursusMengulangList;
     }
 
-    // Helper method to find PeriodeAkademik from original list (if needed for sorting by date)
-    // This is a bit inefficient; ideally, you'd have direct access or sort earlier.
     private PeriodeAkademik findPeriodeAkademikByName(String namaPeriode, List<KrsRincianMahasiswa> rincianList) {
         for (KrsRincianMahasiswa rincian : rincianList) {
             if (rincian.getSiakKrsMahasiswa() != null && rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik() != null &&
