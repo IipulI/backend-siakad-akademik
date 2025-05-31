@@ -3,6 +3,8 @@ package com.siakad.service.impl;
 import com.siakad.dto.request.KrsReqDto;
 import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.response.KrsResDto;
+import com.siakad.dto.response.MengulangResDto;
+import com.siakad.dto.response.PeriodeResDto;
 import com.siakad.dto.response.PesertaKelas;
 import com.siakad.dto.transform.KrsTransform;
 import com.siakad.dto.transform.PesertaKelasTransform;
@@ -25,10 +27,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -218,18 +218,96 @@ public class KrsServiceImpl implements KrsService {
         return mapperPesertaKelas.toDtoList(krsRincianMahasiswaList); // Use the mapper to convert the list
     }
 
-//    @Override
-//    public void addPesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest){
-//        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(id)
-//                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
-//
-//        List<UUID> newMahasiswaList = new ArrayList<>();
-//
-//        for (UUID mahasiswaId : request.getMahasiswaIds()){
-//            Mahasiswa mahasiswa = mahasiswaRepository.findMahasiswaByIdAndIsDeletedFalse(mahasiswaId).orElseThrow(() -> new RuntimeException("Mahaiswa tidak ditemukan:" + mahasiswaId));
-//
-//            KrsRincianMahasiswa rincianKrs =
-//        }
-//    }
+    @Override
+    public List<MengulangResDto> getAllMengulang(UUID mahasiswaId) {
+        List<KrsRincianMahasiswa> allRincianKrsMahasiswa = krsRincianMahasiswaRepository
+                .findBySiakKrsMahasiswaSiakMahasiswaIdAndIsDeletedFalse(mahasiswaId);
 
+        if (allRincianKrsMahasiswa.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Group all KrsRincianMahasiswa entities by MataKuliah
+        Map<MataKuliah, List<KrsRincianMahasiswa>> attemptsByCourse = allRincianKrsMahasiswa.stream()
+                .filter(rincian -> rincian.getSiakKelasKuliah() != null && rincian.getSiakKelasKuliah().getSiakMataKuliah() != null)
+                .collect(Collectors.groupingBy(rincian -> rincian.getSiakKelasKuliah().getSiakMataKuliah()));
+
+        List<MengulangResDto> kursusMengulangList = new ArrayList<>();
+
+        for (Map.Entry<MataKuliah, List<KrsRincianMahasiswa>> entry : attemptsByCourse.entrySet()) {
+            MataKuliah mataKuliahEntity = entry.getKey();
+            List<KrsRincianMahasiswa> courseAttempts = entry.getValue();
+
+            if (courseAttempts.isEmpty()) {
+                continue;
+            }
+
+            // Sort attempts by PeriodeAkademik's start date to find the latest one
+            courseAttempts.sort((r1, r2) -> {
+                PeriodeAkademik pa1 = r1.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
+                PeriodeAkademik pa2 = r2.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
+                if (pa1 != null && pa1.getTanggalMulai() != null && pa2 != null && pa2.getTanggalMulai() != null) {
+                    return pa2.getTanggalMulai().compareTo(pa1.getTanggalMulai()); // Descending for latest first
+                }
+                return 0; // Fallback
+            });
+
+            KrsRincianMahasiswa latestAttemptEntity = courseAttempts.get(0); // Get the most recent attempt
+
+            // **Check if the latest attempt's status is "tidak lulus"**
+            // Assuming KrsRincianMahasiswa has a getStatus() method returning String
+            if ("tidak lulus".equalsIgnoreCase(latestAttemptEntity.getStatus())) {
+                MengulangResDto mengulangDto = new MengulangResDto();
+                mengulangDto.setNamaMataKuliah(mataKuliahEntity.getNamaMataKuliah());
+                mengulangDto.setKodeMataKuliah(mataKuliahEntity.getKodeMataKuliah());
+
+                // Convert all KrsRincianMahasiswa attempts for this course to PeriodeResDto
+                List<PeriodeResDto> periodeResDtoList = courseAttempts.stream()
+                        .sorted((r1, r2) -> { // Sort back to chronological for display
+                            PeriodeAkademik pa1 = r1.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
+                            PeriodeAkademik pa2 = r2.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
+                            if (pa1 != null && pa1.getTanggalMulai() != null && pa2 != null && pa2.getTanggalMulai() != null) {
+                                return pa1.getTanggalMulai().compareTo(pa2.getTanggalMulai()); // Ascending
+                            }
+                            return 0;
+                        })
+                        .map(rincian -> {
+                            PeriodeResDto periodeDto = new PeriodeResDto();
+                            PeriodeAkademik pa = rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
+                            KrsMahasiswa km = rincian.getSiakKrsMahasiswa();
+
+                            periodeDto.setPeriodeAkademik(pa.getNamaPeriode());
+
+                            int sks = mataKuliahEntity.getSksTatapMuka() != null ? mataKuliahEntity.getSksTatapMuka() : 0;
+                            if (Boolean.TRUE.equals(mataKuliahEntity.getAdaPraktikum()) && mataKuliahEntity.getSksPraktikum() != null) {
+                                sks += mataKuliahEntity.getSksPraktikum();
+                            }
+                            periodeDto.setSks(sks);
+
+                            Integer semesterAttempt = km.getSemester(); // From KrsMahasiswa
+                            periodeDto.setSemester(semesterAttempt != null ? semesterAttempt : 0);
+
+                            periodeDto.setNilai(rincian.getHurufMutu()); // Grade "A", "B", "C", etc.
+                            return periodeDto;
+                        })
+                        .collect(Collectors.toList());
+
+                mengulangDto.setPeriode(periodeResDtoList);
+                kursusMengulangList.add(mengulangDto);
+            }
+        }
+        return kursusMengulangList;
+    }
+
+    // Helper method to find PeriodeAkademik from original list (if needed for sorting by date)
+    // This is a bit inefficient; ideally, you'd have direct access or sort earlier.
+    private PeriodeAkademik findPeriodeAkademikByName(String namaPeriode, List<KrsRincianMahasiswa> rincianList) {
+        for (KrsRincianMahasiswa rincian : rincianList) {
+            if (rincian.getSiakKrsMahasiswa() != null && rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik() != null &&
+                    rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik().getNamaPeriode().equals(namaPeriode)) {
+                return rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
+            }
+        }
+        return null;
+    }
 }

@@ -24,9 +24,23 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
             UUID mataKuliahId, UUID mahasiswaId, UUID excludeKrsId);
     Boolean existsBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdAndIsDeletedFalse(UUID kelasId, UUID krsId);
 
+    @Query("SELECT kr FROM KrsRincianMahasiswa kr " +
+            "WHERE kr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
+            "AND kr.isDeleted = false")
+    List<KrsRincianMahasiswa> findBySiakKrsMahasiswaSiakMahasiswaIdAndIsDeletedFalse(
+            @Param("mahasiswaId") UUID mahasiswaId
+    );
+
+     @Query("SELECT kr FROM KrsRincianMahasiswa kr JOIN FETCH kr.siakKelasKuliah skk JOIN FETCH skk.siakMataKuliah " +
+            "WHERE kr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
+            "AND kr.siakKrsMahasiswa.siakPeriodeAkademik.id = :periodeId " +
+            "AND kr.isDeleted = false")
+     List<KrsRincianMahasiswa> findBySiakKrsMahasiswaSiakMahasiswaIdAndSiakKrsMahasiswaSiakPeriodeAkademikIdAndIsDeletedFalse(
+            @Param("mahasiswaId") UUID mahasiswaId, @Param("periodeId") UUID periodeId);
+
     @Query(value = """
     SELECT j.* FROM siak_jadwal_kuliah j
-    JOIN siak_kelas_kuliah kk ON j.kelas_kuliah_id = kk.id
+    JOIN siak_kelas_kuliah kk ON j.siak_kelas_kuliah_id = kk.id
     JOIN siak_rincian_krs_mahasiswa krm ON krm.siak_kelas_kuliah_id = kk.id
     WHERE krm.id = :krsId
     """, nativeQuery = true)

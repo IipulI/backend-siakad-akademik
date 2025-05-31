@@ -1,9 +1,8 @@
 package com.siakad.service;
 
-import com.siakad.dto.request.JadwalDosenReqDto;
 import com.siakad.dto.request.KrsReqDto;
-import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.response.KrsResDto;
+import com.siakad.dto.response.MengulangResDto;
 import com.siakad.dto.response.PesertaKelas;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
@@ -20,5 +19,5 @@ public interface KrsService {
     void updateStatus(HttpServletRequest servletRequest);
 
     List<PesertaKelas> getPesertaKelas(UUID kelasId);
-//    void addPesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest);
+    List<MengulangResDto> getAllMengulang(UUID mahasiswaId);
 }

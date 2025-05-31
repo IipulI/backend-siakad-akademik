@@ -24,4 +24,14 @@ public interface JadwalKuliahRepository extends JpaRepository<JadwalKuliah, UUID
     List<JadwalKuliah> findJadwalKuliahBySiakDosenIdAndIsDeletedFalse(@Param("id") UUID kelasKuliahId, @Param("dosenId") UUID dosenId);
 
     List<JadwalKuliah> findBySiakKelasKuliahId(UUID siakKelasKuliahId);
+
+    @Query("SELECT j FROM JadwalKuliah j " +
+            "JOIN FETCH j.siakKelasKuliah skk " +
+            "JOIN FETCH skk.siakMataKuliah " +
+            "JOIN FETCH j.siakRuangan " +
+            "JOIN FETCH j.siakDosen " + // Assuming Dosen entity exists
+            "WHERE skk.id IN :kelasKuliahIds AND j.isDeleted = false")
+    List<JadwalKuliah> findBySiakKelasKuliahIdInAndIsDeletedFalse(
+            @Param("kelasKuliahIds") List<UUID> kelasKuliahIds
+    );
 }
