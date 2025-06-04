@@ -3,6 +3,7 @@ package com.siakad.service.impl;
 import com.siakad.dto.request.PembimbingAkademikReqDto;
 import com.siakad.dto.response.PembimbingAkademikResDto;
 import com.siakad.dto.transform.PembimbingAkademikTransform;
+import com.siakad.dto.transform.helper.PembimbingAkademikHelper;
 import com.siakad.entity.*;
 import com.siakad.enums.MessageKey;
 import com.siakad.repository.*;
@@ -12,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,6 +30,7 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
     private final PembimbingAkademikRepository pembimbingAkademikRepository;
     private final MahasiswaRepository mahasiswaRepository;
     private final DosenRepository dosenRepository;
+    private final PembimbingAkademikHelper helper;
 
     @Override
     public List<PembimbingAkademikResDto> save(PembimbingAkademikReqDto reqDto, HttpServletRequest servletRequest) {
@@ -55,6 +59,44 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
 
         service.saveUserActivity(servletRequest, MessageKey.CREATE_PEMBIMBING_AKADEMIK);
         return result;
+    }
+
+    @Override
+    public List<PembimbingAkademikResDto> getAll() {
+        List<PembimbingAkademik> all = pembimbingAkademikRepository.findAllByIsDeletedFalse();
+
+        if (all.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<PembimbingAkademikResDto> dtoList = new ArrayList<>();
+
+        for (PembimbingAkademik entity : all) {
+            UUID mahasiswaId = entity.getSiakMahasiswa().getId();
+            UUID periodeAkademikId = entity.getSiakPeriodeAkademik().getId();
+
+            Integer totalSks = helper.getTotalSks(mahasiswaId);
+            Integer batasSks = helper.getBatasSks(mahasiswaId);
+            BigDecimal ipk = helper.getIpkByPeriode(mahasiswaId, periodeAkademikId);
+            BigDecimal ips = helper.getIpsByPeriode(mahasiswaId, periodeAkademikId);
+            boolean diajukan = helper.getStatusDiajukan(mahasiswaId);
+            boolean disetujui = helper.getStatusDisetujui(mahasiswaId);
+            String namaPembimbing = entity.getSiakDosen() != null ? entity.getSiakDosen() + entity.getSiakDosen().getNama() : null;
+
+            PembimbingAkademikResDto dto = mapper.toFullDto(
+                    entity,
+                    batasSks,
+                    totalSks,
+                    ipk,
+                    ips,
+                    diajukan,
+                    disetujui,
+                    namaPembimbing
+            );
+            dtoList.add(dto);
+        }
+
+        return dtoList;
     }
 
 }

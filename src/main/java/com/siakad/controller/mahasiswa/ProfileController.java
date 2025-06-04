@@ -1,4 +1,4 @@
-package com.siakad.controller.akademik;
+package com.siakad.controller.mahasiswa;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,44 +31,18 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "Mahasiswa")
+@Tag(name = "Profil Mahasiswa")
 @RestController
-@RequestMapping("/akademik/mahasiswa")
+@RequestMapping("/mahasiswa/profile")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
-public class MahasiswaController {
+@PreAuthorize("hasRole('MAHASISWA')")
+public class ProfileController {
 
     private final MahasiswaService service;
 
     private final KeluargaMahasiswaService keluargaService;
 
     private final ObjectMapper objectMapper;
-
-    @Operation(summary = "Add Mahasiswa")
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResDto<MahasiswaResDto>> save(
-            @RequestPart(value = "fotoProfil", required = false) MultipartFile fotoProfil,
-            @RequestPart(value = "ijazahSekolah", required = false) MultipartFile ijazahSekolah,
-            @RequestPart("request") String requestJson,
-            HttpServletRequest servletRequest) {
-
-        try {
-            MahasiswaReqDto request = objectMapper.readValue(requestJson, MahasiswaReqDto.class);
-            service.create(request, fotoProfil, ijazahSekolah, servletRequest);
-
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResDto.<MahasiswaResDto>builder()
-                            .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.CREATED.getMessage())
-                            .build());
-        } catch (JsonProcessingException e) {
-            throw new ApplicationException(ExceptionType.BAD_REQUEST, "Invalid JSON format in 'request'");
-        } catch (ApplicationException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR,e.getMessage());
-        }
-    }
 
     @Operation(summary = "Get Foto Profil")
     @GetMapping("/{id}/foto-profil")
@@ -183,23 +157,6 @@ public class MahasiswaController {
         }
     }
 
-    @Operation(summary = "Delete Mahasiswa")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResDto<MahasiswaResDto>> delete(@PathVariable UUID id, HttpServletRequest servletRequest) {
-        try {
-            service.delete(id, servletRequest);
-            return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<MahasiswaResDto>builder()
-                            .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.DELETED.getMessage())
-                            .build()
-            );
-        } catch (ApplicationException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
 
     @Operation(summary = "Add Keluarga Mahasiswa")
     @PostMapping("/{id}/keluarga-mahasiswa")
@@ -218,6 +175,7 @@ public class MahasiswaController {
             );
         } catch (ApplicationException e) {
             throw e;
+
         } catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }

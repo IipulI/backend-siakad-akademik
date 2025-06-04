@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@Tag(name = "Mahasiswa Role")
+@Tag(name = "Hasil Studi")
 @RestController
 @RequestMapping("/mahasiswa")
 @RequiredArgsConstructor

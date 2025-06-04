@@ -25,9 +25,7 @@ public interface CapaianMataKuliahTransform {
     @Mapping(target = "profilLulusanMapped", ignore = true)
     CapaianPembelajaranLulusanResDto toDto(CapaianPembelajaranLulusan entity);
 
-
     List<ProfilLulusanResDto> toDto(List<CapaianPembelajaranLulusan> entities);
-
 
     void toEntity(CapaianMataKuliahReqDto dto, @MappingTarget CapaianMataKuliah entity);
 }

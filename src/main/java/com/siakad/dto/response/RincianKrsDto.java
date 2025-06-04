@@ -10,6 +10,6 @@ public class RincianKrsDto {
     private String kodeMataKuliah;
     private Integer sks;
     private String hurufMutu;
-    private BigDecimal nilaiMutu;
-    private BigDecimal bobot;
+    private BigDecimal angkaMutu;
+    private BigDecimal jumlahAngkaMutu;
 }
