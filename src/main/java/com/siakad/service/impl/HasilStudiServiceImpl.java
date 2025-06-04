@@ -1,6 +1,7 @@
 package com.siakad.service.impl;
 
 import com.siakad.dto.response.HasilStudiDto;
+import com.siakad.dto.response.TranskipDto;
 import com.siakad.dto.transform.HasilStudiTransform;
 import com.siakad.entity.HasilStudi;
 import com.siakad.entity.KrsRincianMahasiswa;
@@ -39,5 +40,19 @@ public class HasilStudiServiceImpl implements HasilStudiService {
                 .findAllBySiakKrsMahasiswa_SiakMahasiswa_IdAndSiakKrsMahasiswa_SiakPeriodeAkademik_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId(), periodeAkademikId);
 
         return mapper.hasilStudiToDtoWithRincian(hasilStudi, rincianList);
+    }
+
+    @Override
+    public TranskipDto getTranskip() {
+        User user = userActivityService.getCurrentUser();
+        HasilStudi hasilStudi = hasilStudiRepository
+                .findBySiakMahasiswa_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Hasil studi not found"));
+
+
+        List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
+                .findAllBySiakKrsMahasiswa_SiakMahasiswa_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId());
+
+        return mapper.hasilStudiToDtoTranskip(hasilStudi, rincianList);
     }
 }

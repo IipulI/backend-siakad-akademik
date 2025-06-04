@@ -15,17 +15,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@Tag(name = "Mahasiswa Role")
+@Tag(name = "Hasil Studi")
 @RestController
 @RequestMapping("/mahasiswa")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('MAHASISWA')")
-public class MahasiswaRoleController {
+public class HasilStudiController {
 
     private final HasilStudiService hasilStudiService;
 
-    @Operation(summary = "Get Hasil Studi by Periode Akademik ID")
-    @GetMapping("/hasil-studi")
+    @Operation(summary = "Get KHS by Periode Akademik ID")
+    @GetMapping("/khs")
     public ResponseEntity<ApiResDto<HasilStudiDto>> getHasilStudi(@RequestParam UUID periodeAkademikId) {
         try {
             HasilStudiDto hasilStudi = hasilStudiService.getHasilStudi(periodeAkademikId);
@@ -34,6 +34,25 @@ public class MahasiswaRoleController {
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
                             .data(hasilStudi)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Transkip Nilai")
+    @GetMapping("/transkip")
+    public ResponseEntity<ApiResDto<TranskipDto>> getTranskip() {
+        try {
+            TranskipDto transkip = hasilStudiService.getTranskip();
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<TranskipDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .data(transkip)
                             .build()
             );
         } catch (ApplicationException e) {

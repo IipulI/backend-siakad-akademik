@@ -79,6 +79,4 @@ public interface RpsTransform {
     default UUID mapKelasRpsIdToUUID(KelasRpsId id) {
         return id != null ? id.getSiakRpsId() : null;
     }
-
-
 }

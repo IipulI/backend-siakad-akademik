@@ -1,5 +1,6 @@
 package com.siakad.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -10,12 +11,14 @@ public class PembimbingAkademikResDto {
     private String angkatan;
     private String statusMahasiswa;
     private Integer semester;
-    private BigDecimal batasSks;
-    private BigDecimal totalSks;
+    private Integer batasSks;
+    private Integer totalSks;
     private BigDecimal ipk;
     private BigDecimal ips;
     private Boolean statusDiajukan = false;
-    private Boolean statusDisetujiu = false;
+    private Boolean statusDisetujui = false;
     private String pembimbingAkademik;
-    private String unitKerja;
+
+    @JsonIgnore
+    private String programStudi;
 }

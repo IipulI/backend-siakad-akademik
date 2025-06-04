@@ -27,12 +27,10 @@ public abstract class KrsTransform {
     @Autowired
     private JadwalKuliahMapperHelper jadwalKuliahHelper;
 
-    // ENTITY CONVERTERS
     public abstract KrsMahasiswa toEntity(PesertaKelasReqDto dto);
     public abstract KrsRincianMahasiswa toEntityRincian(KrsReqDto dto);
     public abstract KrsRincianMahasiswa toEntityRincianPeserta(PesertaKelasReqDto dto);
 
-    // DTO CONVERTERS
     @Mapping(source = "siakKelasKuliah.siakMataKuliah", target = "mataKuliah")
     @Mapping(source = "siakKelasKuliah.siakMataKuliah.nilaiMin", target = "riwayatMatakuliah")
     @Mapping(source = "siakKelasKuliah.nama", target = "namaKelas")
@@ -57,22 +55,18 @@ public abstract class KrsTransform {
         jadwalKuliahHelper.mapJadwalKuliahToDto(dto, entity);
     }
 
-    // ✅ TO DTO MENUNGGU IMPLEMENTATION
     public KrsMenungguResDto toDtoMenunggu(List<KrsRincianMahasiswa> rincianList) {
         KrsMenungguResDto dto = new KrsMenungguResDto();
 
-        // Convert list rincian → list KrsResDto
         List<KrsResDto> krsList = toDto(rincianList);
         dto.setKrs(krsList);
 
-        // Ambil total SKS dari entitas utama
         if (!rincianList.isEmpty()) {
             KrsMahasiswa krs = rincianList.get(0).getSiakKrsMahasiswa();
             dto.setTotalSks(krs.getJumlahSksDiambil());
         } else {
             dto.setTotalSks(0);
         }
-
         return dto;
     }
 }

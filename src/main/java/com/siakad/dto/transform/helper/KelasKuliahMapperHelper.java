@@ -39,8 +39,6 @@ public class KelasKuliahMapperHelper {
                 .collect(Collectors.toList());
     }
 
-
-
     public int hitungJumlahPeserta(KelasKuliah kelas) {
         return rincianRepository.countBySiakKelasKuliahAndIsDeletedFalse(kelas);
     }
