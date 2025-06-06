@@ -1,4 +1,4 @@
-package com.siakad.controller.Dosen;
+package com.siakad.controller.dosen;
 
 import com.siakad.dto.request.*;
 import com.siakad.dto.response.*;
@@ -131,28 +131,6 @@ public class DosenKelasKuliahController {
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(all)
-                            .build()
-            );
-        } catch (ApplicationException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
-
-
-    @Operation(summary = "Get all Jadwal By Tanggal")
-    @GetMapping("/jadwal-kuliah-harian")
-    public ResponseEntity<ApiResDto<List<GetJadwalResDto>>> getJadwalKuliahHarian(
-            GetJadwalReqDto reqDto
-    ) {
-        try {
-            List<GetJadwalResDto> jadwalHarian = jadwalDosenService.getJadwalHarian(reqDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                    ApiResDto.<List<GetJadwalResDto>>builder()
-                            .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.UPDATED.getMessage())
-                            .data(jadwalHarian)
                             .build()
             );
         } catch (ApplicationException e) {

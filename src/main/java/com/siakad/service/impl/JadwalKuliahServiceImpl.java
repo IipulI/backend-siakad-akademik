@@ -29,99 +29,116 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
 
     @Override
     public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanMahasiswa(UUID mahasiswaId, UUID periodeAkademikId) {
-        // 1. Get all KrsRincianMahasiswa for the student and the specified active period
+        List<String> daysOfWeek = Arrays.asList("senin", "selasa", "rabu", "kamis", "jumat", "sabtu");
+
+        Map<String, List<JadwalMingguanResDto>> jadwalByDay = new LinkedHashMap<>();
+        for (String day : daysOfWeek) {
+            jadwalByDay.put(day, new ArrayList<>());
+        }
+
+        Set<UUID> kelasKuliahIds = getEnrolledKelasKuliahIds(mahasiswaId, periodeAkademikId);
+        if (kelasKuliahIds.isEmpty()) {
+            return jadwalByDay;
+        }
+
+        List<JadwalKuliah> semuaJadwalRelevant = jadwalKuliahRepository
+                .findBySiakKelasKuliahIdInAndIsDeletedFalseFetchingRelations(new ArrayList<>(kelasKuliahIds));
+
+        for (JadwalKuliah jadwal : semuaJadwalRelevant) {
+            JadwalMingguanResDto itemDto = mapToJadwalDto(jadwal);
+            String dayKey = jadwal.getHari().toLowerCase();
+
+            if (jadwalByDay.containsKey(dayKey)) {
+                jadwalByDay.get(dayKey).add(itemDto);
+            }
+        }
+
+        jadwalByDay.forEach((day, items) -> items.sort(Comparator.comparing(JadwalMingguanResDto::getJamMulai)));
+
+        return jadwalByDay;
+    }
+
+    @Override
+    public List<JadwalMingguanResDto> getJadwalHarianMahasiswa(UUID mahasiswaId, UUID periodeAkademikId, String hari) {
+        Set<UUID> kelasKuliahIds = getEnrolledKelasKuliahIds(mahasiswaId, periodeAkademikId);
+        if (kelasKuliahIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<JadwalKuliah> jadwalHarianList = jadwalKuliahRepository
+                .findByKelasKuliahIdsAndHari(new ArrayList<>(kelasKuliahIds), hari);
+
+        return jadwalHarianList.stream()
+                .map(this::mapToJadwalDto)
+                .sorted(Comparator.comparing(JadwalMingguanResDto::getJamMulai))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanDosen(UUID dosenId, UUID periodeAkademikId){
+        List<String> daysOfWeek = Arrays.asList("senin", "selasa", "rabu", "kamis", "jumat", "sabtu");
+
+        Map<String, List<JadwalMingguanResDto>> jadwalByDay = new LinkedHashMap<>();
+        for (String day : daysOfWeek) {
+            jadwalByDay.put(day, new ArrayList<>());
+        }
+
+        List<JadwalKuliah> semuaJadwalRelevant = jadwalKuliahRepository
+                .getjadwalKuliahDosenMingguan(dosenId, periodeAkademikId);
+
+        for (JadwalKuliah jadwal : semuaJadwalRelevant) {
+            JadwalMingguanResDto itemDto = mapToJadwalDto(jadwal);
+            String dayKey = jadwal.getHari().toLowerCase();
+
+            if (jadwalByDay.containsKey(dayKey)) {
+                jadwalByDay.get(dayKey).add(itemDto);
+            }
+        }
+
+        jadwalByDay.forEach((day, items) -> items.sort(Comparator.comparing(JadwalMingguanResDto::getJamMulai)));
+
+        return jadwalByDay;
+    }
+
+    @Override
+    public List<JadwalMingguanResDto> getJadwalHarianDosen(UUID dosenId, UUID periodeAkademikId, String hari) {
+        List<JadwalKuliah> jadwalHarianList = jadwalKuliahRepository
+                .getjadwalKuliahDosenHarian(dosenId, periodeAkademikId, hari);
+
+        return jadwalHarianList.stream()
+                .map(this::mapToJadwalDto)
+                .sorted(Comparator.comparing(JadwalMingguanResDto::getJamMulai))
+                .collect(Collectors.toList());
+    }
+
+
+    private Set<UUID> getEnrolledKelasKuliahIds(UUID mahasiswaId, UUID periodeAkademikId) {
         List<KrsRincianMahasiswa> rincianKrsList = krsRincianMahasiswaRepository
                 .findBySiakKrsMahasiswaSiakMahasiswaIdAndSiakKrsMahasiswaSiakPeriodeAkademikIdAndIsDeletedFalse(
                         mahasiswaId, periodeAkademikId);
-        // Note: If the above derived query method is problematic or too long,
-        // consider using an @Query in your KrsRincianMahasiswaRepository for clarity and control.
 
-        if (rincianKrsList.isEmpty()) {
-            return Collections.emptyMap(); // No schedule if not enrolled in anything for the period
-        }
-
-        // Collect all KelasKuliah IDs the student is enrolled in, filtering out nulls for safety
-        Set<UUID> kelasKuliahIds = rincianKrsList.stream()
+        return rincianKrsList.stream()
                 .filter(rincian -> rincian.getSiakKelasKuliah() != null)
                 .map(rincian -> rincian.getSiakKelasKuliah().getId())
                 .collect(Collectors.toSet());
+    }
 
-        if (kelasKuliahIds.isEmpty()) {
-            return Collections.emptyMap(); // No KelasKuliah associated
-        }
+    // Helper method to map from entity to DTO, avoiding code duplication
+    private JadwalMingguanResDto mapToJadwalDto(JadwalKuliah jadwal) {
+        KelasKuliah kelasKuliah = jadwal.getSiakKelasKuliah();
+        MataKuliah mataKuliah = kelasKuliah.getSiakMataKuliah();
+        Ruangan ruangan = jadwal.getSiakRuangan();
+        Dosen dosen = jadwal.getSiakDosen();
 
-        // 2. Fetch all relevant JadwalKuliah entries for these KelasKuliah IDs
-        // Consider using a @Query with JOIN FETCH in JadwalKuliahRepository for this method
-        // to optimize fetching of related entities (KelasKuliah, MataKuliah, Ruangan, Dosen)
-        // to prevent N+1 query problems.
-        // Example: findBySiakKelasKuliahIdInAndIsDeletedFalseFetchingRelations(...)
-        List<JadwalKuliah> semuaJadwalRelevant = jadwalKuliahRepository
-                .findBySiakKelasKuliahIdInAndIsDeletedFalse(new ArrayList<>(kelasKuliahIds));
-
-
-        Map<String, List<JadwalMingguanResDto>> jadwalByDay = new LinkedHashMap<>();
-        // Using LinkedHashMap to potentially preserve day order if days are processed in a specific order
-
-        for (JadwalKuliah jadwal : semuaJadwalRelevant) {
-            // Defensive checks for potentially null related entities if not using JOIN FETCH
-            // or if data integrity allows nulls where they are not expected.
-            if (jadwal.getSiakKelasKuliah() == null ||
-                    jadwal.getSiakKelasKuliah().getSiakMataKuliah() == null ||
-                    jadwal.getSiakRuangan() == null ||
-                    jadwal.getSiakDosen() == null) { // Assuming Dosen is mandatory for a schedule item
-                // Log this occurrence or handle as appropriate
-                continue;
-            }
-
-            KelasKuliah kelasKuliah = jadwal.getSiakKelasKuliah();
-            MataKuliah mataKuliah = kelasKuliah.getSiakMataKuliah();
-            Ruangan ruangan = jadwal.getSiakRuangan();
-            Dosen dosen = jadwal.getSiakDosen();
-
-            String dosenName = "N/A";
-            // Assuming Dosen entity has a getNama() method. Adjust if it's getNamaDosen(), etc.
-            if (dosen.getNama() != null) {
-                dosenName = dosen.getNama();
-            }
-
-            String kelasNama = "N/A";
-            // Assuming KelasKuliah entity has a getNama() method for the class name.
-            if (kelasKuliah.getNama() != null) {
-                kelasNama = kelasKuliah.getNama();
-            }
-
-            String jamMulaiStr = "N/A";
-            if (jadwal.getJamMulai() != null) {
-                jamMulaiStr = jadwal.getJamMulai().format(TIME_FORMATTER);
-            }
-
-            String jamSelesaiStr = "N/A";
-            if (jadwal.getJamSelesai() != null) {
-                jamSelesaiStr = jadwal.getJamSelesai().format(TIME_FORMATTER);
-            }
-
-
-            JadwalMingguanResDto itemDto = new JadwalMingguanResDto(
-                    mataKuliah.getNamaMataKuliah(),
-                    mataKuliah.getKodeMataKuliah(),
-                    jamMulaiStr,
-                    jamSelesaiStr,
-                    kelasNama,
-                    ruangan.getNamaRuangan(),
-                    dosenName
-            );
-
-            // Normalize day name to lowercase for the map key
-            // Assuming jadwal.getHari() returns strings like "Senin", "Selasa", etc.
-            String dayKey = jadwal.getHari().toLowerCase();
-            jadwalByDay.computeIfAbsent(dayKey, k -> new ArrayList<>()).add(itemDto);
-        }
-
-        // Optional: Sort items within each day by jamMulai
-        jadwalByDay.forEach((day, items) -> {
-            items.sort(Comparator.comparing(JadwalMingguanResDto::getJamMulai));
-        });
-
-        return jadwalByDay;
+        // Assumption: Dosen entity has getNama() and KelasKuliah has getNama()
+        return new JadwalMingguanResDto(
+                mataKuliah.getNamaMataKuliah(),
+                mataKuliah.getKodeMataKuliah(),
+                jadwal.getJamMulai() != null ? jadwal.getJamMulai().format(TIME_FORMATTER) : "N/A",
+                jadwal.getJamSelesai() != null ? jadwal.getJamSelesai().format(TIME_FORMATTER) : "N/A",
+                kelasKuliah.getNama(),
+                ruangan.getNamaRuangan(),
+                dosen != null ? dosen.getNama() : "N/A"
+        );
     }
 }

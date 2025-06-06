@@ -1,18 +1,21 @@
 package com.siakad.dto.response;
 
-import lombok.Data;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO representing a single schedule item in a student's weekly schedule.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class JadwalMingguanResDto {
     private String namaMataKuliah;
     private String kodeMataKuliah;
-    private String jamMulai;       // e.g., "08:00"
-    private String jamSelesai;     // e.g., "09:40"
-    private String kelas;          // e.g., "Reguler B" (from KelasKuliah.nama)
-    private String ruangan;        // e.g., "FTS Lantai 3" (from Ruangan.namaRuangan)
-    private String dosen;          // e.g., "Nama Dosen" (from Dosen.namaDosen - assuming Dosen entity)
+    private String jamMulai;
+    private String jamSelesai;
+    private String kelas;
+    private String ruangan;
+    private String dosen;
 }
