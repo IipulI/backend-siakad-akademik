@@ -103,39 +103,39 @@ public class PengumumanController {
         }
     }
 
-    @Operation(summary = "Get Pengumuman")
-    @GetMapping
-    public ResponseEntity<ApiResDto<List<PengumumanResDto>>> search(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "1") @Min(1) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort
-    ) {
-        try {
-            String[] sortParams = sort.split(",");
-            Sort.Direction direction = sortParams.length > 1 ?
-                    Sort.Direction.fromString(sortParams[1]) : Sort.Direction.DESC;
-            Sort sortObj = Sort.by(direction, sortParams[0]);
-
-            Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
-
-
-            Page<PengumumanResDto> all = service.search(keyword, status, pageable);
-            return ResponseEntity.ok(
-                    ApiResDto.<List<PengumumanResDto>>builder()
-                            .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.READ.getMessage())
-                            .data(all.getContent())
-                            .pagination(PaginationDto.fromPage(all))
-                            .build()
-            );
-        } catch (ApplicationException e){
-            throw e;
-        } catch (Exception e){
-            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
+//    @Operation(summary = "Get Pengumuman")
+//    @GetMapping
+//    public ResponseEntity<ApiResDto<List<PengumumanResDto>>> search(
+//            @RequestParam(required = false) String keyword,
+//            @RequestParam(required = false) String status,
+//            @RequestParam(defaultValue = "1") @Min(1) int page,
+//            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+//            @RequestParam(defaultValue = "createdAt,desc") String sort
+//    ) {
+//        try {
+//            String[] sortParams = sort.split(",");
+//            Sort.Direction direction = sortParams.length > 1 ?
+//                    Sort.Direction.fromString(sortParams[1]) : Sort.Direction.DESC;
+//            Sort sortObj = Sort.by(direction, sortParams[0]);
+//
+//            Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
+//
+//
+//            Page<PengumumanResDto> all = service.search(keyword, status, pageable);
+//            return ResponseEntity.ok(
+//                    ApiResDto.<List<PengumumanResDto>>builder()
+//                            .status(MessageKey.SUCCESS.getMessage())
+//                            .message(MessageKey.READ.getMessage())
+//                            .data(all.getContent())
+//                            .pagination(PaginationDto.fromPage(all))
+//                            .build()
+//            );
+//        } catch (ApplicationException e){
+//            throw e;
+//        } catch (Exception e){
+//            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+//        }
+//    }
 
     @Operation(summary = "Update Pengumuman")
     @PutMapping(value = "/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -20,7 +20,11 @@ public interface InvoiceMahasiswaRepository extends JpaRepository<InvoiceMahasis
 
     Optional<InvoiceMahasiswa> findBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswaId);
 
+    List<InvoiceMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarIsNull(UUID siakMahasiswaId);
+
     List<InvoiceMahasiswa> findAllByTanggalBayarIsNotNullAndIsDeletedFalse();
+
+    Optional<InvoiceMahasiswa> findFirstBySiakMahasiswa_IdAndIsDeletedFalseOrderByCreatedAtDesc(UUID mahasiswaId);
 
     @Query("SELECT COALESCE(SUM(im.totalTagihan), 0) FROM InvoiceMahasiswa im WHERE im.isDeleted = false")
     BigDecimal sumTotalTagihanAktif();
@@ -38,4 +42,5 @@ public interface InvoiceMahasiswaRepository extends JpaRepository<InvoiceMahasis
 
     List<InvoiceMahasiswa> findBySiakPeriodeAkademikAndSiakMahasiswa(PeriodeAkademik siakPeriodeAkademik, Mahasiswa siakMahasiswa);
 
+    List<InvoiceMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalseOrderByCreatedAtDesc(UUID mahasiswaId);
 }
