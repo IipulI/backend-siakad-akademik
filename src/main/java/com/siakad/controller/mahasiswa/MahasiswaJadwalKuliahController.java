@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@Tag(name = "KRS")
+@Tag(name = "Jadwal Mahasiswa")
 @RestController
 @RequestMapping("/mahasiswa/jadwal")
 @RequiredArgsConstructor
