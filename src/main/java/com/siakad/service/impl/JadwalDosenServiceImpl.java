@@ -1,9 +1,7 @@
 package com.siakad.service.impl;
 
 import com.siakad.dto.request.*;
-import com.siakad.dto.response.JadwalDosenResDto;
 import com.siakad.dto.response.JadwalDto;
-import com.siakad.dto.response.JadwalKuliahResDto;
 import com.siakad.dto.transform.JadwalDosenTransform;
 import com.siakad.entity.Dosen;
 import com.siakad.entity.JadwalKuliah;
@@ -84,7 +82,7 @@ public class JadwalDosenServiceImpl implements JadwalDosenService {
         kelasKuliahRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
 
-        List<JadwalKuliah> byDosen = jadwalKuliahRepository.findJadwalKuliahBySiakDosenIdAndIsDeletedFalse(id, dosenId);
+        List<JadwalKuliah> byDosen = jadwalKuliahRepository.findJadwalKuliahByKelasIdAndSiakDosenIdAndIsDeletedFalse(id, dosenId);
 
         return mapper.toDto(byDosen);
     }
