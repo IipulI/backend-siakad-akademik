@@ -17,7 +17,6 @@ public interface ProgramStudiTransform {
     @Mapping(source = "siakJenjang", target = "jenjang")
     ProgramStudiResDto toDto(ProgramStudi entity);
 
-
     RuanganResDto toDto(Ruangan entity);
 
     JenjangResDto jenjangToDto(Jenjang entity);

@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface PembimbingAkademikService {
     List<PembimbingAkademikResDto> save(PembimbingAkademikReqDto reqDto, HttpServletRequest servletRequest);
-
+    List<PembimbingAkademikResDto> getAll();
 }

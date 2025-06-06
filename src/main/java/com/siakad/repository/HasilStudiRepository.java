@@ -13,4 +13,5 @@ public interface HasilStudiRepository extends JpaRepository<HasilStudi, UUID> {
 
     Optional<HasilStudi> findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(UUID siakMahasiswaId);
     Optional<HasilStudi> findBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(UUID siakMahasiswaId, UUID periodeAkademik);
+    Optional<HasilStudi> findBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswaId);
 }

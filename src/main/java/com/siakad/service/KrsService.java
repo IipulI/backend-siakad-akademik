@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface KrsService {
-
     void save(KrsReqDto dto, HttpServletRequest servletRequest);
     void update(KrsReqDto dto, HttpServletRequest servletRequest);
     Page<KrsResDto> getPaginated(String kelas, Pageable pageable);

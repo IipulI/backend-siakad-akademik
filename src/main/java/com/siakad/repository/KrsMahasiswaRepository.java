@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,31 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
     WHERE km.status = 'Menunggu'  
       AND km.siakPeriodeAkademik.status = 'ACTIVE' 
       AND km.siakMahasiswa.id = :mahasiswaId
-""")
+    """)
     List<KrsRincianMahasiswa> findAllRincianByStatusMenungguAndPeriodeAktifAndMahasiswa(UUID mahasiswaId);
+
+    @Query("""
+    SELECT CASE 
+        WHEN km.status = 'Diajukan' OR km.status = 'Disetujui' THEN true 
+        ELSE false 
+    END 
+    FROM KrsMahasiswa km 
+    WHERE km.siakMahasiswa.id = :mahasiswaId 
+    ORDER BY km.siakMahasiswa.semester DESC
+    """)
+    Boolean isDiajukan(@Param("mahasiswaId") UUID mahasiswaId);
+
+    @Query("""
+    SELECT CASE 
+        WHEN km.status = 'Disetujui' THEN true 
+        ELSE false 
+    END 
+    FROM KrsMahasiswa km 
+    WHERE km.siakMahasiswa.id = :mahasiswaId 
+    ORDER BY km.siakMahasiswa.semester DESC
+    """)
+    Boolean isDisetujui(@Param("mahasiswaId") UUID mahasiswaId);
+
+    @Query("SELECT km.status FROM KrsMahasiswa km WHERE km.siakMahasiswa.id = :mahasiswaId ORDER BY km.siakMahasiswa.semester DESC")
+    String findLatestStatus(@Param("mahasiswaId") UUID mahasiswaId);
 }
