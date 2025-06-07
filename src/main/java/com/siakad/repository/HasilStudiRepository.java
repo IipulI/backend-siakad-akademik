@@ -17,6 +17,7 @@ public interface HasilStudiRepository extends JpaRepository<HasilStudi, UUID> {
     Optional<HasilStudi> findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(UUID siakMahasiswaId);
     Optional<HasilStudi> findBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(UUID siakMahasiswaId, UUID periodeAkademik);
     Optional<HasilStudi> findBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswaId);
+    List<HasilStudi> findAllBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswaId);
 
     @Query("""
         SELECT m.ips FROM HasilStudi m WHERE m.isDeleted = false

@@ -54,4 +54,8 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
 
     @Query("SELECT km.status FROM KrsMahasiswa km WHERE km.siakMahasiswa.id = :mahasiswaId ORDER BY km.siakMahasiswa.semester DESC")
     String findLatestStatus(@Param("mahasiswaId") UUID mahasiswaId);
+
+    Optional<KrsMahasiswa> findByIdAndIsDeletedFalse(UUID id);
+
+    List<KrsMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswa_Id);
 }

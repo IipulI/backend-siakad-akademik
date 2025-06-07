@@ -18,6 +18,7 @@ import java.util.UUID;
 @Repository
 public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianMahasiswa, UUID>,
         JpaSpecificationExecutor<KrsRincianMahasiswa> {
+
     Optional<KrsRincianMahasiswa> findByIdAndIsDeletedFalse(UUID id);
 
     List<KrsRincianMahasiswa> findAllBySiakKrsMahasiswa_IdAndIsDeletedFalse(UUID id);
@@ -32,6 +33,8 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
     List<KrsRincianMahasiswa> findBySiakKrsMahasiswaSiakMahasiswaIdAndIsDeletedFalse(
             @Param("mahasiswaId") UUID mahasiswaId
     );
+
+    List<KrsRincianMahasiswa> findBySiakKrsMahasiswaSiakMahasiswa_IdAndSiakKrsMahasiswaSiakPeriodeAkademik_IdAndIsDeletedFalse(UUID siakMahasiswaId, UUID periodeAkademikId);
 
      @Query("SELECT kr FROM KrsRincianMahasiswa kr JOIN FETCH kr.siakKelasKuliah skk JOIN FETCH skk.siakMataKuliah " +
             "WHERE kr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
@@ -84,6 +87,14 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
     List<KrsRincianMahasiswa> findAllByIsDeletedFalse();
 
     List<KrsRincianMahasiswa> findAllBySiakKrsMahasiswa_SiakMahasiswa_IdAndSiakKrsMahasiswa_SiakPeriodeAkademik_IdAndIsDeletedFalse(UUID mahasiswaId, UUID kelasId);
-    List<KrsRincianMahasiswa> findAllBySiakKrsMahasiswa_SiakMahasiswa_IdAndIsDeletedFalse(UUID mahasiswaId);
-
+    @Query("""
+        SELECT krm
+        FROM KrsRincianMahasiswa krm
+        JOIN krm.siakKrsMahasiswa km
+        JOIN km.siakMahasiswa sm
+        WHERE sm.id = :mahasiswaId
+          AND krm.isDeleted = false
+          AND km.isDeleted = false
+    """)
+    List<KrsRincianMahasiswa> findAllActiveByMahasiswaId(@Param("mahasiswaId") UUID mahasiswaId);
 }

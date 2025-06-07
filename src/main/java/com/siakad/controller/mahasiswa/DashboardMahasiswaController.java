@@ -12,10 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @Tag(name = "Dashboard Mahasiswa")
 @RestController
@@ -74,6 +76,44 @@ public class DashboardMahasiswaController {
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(tagihanKomponenMahasiswa)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Invoice")
+    @GetMapping("/invoice")
+    public ResponseEntity<ApiResDto<List<RiwayatTagihanDto>>> getRiwayatTagihan() {
+        try {
+            List<RiwayatTagihanDto> riwayatTagihan = service.getRiwayatTagihan();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<RiwayatTagihanDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(riwayatTagihan)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Detail Invoice")
+    @GetMapping("/invoice-detail/{id}")
+    public ResponseEntity<ApiResDto<DetailRiwayatTagihanDto>> getDetailRiwayatTagihan(@PathVariable UUID id) {
+        try {
+            DetailRiwayatTagihanDto detailRiwayatTagihan = service.getDetailRiwayatTagihan(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<DetailRiwayatTagihanDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(detailRiwayatTagihan)
                             .build()
             );
         } catch (ApplicationException e) {

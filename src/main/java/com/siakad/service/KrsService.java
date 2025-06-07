@@ -3,10 +3,8 @@ package com.siakad.service;
 import com.siakad.dto.request.KrsReqDto;
 import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.request.PindahKelasReqDto;
-import com.siakad.dto.response.KrsMenungguResDto;
-import com.siakad.dto.response.KrsResDto;
-import com.siakad.dto.response.MengulangResDto;
-import com.siakad.dto.response.PesertaKelas;
+import com.siakad.dto.response.*;
+import com.siakad.enums.StatusMahasiswa;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +23,9 @@ public interface KrsService {
     void deletePesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest);
     void pindahKelasPeserta(UUID id, PindahKelasReqDto request, HttpServletRequest servletRequest);
     List<MengulangResDto> getAllMengulang(UUID mahasiswaId);
+    List<MengulangResDto> getAllMengulangByPeriode(UUID mahasiswaId, UUID periodeId);
+    void deleteKrs(UUID id, HttpServletRequest servletRequest);
+    List<FinalisasiMkDto> getAllFinalisasiMk(UUID mahasiswaId);
+    List<StatusSemesterDto> getStatusSemester(UUID mahasiswaId);
+    RiwayatKrsDto getRiwayatKrs(UUID mahasiswaId);
 }

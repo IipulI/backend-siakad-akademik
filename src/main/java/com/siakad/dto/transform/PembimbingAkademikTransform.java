@@ -18,6 +18,7 @@
         @Mapping(source = "siakMahasiswa.statusMahasiswa", target = "statusMahasiswa")
         @Mapping(source = "siakMahasiswa.semester", target = "semester")
         @Mapping(source = "siakMahasiswa.siakProgramStudi.namaProgramStudi", target = "programStudi")
+        @Mapping(source = "siakPeriodeAkademik.namaPeriode", target = "periodeAkademik")
         PembimbingAkademikResDto toDto(PembimbingAkademik entity);
 
         void toEntity(PembimbingAkademikReqDto dto, @MappingTarget PembimbingAkademik entity);

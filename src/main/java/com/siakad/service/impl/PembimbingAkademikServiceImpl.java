@@ -5,17 +5,21 @@ import com.siakad.dto.response.PembimbingAkademikResDto;
 import com.siakad.dto.transform.PembimbingAkademikTransform;
 import com.siakad.dto.transform.helper.PembimbingAkademikHelper;
 import com.siakad.entity.*;
+import com.siakad.entity.service.PembimbingAkademikSpecification;
 import com.siakad.enums.MessageKey;
 import com.siakad.repository.*;
 import com.siakad.service.PembimbingAkademikService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,40 +67,35 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
 
     @Override
     public List<PembimbingAkademikResDto> getAll() {
-        List<PembimbingAkademik> all = pembimbingAkademikRepository.findAllByIsDeletedFalse();
+        return List.of((PembimbingAkademikResDto) null);
+    }
 
-        if (all.isEmpty()) {
-            return Collections.emptyList();
-        }
+    @Override
+    public Page<PembimbingAkademikResDto> getAllByPaginate(String periodeAkademik, String programStudi, Integer semester, String angkatan, Pageable pageable) {
+        PembimbingAkademikSpecification specBuilder = new PembimbingAkademikSpecification();
+        Specification<PembimbingAkademik> spec = specBuilder.entitySearch(periodeAkademik, programStudi, semester, angkatan);
 
-        List<PembimbingAkademikResDto> dtoList = new ArrayList<>();
+        Page<PembimbingAkademik> entities = pembimbingAkademikRepository.findAll(spec, pageable);
 
-        for (PembimbingAkademik entity : all) {
+        List<PembimbingAkademikResDto> dtoList = entities.stream().map(entity -> {
             UUID mahasiswaId = entity.getSiakMahasiswa().getId();
             UUID periodeAkademikId = entity.getSiakPeriodeAkademik().getId();
 
             Integer totalSks = helper.getTotalSks(mahasiswaId);
             Integer batasSks = helper.getBatasSks(mahasiswaId);
+
             BigDecimal ipk = helper.getIpkByPeriode(mahasiswaId, periodeAkademikId);
             BigDecimal ips = helper.getIpsByPeriode(mahasiswaId, periodeAkademikId);
             boolean diajukan = helper.getStatusDiajukan(mahasiswaId);
             boolean disetujui = helper.getStatusDisetujui(mahasiswaId);
-            String namaPembimbing = entity.getSiakDosen() != null ? entity.getSiakDosen() + entity.getSiakDosen().getNama() : null;
+            String namaPembimbing = entity.getSiakDosen() != null
+                    ? entity.getSiakDosen().getNidn() + " - " + entity.getSiakDosen().getNama()
+                    : null;
 
-            PembimbingAkademikResDto dto = mapper.toFullDto(
-                    entity,
-                    batasSks,
-                    totalSks,
-                    ipk,
-                    ips,
-                    diajukan,
-                    disetujui,
-                    namaPembimbing
-            );
-            dtoList.add(dto);
-        }
+            return mapper.toFullDto(entity, batasSks, totalSks, ips, ipk, diajukan, disetujui, namaPembimbing);
+        }).toList();
 
-        return dtoList;
+        return new PageImpl<>(dtoList, pageable, entities.getTotalElements());
     }
 
 }

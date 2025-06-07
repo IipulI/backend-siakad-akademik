@@ -3,8 +3,11 @@ package com.siakad.service;
 import com.siakad.dto.response.*;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface DashboardService {
+    // -- Akademik
+
     CardDto getCard();
     List<AkmAngkatanDto> getAkmAngkatan();
     List<AkmProdiDto> getJumlahMahasiswaPerProdi();
@@ -14,5 +17,6 @@ public interface DashboardService {
     TagihanMahasiswaDto getTagihanMahasiswa();
     GrafikAkademikDto getGrafikAkademik();
     TagihanKomponenMahasiswaDto getTagihanKomponenMahasiswa();
-
+    List<RiwayatTagihanDto> getRiwayatTagihan();
+    DetailRiwayatTagihanDto getDetailRiwayatTagihan(UUID id);
 }

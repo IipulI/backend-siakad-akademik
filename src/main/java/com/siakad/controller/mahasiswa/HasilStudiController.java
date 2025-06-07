@@ -1,6 +1,7 @@
 package com.siakad.controller.mahasiswa;
 
 import com.siakad.dto.response.*;
+import com.siakad.entity.KrsRincianMahasiswa;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Hasil Studi")
@@ -47,12 +49,14 @@ public class HasilStudiController {
     @GetMapping("/transkip")
     public ResponseEntity<ApiResDto<TranskipDto>> getTranskip() {
         try {
-            TranskipDto transkip = hasilStudiService.getTranskip();
+            List<KrsRincianMahasiswa> rincianMahasiswa = hasilStudiService.getRincianMahasiswa();
+
+            TranskipDto transkipDto = hasilStudiService.buildTranskip(rincianMahasiswa);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiResDto.<TranskipDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
-                            .data(transkip)
+                            .data(transkipDto)
                             .build()
             );
         } catch (ApplicationException e) {

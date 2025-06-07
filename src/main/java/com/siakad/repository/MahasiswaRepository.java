@@ -1,5 +1,6 @@
 package com.siakad.repository;
 
+import com.siakad.entity.Jenjang;
 import com.siakad.entity.Mahasiswa;
 import com.siakad.entity.ProgramStudi;
 import org.springframework.data.domain.Page;
@@ -92,4 +93,8 @@ public interface MahasiswaRepository extends JpaRepository<Mahasiswa, UUID>,
     int countBySiakProgramStudiAndNoTerdaftarIsNotNullAndIsDeletedFalse(ProgramStudi ps);
 
     int countBySiakProgramStudiAndNoTerdaftarIsNullAndIsDeletedFalse(ProgramStudi ps);
+
+    @Query("SELECT m.siakProgramStudi.siakJenjang FROM Mahasiswa m WHERE m.id = :mahasiswaId")
+    Jenjang findJenjangByMahasiswaId(@Param("mahasiswaId") UUID mahasiswaId);
+
 }

@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "Dashboard")
+@Tag(name = "Dashboard Akademik")
 @RestController
 @RequestMapping("/akademik/dashboard")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('AKADEMIK_UNIV')")
-public class DashboardController {
+public class DashboardAkademikController {
 
     private final DashboardService service;
 
