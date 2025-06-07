@@ -26,7 +26,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik/komposisi-nilai-mata-kuliah")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class KomposisiNilaiMataKuliahController {
 
     private final KomposisiPenilaianService service;

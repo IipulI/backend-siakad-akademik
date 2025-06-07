@@ -32,7 +32,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/keuangan/invoice-mahasiswa")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('KEUANGAN_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class InvoiceMahasiswaController {
 
     private final InvoiceMahasiwaService service;

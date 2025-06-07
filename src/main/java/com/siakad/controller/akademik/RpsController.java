@@ -38,7 +38,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik/rps")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class RpsController {
 
     private final RpsService service;

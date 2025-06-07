@@ -25,7 +25,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class AkademikController {
 
     private final KelasKuliahService service;
