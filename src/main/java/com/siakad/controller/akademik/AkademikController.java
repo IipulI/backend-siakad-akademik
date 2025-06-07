@@ -25,12 +25,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class AkademikController {
 
     private final KelasKuliahService service;
     private final HasilStudiService hasilStudiService;
     private final KrsService krsService;
+    private final DashboardService dashboardService;
 
     @Operation(summary = "Ganti semester")
     @PutMapping("/ganti-semester")
@@ -194,6 +195,26 @@ public class AkademikController {
             } catch (Exception e) {
                 throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
             }
+        }
+    }
+
+    @Operation(summary = "Get Mahasiswa Baru")
+    @GetMapping("/tagihan-komponen/{id}")
+    public ResponseEntity<ApiResDto<TagihanKomponenMahasiswaDto>> getMahasiswaBaru(@PathVariable UUID id) {
+        try {
+
+            TagihanKomponenMahasiswaDto tagihanKomponenMahasiswa = dashboardService.getTagihanKomponenMahasiswa(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<TagihanKomponenMahasiswaDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(tagihanKomponenMahasiswa)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 }

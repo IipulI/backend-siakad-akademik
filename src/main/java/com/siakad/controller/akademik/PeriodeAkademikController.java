@@ -33,7 +33,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik/periode-akademik")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class PeriodeAkademikController {
 
     private final PeriodeAkademikService service;

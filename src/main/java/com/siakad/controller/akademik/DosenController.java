@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/akademik/dosen")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class DosenController {
 
     private final DosenService service;

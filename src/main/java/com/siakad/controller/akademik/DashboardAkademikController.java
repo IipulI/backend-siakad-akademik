@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/akademik/dashboard")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class DashboardAkademikController {
 
     private final DashboardService service;

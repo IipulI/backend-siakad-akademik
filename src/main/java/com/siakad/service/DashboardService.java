@@ -12,6 +12,7 @@ public interface DashboardService {
     List<AkmAngkatanDto> getAkmAngkatan();
     List<AkmProdiDto> getJumlahMahasiswaPerProdi();
     List<MahasiswaBaruDto> getMahasiswaBaru();
+    TagihanKomponenMahasiswaDto getTagihanKomponenMahasiswa(UUID id);
 
     // -- Mahasiswa
     TagihanMahasiswaDto getTagihanMahasiswa();
