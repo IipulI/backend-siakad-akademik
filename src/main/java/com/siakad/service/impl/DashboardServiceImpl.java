@@ -2,18 +2,14 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.response.*;
 import com.siakad.dto.transform.helper.CardMapperHelper;
-import com.siakad.dto.transform.helper.ProgramStudiMapperHelper;
 import com.siakad.entity.*;
 import com.siakad.repository.*;
 import com.siakad.service.DashboardService;
 import com.siakad.service.UserActivityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -105,7 +101,8 @@ public class DashboardServiceImpl implements DashboardService {
         for (ProgramStudi ps : allProdi) {
             int total = mahasiswaRepository.countBySiakProgramStudiAndIsDeletedFalse(ps);
             int lakiLaki = mahasiswaRepository.countBySiakProgramStudiAndJenisKelaminAndIsDeletedFalse(ps, "Laki-laki");
-            int perempuan = mahasiswaRepository.countBySiakProgramStudiAndJenisKelaminAndIsDeletedFalse(ps, "Perempuan");
+            int perempuan = mahasiswaRepository.countBySiakProgramStudiAndJenisKelaminAndIsDeletedFalse(ps,
+                    "Perempuan");
             int pdb = mahasiswaRepository.countBySiakProgramStudiAndNoTerdaftarIsNotNullAndIsDeletedFalse(ps);
             int lainnya = mahasiswaRepository.countBySiakProgramStudiAndNoTerdaftarIsNullAndIsDeletedFalse(ps);
 
@@ -143,12 +140,13 @@ public class DashboardServiceImpl implements DashboardService {
     public TagihanMahasiswaDto getTagihanMahasiswa() {
         User currentUser = service.getCurrentUser();
 
-        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository.findBySiakMahasiswa_IdAndIsDeletedFalse(currentUser.getSiakMahasiswa().getId())
+        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository
+                .findBySiakMahasiswa_IdAndIsDeletedFalse(currentUser.getSiakMahasiswa().getId())
                 .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
 
-        InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository.findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
+        InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository
+                .findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
                 .orElseThrow(() -> new RuntimeException("Invoice Mahasiswa tidak ditemukan"));
-
 
         TagihanMahasiswaDto dto = new TagihanMahasiswaDto();
         dto.setTotalTagihan(invoiceMahasiswa.getTotalTagihan());
@@ -174,9 +172,11 @@ public class DashboardServiceImpl implements DashboardService {
 
         // 3. Hitung SKS kumulatif (yang lulus)
         Integer sksKumulatif = hasilStudiRepository.sumSksLulusByMahasiswa(mahasiswaId);
-        if (sksKumulatif == null) sksKumulatif = 0;
+        if (sksKumulatif == null)
+            sksKumulatif = 0;
 
-        // 4. Estimasi jumlah mata kuliah: sks dibagi 3 atau 2 (rata-rata 3 sks per matkul)
+        // 4. Estimasi jumlah mata kuliah: sks dibagi 3 atau 2 (rata-rata 3 sks per
+        // matkul)
         int rataSksPerMatkul = 3;
         int mataKuliahKumulatif = sksKumulatif / rataSksPerMatkul;
 
@@ -199,16 +199,17 @@ public class DashboardServiceImpl implements DashboardService {
                 .findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarIsNull(mahasiswaId);
 
         if (invoices.isEmpty()) {
-            throw new RuntimeException("Invoice tidak ditemukan");
+            throw new RuntimeException("Tidak ada tagihan yang ditemukan untuk mahasiswa ini.");
         }
 
         List<TagihanKomponenDto> komponenList = invoices.stream()
-                .flatMap(invoice -> invoice.getInvoicePembayaranKomponenMahasiswaList().stream())
-                .map(komponen -> TagihanKomponenDto.builder()
-                        .kodeKomponen(komponen.getInvoiceKomponen().getKodeKomponen())
-                        .namaKomponen(komponen.getInvoiceKomponen().getNama())
-                        .tagihan(komponen.getInvoiceKomponen().getNominal())
-                        .build())
+                .flatMap(invoice -> invoice.getInvoicePembayaranKomponenMahasiswaList().stream()
+                        .map(komponen -> TagihanKomponenDto.builder()
+                                .kodeKomponen(komponen.getInvoiceKomponen().getKodeKomponen())
+                                .namaKomponen(komponen.getInvoiceKomponen().getNama())
+                                .tagihan(komponen.getInvoiceKomponen().getNominal())
+                                .tanggalTenggat(invoice.getTanggalTenggat())
+                                .build()))
                 .toList();
 
         BigDecimal totalTagihan = komponenList.stream()
@@ -265,12 +266,14 @@ public class DashboardServiceImpl implements DashboardService {
 
         ProgramStudiResDto programStudiResDto = new ProgramStudiResDto();
         programStudiResDto.setId(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getId());
-        programStudiResDto.setNamaProgramStudi(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getNamaProgramStudi());
+        programStudiResDto
+                .setNamaProgramStudi(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getNamaProgramStudi());
 
         JenjangResDto jenjangResDto = new JenjangResDto();
         jenjangResDto.setId(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getId());
         jenjangResDto.setNama(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getNama());
-        jenjangResDto.setJenjang(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getJenjang());
+        jenjangResDto
+                .setJenjang(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getJenjang());
         programStudiResDto.setJenjang(jenjangResDto);
         dto.setProgramStudiResDto(programStudiResDto);
 
@@ -287,6 +290,35 @@ public class DashboardServiceImpl implements DashboardService {
                 .toList();
         dto.setTagihanKomponenDtos(komponenList);
         return dto;
+    }
+
+    @Override
+    public TagihanKomponenMahasiswaDto getTagihanKomponenMahasiswa(UUID id) {
+        List<InvoiceMahasiswa> invoices = invoiceMahasiswaRepository
+                .findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarIsNull(id);
+
+        if (invoices.isEmpty()) {
+            throw new RuntimeException("Tidak ada tagihan yang ditemukan untuk mahasiswa ini.");
+        }
+
+        List<TagihanKomponenDto> komponenList = invoices.stream()
+                .flatMap(invoice -> invoice.getInvoicePembayaranKomponenMahasiswaList().stream()
+                        .map(komponen -> TagihanKomponenDto.builder()
+                                .kodeKomponen(komponen.getInvoiceKomponen().getKodeKomponen())
+                                .namaKomponen(komponen.getInvoiceKomponen().getNama())
+                                .tagihan(komponen.getInvoiceKomponen().getNominal())
+                                .tanggalTenggat(invoice.getTanggalTenggat())
+                                .build()))
+                .toList();
+
+        BigDecimal totalTagihan = komponenList.stream()
+                .map(TagihanKomponenDto::getTagihan)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return TagihanKomponenMahasiswaDto.builder()
+                .tagihanKomponen(komponenList)
+                .totalTagihan(totalTagihan)
+                .build();
     }
 
 }
