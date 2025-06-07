@@ -31,7 +31,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik/capaian-pembelajaran-lulusan")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class CapaianPembelajaranLulusanController {
 
     private final CapaianPembelajaranLulusanService service;

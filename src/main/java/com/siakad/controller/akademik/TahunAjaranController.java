@@ -31,7 +31,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik/tahun-ajaran")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class TahunAjaranController {
 
     private final TahunAjaranService service;

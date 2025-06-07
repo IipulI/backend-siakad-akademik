@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/akademik/program-studi")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class ProgramStudiController {
 
     private final ProgramStudiService service;

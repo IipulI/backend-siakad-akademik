@@ -30,7 +30,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik/kelas-kuliah")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class KelasKuliahController {
 
     private final KelasKuliahService service;
