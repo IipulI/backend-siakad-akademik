@@ -112,4 +112,6 @@ public interface JadwalKuliahRepository extends JpaRepository<JadwalKuliah, UUID
             @Param("periodeId") UUID periodeId,
             @Param("hari") String hari
     );
+
+    Optional<JadwalKuliah> findBySiakKelasKuliahIdAndIsDeletedFalse(UUID kelasId);
 }

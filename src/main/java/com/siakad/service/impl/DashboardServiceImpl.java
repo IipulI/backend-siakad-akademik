@@ -207,7 +207,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .map(komponen -> TagihanKomponenDto.builder()
                         .kodeKomponen(komponen.getInvoiceKomponen().getKodeKomponen())
                         .namaKomponen(komponen.getInvoiceKomponen().getNama())
-                        .tagihan(komponen.getTagihan())
+                        .tagihan(komponen.getInvoiceKomponen().getNominal())
                         .build())
                 .toList();
 
@@ -219,6 +219,74 @@ public class DashboardServiceImpl implements DashboardService {
                 .tagihanKomponen(komponenList)
                 .totalTagihan(totalTagihan)
                 .build();
+    }
+
+    @Override
+    public List<RiwayatTagihanDto> getRiwayatTagihan() {
+        User currentUser = service.getCurrentUser();
+        UUID mahasiswaId = currentUser.getSiakMahasiswa().getId();
+
+        List<InvoiceMahasiswa> invoices = invoiceMahasiswaRepository
+                .findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarNotNull(mahasiswaId);
+
+        List<RiwayatTagihanDto> riwayatTagihanDtos = new ArrayList<>();
+        for (InvoiceMahasiswa invoice : invoices) {
+            RiwayatTagihanDto dto = new RiwayatTagihanDto();
+            dto.setId(invoice.getId());
+            dto.setKodeInvoice(invoice.getKodeInvoice());
+            dto.setMetodeBayar(invoice.getMetodeBayar());
+            dto.setPeriodeAkademik(invoice.getSiakPeriodeAkademik().getNamaPeriode());
+            dto.setTotalPembayaran(invoice.getTotalBayar());
+            dto.setTanggalBayar(invoice.getTanggalBayar());
+
+            riwayatTagihanDtos.add(dto);
+        }
+
+        return riwayatTagihanDtos;
+    }
+
+    @Override
+    public DetailRiwayatTagihanDto getDetailRiwayatTagihan(UUID id) {
+
+        User currentUser = service.getCurrentUser();
+        UUID mahasiswaId = currentUser.getSiakMahasiswa().getId();
+
+        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
+
+        DetailRiwayatTagihanDto dto = new DetailRiwayatTagihanDto();
+        dto.setKodeInvoice(invoiceMahasiswa.getKodeInvoice());
+        dto.setPeriodeAkademik(invoiceMahasiswa.getSiakPeriodeAkademik().getNamaPeriode());
+        dto.setMetodeBayar(invoiceMahasiswa.getMetodeBayar());
+        dto.setTanggalBayar(invoiceMahasiswa.getTanggalBayar());
+        dto.setTotalBayar(invoiceMahasiswa.getTotalBayar());
+        dto.setNpm(invoiceMahasiswa.getSiakMahasiswa().getNpm());
+        dto.setNama(invoiceMahasiswa.getSiakMahasiswa().getNama());
+
+        ProgramStudiResDto programStudiResDto = new ProgramStudiResDto();
+        programStudiResDto.setId(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getId());
+        programStudiResDto.setNamaProgramStudi(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getNamaProgramStudi());
+
+        JenjangResDto jenjangResDto = new JenjangResDto();
+        jenjangResDto.setId(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getId());
+        jenjangResDto.setNama(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getNama());
+        jenjangResDto.setJenjang(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getJenjang());
+        programStudiResDto.setJenjang(jenjangResDto);
+        dto.setProgramStudiResDto(programStudiResDto);
+
+        List<InvoiceMahasiswa> invoices = invoiceMahasiswaRepository
+                .findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarNotNull(mahasiswaId);
+
+        List<TagihanKomponenDto> komponenList = invoices.stream()
+                .flatMap(invoice -> invoice.getInvoicePembayaranKomponenMahasiswaList().stream())
+                .map(komponen -> TagihanKomponenDto.builder()
+                        .kodeKomponen(komponen.getInvoiceKomponen().getKodeKomponen())
+                        .namaKomponen(komponen.getInvoiceKomponen().getNama())
+                        .tagihan(komponen.getInvoiceKomponen().getNominal())
+                        .build())
+                .toList();
+        dto.setTagihanKomponenDtos(komponenList);
+        return dto;
     }
 
 }

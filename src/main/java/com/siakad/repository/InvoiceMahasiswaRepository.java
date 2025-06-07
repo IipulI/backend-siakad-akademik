@@ -3,6 +3,7 @@ package com.siakad.repository;
 import com.siakad.entity.InvoiceMahasiswa;
 import com.siakad.entity.Mahasiswa;
 import com.siakad.entity.PeriodeAkademik;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +22,12 @@ public interface InvoiceMahasiswaRepository extends JpaRepository<InvoiceMahasis
     Optional<InvoiceMahasiswa> findBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswaId);
 
     List<InvoiceMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarIsNull(UUID siakMahasiswaId);
+
+    @EntityGraph(attributePaths = {
+            "invoicePembayaranKomponenMahasiswaList",
+            "invoicePembayaranKomponenMahasiswaList.invoiceKomponen"
+    })
+    List<InvoiceMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarNotNull(UUID siakMahasiswaId);
 
     List<InvoiceMahasiswa> findAllByTanggalBayarIsNotNullAndIsDeletedFalse();
 
@@ -43,4 +50,6 @@ public interface InvoiceMahasiswaRepository extends JpaRepository<InvoiceMahasis
     List<InvoiceMahasiswa> findBySiakPeriodeAkademikAndSiakMahasiswa(PeriodeAkademik siakPeriodeAkademik, Mahasiswa siakMahasiswa);
 
     List<InvoiceMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalseOrderByCreatedAtDesc(UUID mahasiswaId);
+
+
 }

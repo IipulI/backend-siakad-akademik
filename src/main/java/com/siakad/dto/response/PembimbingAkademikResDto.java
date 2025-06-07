@@ -21,4 +21,6 @@ public class PembimbingAkademikResDto {
 
     @JsonIgnore
     private String programStudi;
+    @JsonIgnore
+    private String periodeAkademik;
 }
