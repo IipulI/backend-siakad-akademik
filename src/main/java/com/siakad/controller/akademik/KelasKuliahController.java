@@ -1,15 +1,11 @@
 package com.siakad.controller.akademik;
 
-import com.siakad.dto.request.JadwalDosenReqDto;
-import com.siakad.dto.request.KelasKuliahReqDto;
-import com.siakad.dto.request.PesertaKelasReqDto;
+import com.siakad.dto.request.*;
 import com.siakad.dto.response.*;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.service.JadwalDosenService;
-import com.siakad.service.KelasKuliahService;
-import com.siakad.service.KrsService;
+import com.siakad.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,19 +23,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Tag(name = "Kelas Kuliah")
 @RestController
 @RequestMapping("/akademik/kelas-kuliah")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class KelasKuliahController {
 
     private final KelasKuliahService service;
-
+    private final PenilaianKelasService penilaianKelasService;
     private final JadwalDosenService jadwalDosenService;
     private final KrsService krsService;
+    private final RpsService rpsService;
 
     @Operation(summary = "Add Kelas Kuliah")
     @PostMapping
@@ -102,6 +100,27 @@ public class KelasKuliahController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
+    @Operation(summary = "Data Kelas Kuliah untuk mapping di rps")
+    @GetMapping("/map-rps")
+    public ResponseEntity<ApiResDto<List<KelasKuliahDto>>> getAll() {
+        try {
+            List<KelasKuliahDto> all = service.getAllKelasKuliah();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<KelasKuliahDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(all)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+
 
     @Operation(summary = "Get Kelas Kuliah By Pagination")
     @GetMapping()
@@ -219,23 +238,131 @@ public class KelasKuliahController {
         }
     }
 
-//    public ResponseEntity<ApiResDto<JadwalKuliahResDto>> updatePesertaKelas(
-//            @PathVariable UUID id,
-//            @Valid @RequestBody PesertaKelasReqDto request,
-//            HttpServletRequest serletRequest
-//            ) {
-//        try {
-//            krsService.updatePeserta(id, request, serletRequest);
-//            return ResponseEntity.status(HttpStatus.CREATED).body(
-//                    ApiResDto.<JadwalKuliahResDto>builder()
-//                            .status(MessageKey.SUCCESS.getMessage())
-//                            .message(MessageKey.UPDATED.getMessage())
-//                            .build()
-//            );
-//        } catch (ApplicationException e) {
-//            throw e;
-//        } catch (Exception e){
-//            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
-//        }
-//    }
+    @Operation(summary = "Add Peserta Mahasiswa by Kelas Kuliah ID")
+    @PostMapping("/{id}/peserta-kelas")
+    public ResponseEntity<ApiResDto<Objects>> updatePesertaKelas(
+            @PathVariable UUID id,
+            @Valid @RequestBody PesertaKelasReqDto request,
+            HttpServletRequest serletRequest
+            ) {
+        try {
+            krsService.addPesertaKelas(id, request, serletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<Objects>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e){
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Delete Peserta Mahasiswa by Kelas Kuliah ID")
+    @DeleteMapping("/{id}/peserta-kelas")
+    public ResponseEntity<ApiResDto<Objects>> deletePesertaKelas(
+            @PathVariable UUID id,
+            @Valid @RequestBody PesertaKelasReqDto request,
+            HttpServletRequest serletRequest
+    ) {
+        try {
+            krsService.deletePesertaKelas(id, request, serletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<Objects>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.DELETED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e){
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Pindah Kelas Peserta Mahasiswa by Kelas Kuliah ID")
+    @PutMapping("/{id}/peserta-kelas/pindah-kelas")
+    public ResponseEntity<ApiResDto<Objects>> pindahKelas(
+            @PathVariable UUID id,
+            @Valid @RequestBody PindahKelasReqDto request,
+            HttpServletRequest serletRequest
+    ) {
+        try {
+            krsService.pindahKelasPeserta(id, request, serletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<Objects>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e){
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Rps by kelas kuliah ID")
+    @GetMapping("/{id}/kelas-rps")
+    public ResponseEntity<ApiResDto<RpsResDto>> getOneKelasRps(@PathVariable UUID id) {
+        try {
+
+            RpsResDto rpsByKelas = rpsService.getRpsByKelas(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<RpsResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(rpsByKelas)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Add Penilaian")
+    @PutMapping("/{id}/penilaian")
+    public ResponseEntity<ApiResDto<KrsResDto>> save(
+            @PathVariable UUID id,
+            @Valid @RequestBody PenilaianKelasKuliahReqDto request,
+            HttpServletRequest servletRequest
+    ) {
+        try {
+            penilaianKelasService.updateNilaiKelas(id,request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<KrsResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get All Penilaian By Kelas ID")
+    @GetMapping("/{id}/penilaian")
+    public ResponseEntity<ApiResDto<PenilaianKelasResDto>> getAllPenilaian(@PathVariable UUID id){
+        try {
+            PenilaianKelasResDto allPenilaianKelas = penilaianKelasService.getAllPenilaianKelas(id);
+
+            return ResponseEntity.ok(
+                    ApiResDto.<PenilaianKelasResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(allPenilaianKelas)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 }

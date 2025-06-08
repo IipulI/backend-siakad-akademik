@@ -9,8 +9,8 @@ import java.util.UUID;
 public class SkalaPenilaianReqDto {
     private UUID siakTahunAjaranId;
     private UUID siakProgramStudiId;
-    private String angkaMutu;
-    private BigDecimal nilaiMutu;
+    private String hurufMutu;
+    private BigDecimal angkaMutu;
     private BigDecimal nilaiMin;
     private BigDecimal nilaiMax;
 }

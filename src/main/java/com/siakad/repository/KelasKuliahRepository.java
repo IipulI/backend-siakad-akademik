@@ -20,4 +20,11 @@ public interface KelasKuliahRepository extends JpaRepository<KelasKuliah, UUID>,
         SELECT p FROM KelasKuliah p WHERE p.id IN :ids AND p.isDeleted=false
     """)
     List<KelasKuliah> findAllByIdAndIsDeletedFalse(@Param("ids") List<UUID> ids);
+
+    List<KelasKuliah> findAllByIsDeletedFalse();
+
+    @Query("""
+        SELECT p FROM KelasKuliah p WHERE p.statusKelas = 'Aktif'
+    """)
+    List<KelasKuliah> findAllByStatusKelas();
 }

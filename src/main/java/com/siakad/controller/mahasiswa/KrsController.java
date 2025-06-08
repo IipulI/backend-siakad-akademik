@@ -3,11 +3,13 @@ package com.siakad.controller.mahasiswa;
 import com.siakad.dto.request.KrsReqDto;
 import com.siakad.dto.request.ProfilLulusanReqDto;
 import com.siakad.dto.response.*;
+import com.siakad.entity.User;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
 import com.siakad.service.KrsService;
 import com.siakad.service.ProfilLulusanService;
+import com.siakad.service.UserActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,12 +31,13 @@ import java.util.UUID;
 
 @Tag(name = "KRS")
 @RestController
-@RequestMapping("/akademik/krs")
+@RequestMapping("/mahasiswa/krs")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('MAHASISWA')")
 public class KrsController {
 
     private final KrsService service;
+    private final UserActivityService userActivityService;
 
     @Operation(summary = "Add Krs")
     @PostMapping
@@ -123,6 +126,49 @@ public class KrsController {
                     ApiResDto.<KrsResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+
+    @Operation(summary = "Get all krs by status Menunggu")
+    @GetMapping("/status-menunggu")
+    public ResponseEntity<ApiResDto<KrsMenungguResDto>> getAllStatusMenunggu() {
+        try {
+            KrsMenungguResDto allKrsByStatusMenunggu = service.getAllKrsByStatusMenunggu();
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<KrsMenungguResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .data(allKrsByStatusMenunggu)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "get mengulang")
+    @GetMapping("/mengulang")
+    public ResponseEntity<ApiResDto<List<MengulangResDto>>> krsMengulang() {
+        try {
+            User user = userActivityService.getCurrentUser();
+            var mahasiswa = user.getSiakMahasiswa().getId();
+
+            List<MengulangResDto> data = service.getAllMengulang(mahasiswa);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<MengulangResDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(data)
                             .build()
             );
         } catch (ApplicationException e) {

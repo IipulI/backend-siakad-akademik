@@ -55,6 +55,7 @@ public class Mahasiswa {
     private Integer rtKtp;
     private Integer rwKtp;
     private String desaKtp;
+    private String noTerdaftar;
     private String provinsiKtp;
     private String kodePosKtp;
     private String statusTinggalKtp;
@@ -74,8 +75,6 @@ public class Mahasiswa {
 
     @Email
     private String emailKampus;
-
-    private String noTerdaftar;
     private String pendidikanAsal;
     private String provinsiSekolah;
     private String kotaKabSekolah;

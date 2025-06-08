@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/akademik/ruangan")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class RuanganController {
 
     private final RuanganService service;

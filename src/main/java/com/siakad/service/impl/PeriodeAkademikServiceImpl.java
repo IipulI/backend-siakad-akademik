@@ -1,9 +1,13 @@
 package com.siakad.service.impl;
 
+import com.siakad.dto.request.HasilStudiReqDto;
 import com.siakad.dto.request.PeriodeAkademikReqDto;
+import com.siakad.dto.response.HasilStudiDto;
 import com.siakad.dto.response.PeriodeAkademikResDto;
+import com.siakad.dto.response.PeriodeDto;
 import com.siakad.dto.transform.PeriodeAkademikTransform;
 import com.siakad.entity.PeriodeAkademik;
+import com.siakad.entity.User;
 import com.siakad.entity.service.PeriodeAkademikSpecification;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
@@ -11,6 +15,7 @@ import com.siakad.enums.StatusPeriode;
 import com.siakad.exception.ApplicationException;
 import com.siakad.repository.PeriodeAkademikRepository;
 import com.siakad.repository.TahunAjaranRepository;
+import com.siakad.service.HasilStudiService;
 import com.siakad.service.PeriodeAkademikService;
 import com.siakad.service.UserActivityService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +27,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -91,5 +99,25 @@ public class PeriodeAkademikServiceImpl implements PeriodeAkademikService {
 
         service.saveUserActivity(servletRequest, MessageKey.DELETE_PERIODE_AKADEMIK);
         mapper.toDto(saved);
+    }
+
+    @Override
+    public List<PeriodeDto> getAll() {
+        List<PeriodeAkademik> all = periodeAkademikRepository.findAllByIsDeletedFalse();
+        return all.stream().map(mapper::toDtoDropdown).collect(Collectors.toList());
+    }
+
+    @Override
+    public void changeStatus(UUID id, HttpServletRequest servletRequest) {
+        Optional<PeriodeAkademik> firstByStatusActive = periodeAkademikRepository.findFirstByStatusActive();
+        firstByStatusActive.ifPresent(periodeAkademik -> periodeAkademik.setStatus(StatusPeriode.INACTIVE.name()));
+
+        PeriodeAkademik periodeAkademik = periodeAkademikRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Perde akademik tidak ditemukan : " + id));
+
+        periodeAkademik.setId(id);
+        periodeAkademik.setStatus(StatusPeriode.ACTIVE.name());
+        periodeAkademikRepository.save(periodeAkademik);
+        service.saveUserActivity(servletRequest, MessageKey.UPDATE_PERIODE_AKADEMIK);
     }
 }

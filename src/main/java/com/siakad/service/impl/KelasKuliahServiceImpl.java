@@ -2,18 +2,19 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.request.JadwalKuliahReqDto;
 import com.siakad.dto.request.KelasKuliahReqDto;
+import com.siakad.dto.response.KelasKuliahDto;
 import com.siakad.dto.response.KelasKuliahResDto;
 import com.siakad.dto.transform.helper.KelasKuliahMapperHelper;
 import com.siakad.dto.transform.KelasKuliahTranform;
 import com.siakad.entity.*;
 import com.siakad.entity.service.KelasKuliahSpecification;
-import com.siakad.enums.ExceptionType;
-import com.siakad.enums.MessageKey;
+import com.siakad.enums.*;
 import com.siakad.exception.ApplicationException;
 import com.siakad.repository.*;
 import com.siakad.service.KelasKuliahService;
 import com.siakad.service.UserActivityService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,8 +22,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,9 +38,12 @@ public class KelasKuliahServiceImpl implements KelasKuliahService {
     private final PeriodeAkademikRepository periodeAkademikRepository;
     private final MataKuliahRepository mataKuliahRepository;
     private final JadwalKuliahRepository jadwalKuliahRepository;
+    private final KrsRincianMahasiswaRepository krsRincianMahasiswaRepository;
     private final RuanganRepository ruanganRepository;
+    private final HasilStudiRepository hasilStudiRepository;
     private final UserActivityService service;
     private final KelasKuliahTranform mapper;
+    private final MahasiswaRepository mahasiswaRepository;
 
     @Override
     public KelasKuliahResDto create(KelasKuliahReqDto request, HttpServletRequest servletRequest) {
@@ -53,7 +60,7 @@ public class KelasKuliahServiceImpl implements KelasKuliahService {
         kelasKuliah.setSiakMataKuliah(mataKuliah);
         kelasKuliah.setSiakPeriodeAkademik(periodeAkademik);
         kelasKuliah.setSiakProgramStudi(programStudi);
-        kelasKuliah.setStatusKelas("aktif");
+        kelasKuliah.setStatusKelas(Status.ACTIVE.getLabel());
         kelasKuliah.setIsDeleted(false);
         KelasKuliah kelas = kelasKuliahRepository.save(kelasKuliah);
 
@@ -71,8 +78,14 @@ public class KelasKuliahServiceImpl implements KelasKuliahService {
         }
 
         service.saveUserActivity(servletRequest, MessageKey.CREATE_KELAS_KULIAH);
-        KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository);
+        KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository, krsRincianMahasiswaRepository);
         return mapper.toDto(kelas, helper);
+    }
+
+    @Override
+    public List<KelasKuliahDto> getAllKelasKuliah() {
+        List<KelasKuliah> all  = kelasKuliahRepository.findAllByIsDeletedFalse();
+        return all.stream().map(mapper::toDtoKelasKuliah).collect(Collectors.toList());
     }
 
     @Override
@@ -80,7 +93,7 @@ public class KelasKuliahServiceImpl implements KelasKuliahService {
         KelasKuliahSpecification specBuilder = new KelasKuliahSpecification();
         Specification<KelasKuliah> spec = specBuilder.entitySearch(keyword, periodeAkademik, tahunKurikulum, programStudi, dosen, sistemKuliah);
         Page<KelasKuliah> all = kelasKuliahRepository.findAll(spec, pageable);
-        KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository);
+        KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository, krsRincianMahasiswaRepository);
         return all.map(entity -> mapper.toDto(entity, helper));
     }
 
@@ -88,7 +101,7 @@ public class KelasKuliahServiceImpl implements KelasKuliahService {
     public KelasKuliahResDto getOne(UUID id) {
         KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan : " + id));
-        KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository);
+        KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository, krsRincianMahasiswaRepository);
         return mapper.toDto(kelasKuliah, helper);
     }
 
@@ -131,7 +144,7 @@ public class KelasKuliahServiceImpl implements KelasKuliahService {
         }
 
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_KELAS_KULIAH);
-        KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository);
+        KelasKuliahMapperHelper helper = new KelasKuliahMapperHelper(jadwalKuliahRepository, krsRincianMahasiswaRepository);
         return mapper.toDto(kelas, helper);
     }
 
@@ -144,4 +157,87 @@ public class KelasKuliahServiceImpl implements KelasKuliahService {
         kelasKuliahRepository.save(kelasKuliah);
         service.saveUserActivity(servletRequest, MessageKey.DELETE_KELAS_KULIAH);
     }
+
+    @Transactional
+    @Override
+    public void gantiSemester() {
+        List<KrsRincianMahasiswa> semuaRincianMahasiswa = krsRincianMahasiswaRepository.findAllByIsDeletedFalse();
+        boolean adaYangBelumDinilai = semuaRincianMahasiswa.stream().anyMatch(r ->
+                r.getNilai() == null || r.getStatus() == null || r.getStatus().isBlank()
+        );
+
+        if (adaYangBelumDinilai) {
+            throw new IllegalStateException("Masih ada mahasiswa yang belum mendapatkan nilai.");
+        }
+
+        List<KelasKuliah> semuaKelas = kelasKuliahRepository.findAllByStatusKelas();
+        semuaKelas.forEach(k -> k.setStatusKelas(Status.INACTIVE.getLabel()));
+        kelasKuliahRepository.saveAll(semuaKelas);
+
+        PeriodeAkademik periodeAktif = periodeAkademikRepository.findFirstByStatusActive()
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode akademik tidak ditemukan"));
+
+        periodeAktif.setStatus(StatusPeriode.INACTIVE.toString());
+        periodeAkademikRepository.save(periodeAktif);
+
+        List<Mahasiswa> semuaMahasiswa = mahasiswaRepository.findAllByStatusMahasiswa();
+        semuaMahasiswa.forEach(ma -> ma.setSemester(ma.getSemester() + 1));
+        mahasiswaRepository.saveAll(semuaMahasiswa);
+
+        for (Mahasiswa mhs : semuaMahasiswa) {
+            int semester = mhs.getSemester();
+
+            List<KrsRincianMahasiswa> rincianMahasiswa = semuaRincianMahasiswa.stream()
+                    .filter(r -> r.getSiakKrsMahasiswa().getSiakMahasiswa().equals(mhs))
+                    .toList();
+
+            List<KrsRincianMahasiswa> rincianIPS = rincianMahasiswa.stream()
+                    .filter(r -> r.getSiakKrsMahasiswa().getSiakPeriodeAkademik().equals(periodeAktif))
+                    .toList();
+
+            int sksDiambilIPS = 0, sksLulusIPS = 0;
+            double totalMutuIPS = 0;
+
+            for (KrsRincianMahasiswa r : rincianIPS) {
+                int sks = r.getSiakKelasKuliah().getSiakMataKuliah().getSksTatapMuka() +
+                        r.getSiakKelasKuliah().getSiakMataKuliah().getSksPraktikum();
+
+                sksDiambilIPS += sks;
+                if (r.getStatus().equalsIgnoreCase(KrsKey.LULUS.getLabel())) {
+                    sksLulusIPS += sks;
+                }
+
+                totalMutuIPS += r.getAngkaMutu().doubleValue() * sks;
+            }
+
+            double ips = sksDiambilIPS > 0 ? totalMutuIPS / sksDiambilIPS : 0;
+
+            int totalSksIPK = 0;
+            double totalMutuIPK = 0;
+
+            for (KrsRincianMahasiswa r : rincianMahasiswa) {
+                int sks = r.getSiakKelasKuliah().getSiakMataKuliah().getSksTatapMuka() +
+                        r.getSiakKelasKuliah().getSiakMataKuliah().getSksPraktikum();
+
+                totalSksIPK += sks;
+                totalMutuIPK += r.getAngkaMutu().doubleValue() * sks;
+            }
+
+            double ipk = totalSksIPK > 0 ? totalMutuIPK / totalSksIPK : 0;
+
+            HasilStudi hasil = HasilStudi.builder()
+                    .siakMahasiswa(mhs)
+                    .siakPeriodeAkademik(periodeAktif)
+                    .semester(semester)
+                    .ips(BigDecimal.valueOf(ips))
+                    .ipk(BigDecimal.valueOf(ipk))
+                    .sksDiambil(sksDiambilIPS)
+                    .sksLulus(sksLulusIPS)
+                    .isDeleted(false)
+                    .build();
+
+            hasilStudiRepository.save(hasil);
+        }
+    }
+
 }

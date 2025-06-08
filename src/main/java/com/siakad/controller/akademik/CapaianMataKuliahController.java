@@ -29,7 +29,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik/mata-kuliah")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class CapaianMataKuliahController {
 
     private final CapaianMataKuliahService service;

@@ -7,6 +7,7 @@ import java.util.UUID;
 @Data
 public class MataKuliahRpsResDto {
     private UUID id;
+    private String kurikulum;
     private String kodeMataKuliah;
     private String namaMataKuliah;
     private Integer sks;

@@ -8,7 +8,6 @@ import java.util.UUID;
 @Data
 public class PenilaianKelasKuliahReqDto {
     private UUID mahasiswaId;
-    private UUID kelasId;
     private BigDecimal tugas;
     private BigDecimal uas;
     private BigDecimal uts;

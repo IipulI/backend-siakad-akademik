@@ -3,6 +3,7 @@
     import com.siakad.entity.ProgramStudi;
     import jdk.dynalink.linker.LinkerServices;
     import org.springframework.data.jpa.repository.JpaRepository;
+    import org.springframework.data.jpa.repository.Query;
     import org.springframework.stereotype.Repository;
 
     import java.util.List;
@@ -14,4 +15,5 @@
         Optional<ProgramStudi> findByIdAndIsDeletedFalse(UUID id);
 
         List<ProgramStudi> findAllByIsDeletedFalse();
+
     }

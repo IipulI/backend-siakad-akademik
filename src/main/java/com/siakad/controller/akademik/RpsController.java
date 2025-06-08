@@ -31,13 +31,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Tag(name = "RPS")
 @RestController
 @RequestMapping("/akademik/rps")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class RpsController {
 
     private final RpsService service;
@@ -46,7 +47,7 @@ public class RpsController {
 
     @Operation(summary = "Add Rps")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResDto<RpsResDto>> save(
+    public ResponseEntity<ApiResDto<Objects>> save(
             @RequestPart(value = "dokumenRps", required = false) MultipartFile dokumenRps,
             @RequestPart("request") String requestJson,
             HttpServletRequest servletRequest) {
@@ -56,7 +57,7 @@ public class RpsController {
             service.create(request, dokumenRps, servletRequest);
 
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResDto.<RpsResDto>builder()
+                    .body(ApiResDto.<Objects>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.CREATED.getMessage())
                             .build());

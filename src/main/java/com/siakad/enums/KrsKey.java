@@ -10,6 +10,7 @@ public enum KrsKey {
     DITOLAK("Ditolak"),
     MENUNGGU("Menunggu"),
     DISETUJUI("Disetujui"),
+    DIAJUKAN("Diajukan"),
 
     BARU("Baru"),
     ULANG("Ulang"),

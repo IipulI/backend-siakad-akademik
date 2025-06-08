@@ -10,8 +10,8 @@ public class SkalaPenilaianResDto {
     private UUID id;
     private String tahunAjaran;
     private String programStudi;
-    private String angkaMutu;
-    private BigDecimal nilaiMutu;
+    private String hurufMutu;
+    private BigDecimal angkaMutu;
     private BigDecimal nilaiMin;
     private BigDecimal nilaiMax;
 }

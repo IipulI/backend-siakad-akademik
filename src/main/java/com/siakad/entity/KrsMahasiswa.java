@@ -33,6 +33,7 @@ public class KrsMahasiswa {
 
     private String status;
     private Integer jumlahSksDiambil;
+//    private Integer semester;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;

@@ -26,7 +26,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/keuangan/invoice-komponen-mahasiswa")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('KEUANGAN_UNIV')")
+@PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI')")
 public class InvoiceKomponenMahasiswaController {
 
     private final InvoiceKomponenService service;

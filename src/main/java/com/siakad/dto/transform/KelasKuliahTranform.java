@@ -23,7 +23,13 @@ public interface KelasKuliahTranform {
     @Mapping(source = "siakMataKuliah", target = "mataKuliah")
     @Mapping(target = "dosen", expression = "java(helper.mapDosen(entity))")
     @Mapping(target = "jadwalMingguan", expression = "java(helper.mapHariJadwal(entity))")
+    @Mapping(target = "peserta", expression = "java(helper.hitungJumlahPeserta(entity))")
+    @Mapping(target = "statusPenilaian", expression = "java(helper.tentukanStatusPenilaian(entity))")
     KelasKuliahResDto toDto(KelasKuliah entity, @Context KelasKuliahMapperHelper helper);
+
+    KelasKuliahDto toDtoKelasKuliah(KelasKuliah entity);
+
+    KomponenPenilaianResDto toDto(KelasKuliah entity);
 
     void toEntity(JadwalKuliahReqDto dto, @MappingTarget JadwalKuliah entity);
     void toEntity(KelasKuliahReqDto dto, @MappingTarget KelasKuliah entity);
@@ -38,4 +44,12 @@ public interface KelasKuliahTranform {
 
     JenjangResDto jenjangToDto(Jenjang entity);
     List<JenjangResDto> jenjangListToDtoList(List<Jenjang> entityList);
+
+    @Mapping(source = "nama", target = "nama")
+    @Mapping(source = "npm", target = "npm")
+    MahasiswaDto mahasiswaToDto(Mahasiswa entity);
+    List<MahasiswaDto> mahasiswaListToDtoList(List<Mahasiswa> entityList);
+
+    KomponenPenilaianResDto komponenPenilaianDto(KomposisiPenilaian entity);
+    List<KomponenPenilaianResDto> komponenPenilaianListToDtoList(List<KomposisiPenilaian> entityList);
 }

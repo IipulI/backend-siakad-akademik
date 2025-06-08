@@ -24,7 +24,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/akademik/komposisi-nilai")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('AKADEMIK_UNIV')")
+@PreAuthorize("hasAnyRole('AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI')")
 public class KomposisiPenilaianController {
 
     private final KomposisiPenilaianService service;
