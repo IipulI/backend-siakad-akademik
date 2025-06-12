@@ -1,16 +1,21 @@
 package com.siakad.controller.dosen;
 
+import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.ApiResDto;
+import com.siakad.dto.response.KrsResDto;
 import com.siakad.dto.response.PaginationDto;
 import com.siakad.dto.response.PembimbingAkademikResDto;
 import com.siakad.entity.User;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
+import com.siakad.service.KrsService;
 import com.siakad.service.PembimbingAkademikService;
 import com.siakad.service.UserActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +40,7 @@ public class DosenPembimbingAkademikController {
 
     private final UserActivityService userActivityService;
     private final PembimbingAkademikService service;
+    private final KrsService krsService;
 
     @Operation(summary = "Get Pembimbing Akademik By Pagination")
     @GetMapping("/all")
@@ -75,6 +82,52 @@ public class DosenPembimbingAkademikController {
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Setuju Krs Mahasiswa")
+    @PostMapping("/setuju")
+    public ResponseEntity<ApiResDto<KrsResDto>> setujuKrs(
+            @Valid @RequestBody UpdateStatusKrsReqDto request,
+            HttpServletRequest servletRequest
+    ){
+        try {
+            krsService.updateStatusKrsSetuju(request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<KrsResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Kembali Krs Mahasiswa")
+    @PostMapping("/kembali")
+    public ResponseEntity<ApiResDto<KrsResDto>> kembaliKrs(
+            @Valid @RequestBody UpdateStatusKrsReqDto request,
+            HttpServletRequest servletRequest
+    ){
+        try {
+            krsService.updateStatusKrsKembalikan(request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<KrsResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
