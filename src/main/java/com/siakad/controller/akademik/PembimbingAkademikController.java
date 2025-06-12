@@ -2,11 +2,15 @@ package com.siakad.controller.akademik;
 
 import com.siakad.dto.request.KelasKuliahReqDto;
 import com.siakad.dto.request.PembimbingAkademikReqDto;
+import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
+import com.siakad.entity.KrsMahasiswa;
+import com.siakad.entity.User;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
 import com.siakad.service.DosenService;
+import com.siakad.service.KrsService;
 import com.siakad.service.PembimbingAkademikService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +40,7 @@ public class PembimbingAkademikController {
 
     private final PembimbingAkademikService service;
     private final DosenService dosenService;
+    private final KrsService krsService;
 
     @Operation(summary = "Add Bimbingan Akademik")
     @PostMapping
@@ -79,19 +84,21 @@ public class PembimbingAkademikController {
         }
     }
 
-    @Operation(summary = "Get Kelas Kuliah By Pagination")
+    @Operation(summary = "Get Pembimbing Akademik By Pagination")
     @GetMapping("/all")
     public ResponseEntity<ApiResDto<List<PembimbingAkademikResDto>>> getPaginated(
-            @RequestParam(required = false) String periodeAkademik,
-            @RequestParam(required = false) String programStudi,
-            @RequestParam(required = false) Integer semester,
+            @RequestParam() UUID periodeAkademikId,
+            @RequestParam(required = false) UUID programStudiId,
             @RequestParam(required = false) String angkatan,
+            @RequestParam(required = false) String statusKrs,
+            @RequestParam(required = false) String namaMahasiswa,
+            @RequestParam(required = false) Boolean hasPembimbing,
+            @RequestParam(required = false) String statusMahasiswa,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort) {
-
+            @RequestParam(defaultValue = "createdAt,desc") String sort
+    ){
         try {
-            // Parse sort parameter
             String[] sortParams = sort.split(",");
             Sort.Direction direction = sortParams.length > 1 ?
                     Sort.Direction.fromString(sortParams[1]) : Sort.Direction.DESC;
@@ -99,19 +106,67 @@ public class PembimbingAkademikController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
-            Page<PembimbingAkademikResDto> search = service.getAllByPaginate(periodeAkademik, programStudi, semester, angkatan, pageable);
+            Page<PembimbingAkademikResDto> data = service.getAllPaginated(
+                    programStudiId, periodeAkademikId, null, namaMahasiswa,
+                    angkatan, statusMahasiswa, statusKrs, hasPembimbing, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<PembimbingAkademikResDto>>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
-                            .data(search.getContent())
-                            .pagination(PaginationDto.fromPage(search))
+                            .data(data.getContent())
+                            .pagination(PaginationDto.fromPage(data))
                             .build()
             );
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Setuju Krs Mahasiswa")
+    @PostMapping("/setuju")
+    public ResponseEntity<ApiResDto<KrsResDto>> setujuKrs(
+            @Valid @RequestBody UpdateStatusKrsReqDto request,
+            HttpServletRequest servletRequest
+    ){
+        try {
+            krsService.updateStatusKrsSetuju(request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<KrsResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Kembali Krs Mahasiswa")
+    @PostMapping("/kembali")
+    public ResponseEntity<ApiResDto<KrsResDto>> kembaliKrs(
+            @Valid @RequestBody UpdateStatusKrsReqDto request,
+            HttpServletRequest servletRequest
+    ){
+        try {
+            krsService.updateStatusKrsKembalikan(request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<KrsResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
