@@ -31,6 +31,8 @@ public class KomposisiPenilaian {
 
     private String nama;
 
+    private String key;
+
     private BigDecimal persentase;
 
     @Column(name = "is_deleted")

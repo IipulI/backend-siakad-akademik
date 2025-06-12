@@ -2,6 +2,7 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.request.KrsReqDto;
 import com.siakad.dto.request.PesertaKelasReqDto;
+import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.dto.request.PindahKelasReqDto;
 import com.siakad.dto.transform.KrsTransform;
@@ -614,6 +615,46 @@ public class KrsServiceImpl implements KrsService {
         dto.setTotalSks(totalSks);
         return dto;
     }
+
+    private static final String STATUS_DIAJUKAN = "Diajukan";
+    private static final String STATUS_DISETUJUI = "Disetujui";
+    private static final String STATUS_DIKEMBALIKAN = "Dikembalikan";
+
+    @Override
+    public void updateStatusKrsSetuju(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest){
+        processBulkUpdate(request, servletRequest, STATUS_DISETUJUI);
+    }
+
+    @Override
+    public void updateStatusKrsKembalikan(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest){
+        processBulkUpdate(request, servletRequest, STATUS_DIKEMBALIKAN);
+    }
+
+    private void processBulkUpdate(UpdateStatusKrsReqDto dto, HttpServletRequest servletRequest, String newStatus) {
+        List<UUID> requestedIds = dto.getMahasiswaIds();
+        UUID periodeId = dto.getPeriodeAkademikId();
+
+        // Find all KRS that are eligible for this bulk update
+        List<KrsMahasiswa> krsToUpdate = krsMahasiswaRepository.findBySiakMahasiswa_IdInAndSiakPeriodeAkademik_IdAndStatus(
+                requestedIds, periodeId, STATUS_DIAJUKAN
+        );
+
+        // Add one more log to see the result of the query
+        System.out.println("Query finished. Found " + krsToUpdate.size() + " records to update.");
+
+
+        for (KrsMahasiswa krs : krsToUpdate) {
+            krs.setStatus(newStatus);
+        }
+
+        krsMahasiswaRepository.saveAll(krsToUpdate);
+        if (Objects.equals(newStatus, STATUS_DISETUJUI)){
+            service.saveUserActivity(servletRequest, MessageKey.APPROVE_KRS);
+        } else if (Objects.equals(newStatus, STATUS_DIKEMBALIKAN)){
+            service.saveUserActivity(servletRequest, MessageKey.RETURN_KRS);
+        }
+    }
+
     private Integer getBatasSks(UUID mahasiswaId) {
         BigDecimal ipsTerakhir = hasilStudiRepository
                 .findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(mahasiswaId)

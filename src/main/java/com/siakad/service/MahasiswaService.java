@@ -1,6 +1,7 @@
 package com.siakad.service;
 
 import com.siakad.dto.request.MahasiswaReqDto;
+import com.siakad.dto.response.MahasiswaChartDto;
 import com.siakad.dto.response.MahasiswaResDto;
 import com.siakad.entity.User;
 import com.siakad.enums.RoleType;
@@ -20,4 +21,6 @@ public interface MahasiswaService {
     MahasiswaResDto update(UUID id, MultipartFile fotoProfil, MultipartFile ijazahSekolah, MahasiswaReqDto request, HttpServletRequest servletRequest) throws IOException;
     void delete(UUID id, HttpServletRequest servletRequest);
     User createUserWithRole(String username, String email, String password, RoleType roleType);
+
+    MahasiswaChartDto getDashboardAkademik(UUID mahasiswaId);
 }   

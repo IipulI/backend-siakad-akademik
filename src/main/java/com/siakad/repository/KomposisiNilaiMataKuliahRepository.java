@@ -21,4 +21,15 @@ public interface KomposisiNilaiMataKuliahRepository extends JpaRepository<Kompos
       AND k.isDeleted = false
 """)
     List<KomposisiNilaiMataKuliah> findByMataKuliahId(@Param("mataKuliahId") UUID mataKuliahId);
+
+
+
+    /**
+     * Batch-fetches all grading components for a given list of courses.
+     * This is crucial for performance.
+     */
+    @Query("SELECT knm FROM KomposisiNilaiMataKuliah knm " +
+            "JOIN FETCH knm.siakKomposisiNilai " +
+            "WHERE knm.siakMataKuliah.id IN :mataKuliahIds AND knm.isDeleted = false")
+    List<KomposisiNilaiMataKuliah> findAllByMataKuliahIn(List<UUID> mataKuliahIds);
 }

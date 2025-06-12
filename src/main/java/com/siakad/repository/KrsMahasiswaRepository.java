@@ -58,4 +58,17 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
     Optional<KrsMahasiswa> findByIdAndIsDeletedFalse(UUID id);
 
     List<KrsMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswa_Id);
+
+    @Query("SELECT k FROM KrsMahasiswa k WHERE k.siakMahasiswa.id IN :mahasiswaIds AND k.siakPeriodeAkademik.id = :periodeId")
+    List<KrsMahasiswa> findByMahasiswaIdsAndPeriodeId(List<UUID> mahasiswaIds, UUID periodeId);
+
+    List<KrsMahasiswa> findBySiakMahasiswa_IdInAndSiakPeriodeAkademik_IdAndStatus(
+            List<UUID> mahasiswaIds,
+            UUID periodeAkademikId,
+            String status
+    );
+
+    @Query("SELECT k.semester, SUM(k.jumlahSksDiambil) FROM KrsMahasiswa k " +
+            "WHERE k.siakMahasiswa.id = :mahasiswaId GROUP BY k.semester ORDER BY k.semester ASC")
+    List<Object[]> findSksDiambilPerSemester(UUID mahasiswaId);
 }

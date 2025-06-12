@@ -4,15 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
-import com.siakad.dto.response.ApiResDto;
-import com.siakad.dto.response.KeluargaMahasiswaResDto;
-import com.siakad.dto.response.MahasiswaResDto;
-import com.siakad.dto.response.PaginationDto;
+import com.siakad.dto.response.*;
+import com.siakad.entity.KrsRincianMahasiswa;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.service.KeluargaMahasiswaService;
-import com.siakad.service.MahasiswaService;
+import com.siakad.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Tag(name = "Mahasiswa")
@@ -39,8 +37,11 @@ import java.util.UUID;
 public class MahasiswaController {
 
     private final MahasiswaService service;
-
     private final KeluargaMahasiswaService keluargaService;
+    private final HasilStudiService hasilStudiService;
+    private final KrsService krsService;
+    private final DashboardService dashboardService;
+    private final KomposisiNilaiMataKuliahMhsService komposisiNilaiMataKuliahMhsService;
 
     private final ObjectMapper objectMapper;
 
@@ -265,5 +266,45 @@ public class MahasiswaController {
         } catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
+    }
+
+    @Operation(summary = "Get Mahasiswa Komposisi Nilai")
+    @GetMapping("{mahasiswaId}/komposisi-nilai")
+    public ResponseEntity<ApiResDto<List<KomposisiNilaiMataKuliahMhsResDto>>> getKomposisiNilaiMahasiswa(
+            @PathVariable UUID mahasiswaId,
+            @RequestParam UUID periodeAkademikId
+    ) {
+        try {
+            List<KomposisiNilaiMataKuliahMhsResDto> nilai = komposisiNilaiMataKuliahMhsService.getKomposisiMataKuliah(mahasiswaId, periodeAkademikId);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<KomposisiNilaiMataKuliahMhsResDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(nilai)
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @GetMapping("/{mahasiswaId}/kemajuan-belajar")
+    public ResponseEntity<ApiResDto<MahasiswaChartDto>> getDashboard(
+            @PathVariable UUID mahasiswaId
+    ) {
+        MahasiswaChartDto dashboardData = service.getDashboardAkademik(mahasiswaId);
+
+        return ResponseEntity.ok(
+                ApiResDto.<MahasiswaChartDto>builder()
+                        .status("SUCCESS")
+                        .message("Data dashboard akademik berhasil diambil.")
+                        .data(dashboardData)
+                        .build()
+        );
     }
 }

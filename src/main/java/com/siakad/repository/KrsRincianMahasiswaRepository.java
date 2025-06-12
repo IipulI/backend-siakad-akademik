@@ -97,4 +97,28 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
           AND km.isDeleted = false
     """)
     List<KrsRincianMahasiswa> findAllActiveByMahasiswaId(@Param("mahasiswaId") UUID mahasiswaId);
+
+
+
+    /**
+     * Fetches all enrollments for a student in a given semester.
+     * It eagerly joins all necessary related tables to prevent N+1 query problems.
+     */
+    @Query("SELECT krr FROM KrsRincianMahasiswa krr " +
+            "JOIN FETCH krr.siakKelasKuliah kk " +
+            "JOIN FETCH kk.siakMataKuliah mk " +
+            "JOIN FETCH mk.siakTahunKurikulum tk " +
+            "WHERE krr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
+            "AND krr.siakKrsMahasiswa.siakPeriodeAkademik.id = :periodeAkademikId " +
+            "AND krr.isDeleted = false")
+    List<KrsRincianMahasiswa> findAllByMahasiswaAndPeriodeWithDetails(UUID mahasiswaId, UUID periodeAkademikId);
+
+
+    @Query("SELECT krr.hurufMutu, SUM(kk.siakMataKuliah.sksTatapMuka + kk.siakMataKuliah.sksPraktikum) " +
+            "FROM KrsRincianMahasiswa krr " +
+            "JOIN krr.siakKelasKuliah kk " +
+            "WHERE krr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
+            "AND krr.hurufMutu IS NOT NULL " +
+            "GROUP BY krr.hurufMutu")
+    List<Object[]> findGradeDistributionBySks(UUID mahasiswaId);
 }
