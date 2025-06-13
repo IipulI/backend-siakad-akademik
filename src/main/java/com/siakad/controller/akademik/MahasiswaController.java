@@ -4,15 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
-import com.siakad.dto.response.ApiResDto;
-import com.siakad.dto.response.KeluargaMahasiswaResDto;
-import com.siakad.dto.response.MahasiswaResDto;
-import com.siakad.dto.response.PaginationDto;
+import com.siakad.dto.response.*;
+import com.siakad.entity.KrsRincianMahasiswa;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.service.KeluargaMahasiswaService;
-import com.siakad.service.MahasiswaService;
+import com.siakad.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Tag(name = "Mahasiswa")
@@ -39,10 +37,12 @@ import java.util.UUID;
 public class MahasiswaController {
 
     private final MahasiswaService service;
-
     private final KeluargaMahasiswaService keluargaService;
-
     private final ObjectMapper objectMapper;
+    private final KelasKuliahService kelasKuliahService;
+    private final HasilStudiService hasilStudiService;
+    private final KrsService krsService;
+    private final DashboardService dashboardService;
 
     @Operation(summary = "Add Mahasiswa")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -224,12 +224,12 @@ public class MahasiswaController {
     }
 
     @Operation(summary = "Get One Keluarga Mahasiswa")
-    @GetMapping("/{id}/keluaga-mahasiswa/{idKeluarga}")
+    @GetMapping("/{id}/keluaga-mahasiswa/{keluargaId}")
     public ResponseEntity<ApiResDto<KeluargaMahasiswaResDto>> getOne(
             @PathVariable UUID id,
-            @PathVariable UUID idKeluarga) {
+            @PathVariable UUID keluargaId) {
         try {
-            var data = keluargaService.getOne(id, idKeluarga);
+            var data = keluargaService.getOne(id, keluargaId);
             return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<KeluargaMahasiswaResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
@@ -245,19 +245,205 @@ public class MahasiswaController {
     }
 
     @Operation(summary = "Update Keluarga Mahasiswa")
-    @PutMapping("/{id}/keluarga-mahasiswa/{idKeluarga}")
+    @PutMapping("/{id}/keluarga-mahasiswa/{keluargaId}")
     public ResponseEntity<ApiResDto<KeluargaMahasiswaResDto>> update(
             @PathVariable UUID id,
-            @PathVariable UUID idKeluarga,
+            @PathVariable UUID keluargaId,
             @Valid @RequestBody KeluargaMahasiswaReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
-            keluargaService.update(id, idKeluarga, request, servletRequest);
+            keluargaService.update(id, keluargaId, request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiResDto.<KeluargaMahasiswaResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+
+    @Operation(summary = "Ganti semester")
+    @PutMapping("/ganti-semester")
+    public ResponseEntity<ApiResDto<Objects>> gantiSemester(){
+        try {
+
+            kelasKuliahService.gantiSemester();
+
+            return ResponseEntity.ok(
+                    ApiResDto.<Objects>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Transkip Nilai")
+    @GetMapping("/transkip/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<TranskipDto>> getTranskip(@PathVariable UUID mahasiswaId) {
+        try {
+            List<KrsRincianMahasiswa> rincianMahasiswa = hasilStudiService.getRincianMahasiswa(mahasiswaId);
+
+            TranskipDto transkipDto = hasilStudiService.buildTranskip(rincianMahasiswa);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<TranskipDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .data(transkipDto)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Khs")
+    @GetMapping("/khs/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<HasilStudiDto>> getTranskip(@PathVariable("mahasiswaId") UUID mahasiswaId,
+                                                                @RequestParam UUID periodeAkademikId) {
+        try {
+            HasilStudiDto hasilStudi = hasilStudiService.getHasilStudi(mahasiswaId, periodeAkademikId);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<HasilStudiDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(hasilStudi)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get mengulang by Periode")
+    @GetMapping("/mengulang/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<List<MengulangResDto>>> krsMengulang(
+            @PathVariable UUID mahasiswaId,
+            @RequestParam UUID periodeAkademikId
+    ) {
+        try {
+            List<MengulangResDto> allMengulangByPeriode = krsService.getAllMengulangByPeriode(mahasiswaId, periodeAkademikId);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<MengulangResDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(allMengulangByPeriode)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get All Finalisasi MK")
+    @GetMapping("/finalisasi-mk/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<List<FinalisasiMkDto>>> finalisasiMk    (
+            @PathVariable("mahasiswaId") UUID mahasiswaId
+    ) {
+        try {
+            List<FinalisasiMkDto> allFinalisasiMk = krsService.getAllFinalisasiMk(mahasiswaId);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<FinalisasiMkDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(allFinalisasiMk)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get All Status Semester")
+    @GetMapping("/status-semester/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<List<StatusSemesterDto>>> getAllStatusSemester  (
+            @PathVariable("mahasiswaId") UUID mahasiswaId
+    ) {
+        try {
+            List<StatusSemesterDto> statusSemester = krsService.getStatusSemester(mahasiswaId);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<StatusSemesterDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(statusSemester)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Riwayat Krs by Mahasiswa ID")
+    @GetMapping("/riwayat-krs/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<RiwayatKrsDto>> getRiwayatKrs  (
+            @PathVariable("mahasiswaId") UUID id) {
+        try {
+            RiwayatKrsDto riwayatKrs = krsService.getRiwayatKrs(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<RiwayatKrsDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(riwayatKrs)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Delete Krs")
+    @DeleteMapping("/krs/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<Objects>> deletedKrs(@PathVariable("mahasiswaId") UUID id, HttpServletRequest request) {
+        {
+            try {
+                krsService.deleteKrs(id, request);
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        ApiResDto.<Objects>builder()
+                                .status(MessageKey.SUCCESS.getMessage())
+                                .message(MessageKey.DELETED.getMessage())
+                                .build()
+                );
+            } catch (ApplicationException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+            }
+        }
+    }
+
+    @Operation(summary = "Get Mahasiswa Baru")
+    @GetMapping("/tagihan-komponen/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<TagihanKomponenMahasiswaDto>> getTagihanMahasiwa(@PathVariable("mahasiswaId") UUID id) {
+        try {
+            TagihanKomponenMahasiswaDto tagihanKomponenMahasiswa = dashboardService.getTagihanKomponenMahasiswa(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<TagihanKomponenMahasiswaDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(tagihanKomponenMahasiswa)
                             .build()
             );
         } catch (ApplicationException e) {

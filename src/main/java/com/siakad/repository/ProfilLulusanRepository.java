@@ -23,5 +23,4 @@ public interface ProfilLulusanRepository extends JpaRepository<ProfilLulusan, UU
     WHERE p.id IN :ids AND p.isDeleted = false
     """)
     List<ProfilLulusan> findAllByIdInAndIsDeletedFalse(@Param("ids") List<UUID> ids);
-
 }
