@@ -21,4 +21,10 @@ public interface CapaianPembelajaranLulusanRepository extends JpaRepository<Capa
     WHERE p.id IN :ids AND p.isDeleted = false
     """)
     List<CapaianPembelajaranLulusan> findAllByIdInAndIsDeletedFalse(@Param("ids") List<UUID> ids);
+    boolean existsByProfilLulusanList_SiakProgramStudi_IdAndIsDeletedFalse(UUID programStudiId);
+
+    boolean existsBySiakProgramStudiIdAndIsDeletedFalse(UUID programStudiId);
+
+    boolean existsByProfilLulusanList_SiakProgramStudi_IdAndSiakTahunKurikulum_IdAndIsDeletedFalse(UUID prodiId, UUID tahunKurikulumId);
+
 }

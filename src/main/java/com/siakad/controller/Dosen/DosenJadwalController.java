@@ -1,4 +1,4 @@
-package com.siakad.controller.dosen;
+package com.siakad.controller.Dosen;
 
 import com.siakad.dto.request.GetJadwalReqDto;
 import com.siakad.dto.request.GetJadwalResDto;
