@@ -26,6 +26,7 @@ public class Jenjang {
 
     private String nama;
     private String jenjang;
+    private String kodeJenjang;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;

@@ -29,6 +29,9 @@
         @JoinColumn(name = "siak_jenjang_id", nullable = false)
         private Jenjang siakJenjang;
 
+        @Column(name = "kode_program_studi")
+        private String kodeProgramStudi;
+
         @Column(name = "nama_program_studi", nullable = false)
         private String namaProgramStudi;
 
