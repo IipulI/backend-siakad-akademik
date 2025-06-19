@@ -70,9 +70,9 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
     }
 
     @Override
-    public Page<MahasiswaKeuanganResDto> getPaginateMahasiswa(String keyword, String fakultas, String angkatan, Integer semester, String programStudi, String npm, Pageable pageable) {
+    public Page<MahasiswaKeuanganResDto> getPaginateMahasiswa(String keyword, String fakultas, String periodeMasuk, String sistemKuliah, String angkatan, Integer semester, String programStudi, String npm, Pageable pageable) {
         MahasiswaSpecification specBuilder = new MahasiswaSpecification();
-        Specification<Mahasiswa> spec = specBuilder.entitySearch(keyword, fakultas, angkatan, semester, programStudi, npm);
+        Specification<Mahasiswa> spec = specBuilder.entitySearch(keyword, fakultas, periodeMasuk, sistemKuliah, angkatan, semester, programStudi, npm);
 
         Page<Mahasiswa> all = mahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toKeuanganDto);
