@@ -146,40 +146,37 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
     @Override
     public void tandaiLunas(TandaiLunasReqDto reqDto, HttpServletRequest servletRequest) {
 
-        for (UUID mahasiswaId : reqDto.getMahasiswaIds()) {
-            Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(mahasiswaId)
+        for (UUID invoiceId : reqDto.getInvoiceMahasiswaIds()) {
+            InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository
+                    .findByIdAndIsDeletedFalse(invoiceId)
                     .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
-                            "Mahasiswa tidak ditemukan: " + mahasiswaId));
+                            "Invoice tidak ditemukan: " + invoiceId));
 
-            List<InvoiceMahasiswa> invoices = invoiceMahasiswaRepository
-                    .findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarIsNull(mahasiswaId);
-
-            if (invoices.isEmpty()) {
-                throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
-                        "Invoice tidak ditemukan untuk mahasiswa: " + mahasiswaId);
+            if (invoiceMahasiswa.getTanggalBayar() != null) {
+                throw new ApplicationException(ExceptionType.BAD_REQUEST,
+                        "Invoice sudah dibayar: " + invoiceId);
             }
 
-            for (InvoiceMahasiswa invoiceMahasiswa : invoices) {
-                invoiceMahasiswa.setTanggalBayar(LocalDate.now());
-                invoiceMahasiswa.setTotalBayar(invoiceMahasiswa.getTotalTagihan());
-                invoiceMahasiswa.setMetodeBayar(InvoiceKey.MANUAL.getLabel());
-                invoiceMahasiswa.setTahap(InvoiceKey.TAHAP2.getLabel());
-                invoiceMahasiswa.setStatus(InvoiceKey.LUNAS.getLabel());
-                // Jangan ubah createdAt kalau update, cukup updatedAt kalau ada
-                invoiceMahasiswaRepository.save(invoiceMahasiswa);
+            invoiceMahasiswa.setTanggalBayar(LocalDate.now());
+            invoiceMahasiswa.setTotalBayar(invoiceMahasiswa.getTotalTagihan());
+            invoiceMahasiswa.setMetodeBayar(InvoiceKey.MANUAL.getLabel());
+            invoiceMahasiswa.setTahap(InvoiceKey.TAHAP2.getLabel());
+            invoiceMahasiswa.setStatus(InvoiceKey.LUNAS.getLabel());
 
-                InvoicePembayaranKomponenMahasiswa komponen = invoicePembayaranKomponenMahasiswaRepository
-                        .findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
-                        .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
-                                "Tagihan komponen tidak ditemukan: " + invoiceMahasiswa.getId()));
+            invoiceMahasiswaRepository.save(invoiceMahasiswa);
 
-                komponen.setTagihan(BigDecimal.ZERO);
-                invoicePembayaranKomponenMahasiswaRepository.save(komponen);
-            }
+            InvoicePembayaranKomponenMahasiswa komponen = invoicePembayaranKomponenMahasiswaRepository
+                    .findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceId)
+                    .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
+                            "Tagihan komponen tidak ditemukan untuk invoice: " + invoiceId));
+
+            komponen.setTagihan(BigDecimal.ZERO);
+            invoicePembayaranKomponenMahasiswaRepository.save(komponen);
         }
 
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_INVOICE_MAHASISWA);
     }
+
 
 
     @Override

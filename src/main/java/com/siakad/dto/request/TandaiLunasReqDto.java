@@ -7,5 +7,5 @@ import java.util.UUID;
 
 @Data
 public class TandaiLunasReqDto {
-    private List<UUID> mahasiswaIds;
+    private List<UUID> invoiceMahasiswaIds;
 }
