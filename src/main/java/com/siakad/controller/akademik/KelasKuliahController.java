@@ -238,6 +238,32 @@ public class KelasKuliahController {
         }
     }
 
+    @Operation(summary = "Get eligible peserta kuliah")
+    @GetMapping("/{id}/eligible-peserta-kelas")
+    public ResponseEntity<ApiResDto> getEligiblePesertaKelas(
+            @PathVariable UUID id,
+            @RequestParam(required = false) String nama,
+            @RequestParam(required = false) String periodeMasuk,
+            @RequestParam(required = false) String sistemKuliah
+    ) {
+        try {
+
+            List<EligiblePesertaKelasDto> elgiblePesertaKelas = krsService.getEligiblePesertaKelas(id, nama, periodeMasuk, sistemKuliah);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(elgiblePesertaKelas)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @Operation(summary = "Add Peserta Mahasiswa by Kelas Kuliah ID")
     @PostMapping("/{id}/peserta-kelas")
     public ResponseEntity<ApiResDto<Objects>> updatePesertaKelas(

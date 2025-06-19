@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -99,11 +100,11 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
     List<KrsRincianMahasiswa> findAllActiveByMahasiswaId(@Param("mahasiswaId") UUID mahasiswaId);
 
 
+    @Query("SELECT krs.siakMahasiswa.id FROM KrsRincianMahasiswa r " +
+            "JOIN r.siakKrsMahasiswa krs " +
+            "WHERE r.siakKelasKuliah.id = :kelasId AND r.isDeleted = false")
+    Set<UUID> findRegisteredMahasiswaIdsByKelasId(@Param("kelasId") UUID kelasId);
 
-    /**
-     * Fetches all enrollments for a student in a given semester.
-     * It eagerly joins all necessary related tables to prevent N+1 query problems.
-     */
     @Query("SELECT krr FROM KrsRincianMahasiswa krr " +
             "JOIN FETCH krr.siakKelasKuliah kk " +
             "JOIN FETCH kk.siakMataKuliah mk " +

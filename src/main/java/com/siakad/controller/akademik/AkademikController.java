@@ -29,6 +29,7 @@ import java.util.UUID;
 public class AkademikController {
 
     private final KelasKuliahService service;
+    private final AkademikService akademikService;
 
     @Operation(summary = "Ganti semester")
     @PutMapping("/ganti-semester")
@@ -48,5 +49,27 @@ public class AkademikController {
         } catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
+    }
+
+    @Operation(summary = "Get manajemen OBE")
+    @GetMapping("/manajemen-obe")
+    public ResponseEntity<ApiResDto<List<ManajemenOBEResDto>>> getStatusOverview(
+            @RequestParam(required = false) String tahunKurikulum,
+            @RequestParam(required = false) String programStudi,
+            @RequestParam(required = false) String jenjang
+    ) {
+        List<ManajemenOBEResDto> result = akademikService.getStatusOverview(
+                tahunKurikulum,
+                programStudi,
+                jenjang
+        );
+
+        return ResponseEntity.ok(
+                ApiResDto.<List<ManajemenOBEResDto>>builder()
+                        .status("SUCCESS")
+                        .message("Data status overview program studi berhasil diambil.")
+                        .data(result)
+                        .build()
+        );
     }
 }

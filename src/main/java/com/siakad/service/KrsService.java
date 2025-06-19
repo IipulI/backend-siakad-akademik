@@ -20,6 +20,7 @@ public interface KrsService {
     KrsMenungguResDto getAllKrsByStatusMenunggu();
     void updateStatus(HttpServletRequest servletRequest);
     List<PesertaKelas> getPesertaKelas(UUID kelasId);
+    List<EligiblePesertaKelasDto> getEligiblePesertaKelas(UUID kelasId, String nama, String periodeMasuk, String sistemKuliah);
     void addPesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest);
     void deletePesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest);
     void pindahKelasPeserta(UUID id, PindahKelasReqDto request, HttpServletRequest servletRequest);

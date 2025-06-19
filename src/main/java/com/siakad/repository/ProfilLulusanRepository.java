@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +24,8 @@ public interface ProfilLulusanRepository extends JpaRepository<ProfilLulusan, UU
     WHERE p.id IN :ids AND p.isDeleted = false
     """)
     List<ProfilLulusan> findAllByIdInAndIsDeletedFalse(@Param("ids") List<UUID> ids);
+
+
+    @Query("SELECT DISTINCT pl.siakProgramStudi.id FROM ProfilLulusan pl WHERE pl.siakProgramStudi.id IN :prodiIds")
+    Set<UUID> findProdiIdsWithRelations(List<UUID> prodiIds);
 }

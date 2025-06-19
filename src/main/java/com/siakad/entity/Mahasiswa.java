@@ -103,4 +103,10 @@ public class Mahasiswa {
 
     @OneToMany(mappedBy = "siakMahasiswa", cascade = CascadeType.ALL)
     private List<InvoiceMahasiswa> invoiceMahasiswa;
+
+    @OneToMany(mappedBy = "siakMahasiswa", cascade = CascadeType.ALL)
+    private List<HasilStudi> hasilStudi;
+
+    @OneToMany(mappedBy = "siakMahasiswa", cascade = CascadeType.ALL)
+    private List<KrsMahasiswa> krsMahasiswa;
 }

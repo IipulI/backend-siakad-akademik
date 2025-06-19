@@ -2,6 +2,8 @@ package com.siakad.repository;
 
 import com.siakad.entity.KrsMahasiswa;
 import com.siakad.entity.KrsRincianMahasiswa;
+import com.siakad.entity.Mahasiswa;
+import com.siakad.entity.PeriodeAkademik;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -71,4 +73,6 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
     @Query("SELECT k.semester, SUM(k.jumlahSksDiambil) FROM KrsMahasiswa k " +
             "WHERE k.siakMahasiswa.id = :mahasiswaId GROUP BY k.semester ORDER BY k.semester ASC")
     List<Object[]> findSksDiambilPerSemester(UUID mahasiswaId);
+
+    Optional<KrsMahasiswa> findBySiakMahasiswaAndSiakPeriodeAkademik(Mahasiswa mahasiswa, PeriodeAkademik periodeAkademik);
 }

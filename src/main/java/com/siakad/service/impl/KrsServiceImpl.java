@@ -5,10 +5,12 @@ import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.dto.request.PindahKelasReqDto;
+import com.siakad.dto.transform.helper.EligibleMahasiswaMapper;
 import com.siakad.dto.transform.KrsTransform;
 import com.siakad.dto.transform.PesertaKelasTransform;
 import com.siakad.entity.*;
 import com.siakad.entity.service.KrsSpecification;
+import com.siakad.entity.service.MahasiswaSpecification;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.KrsKey;
 import com.siakad.enums.MessageKey;
@@ -53,6 +55,8 @@ public class KrsServiceImpl implements KrsService {
     private final PembimbingAkademikRepository pembimbingAkademikRepository;
     private final JadwalKuliahRepository jadwalKuliahRepository;
     private final JenjangRepository jenjangRepository;
+
+    private final EligibleMahasiswaMapper eligibleMahasiswaMapper;
 
     @Transactional
     @Override
@@ -252,7 +256,7 @@ public class KrsServiceImpl implements KrsService {
     }
 
     @Override
-    public List<PesertaKelas> getPesertaKelas(UUID kelasId) { // Example method
+    public List<PesertaKelas> getPesertaKelas(UUID kelasId) {
         kelasKuliahRepository.findByIdAndIsDeletedFalse(kelasId)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
 
@@ -261,99 +265,159 @@ public class KrsServiceImpl implements KrsService {
         return mapperPesertaKelas.toDtoList(krsRincianMahasiswaList); // Use the mapper to convert the list
     }
 
-            @Override
-            public void addPesertaKelas(UUID kelasId, PesertaKelasReqDto request, HttpServletRequest servletRequest){
-                KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(kelasId)
-                        .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
+    @Override
+    public List<EligiblePesertaKelasDto> getEligiblePesertaKelas(UUID kelasId, String nama, String periodeAkademik, String sistemKuliah){
+        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(kelasId)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
 
-                PeriodeAkademik activePeriode = periodeAkademikRepository.findFirstByStatusActive()
-                        .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada periode aktif"));
+        // total sks matakuliah ini
+        Integer sksMataKuliah = kelasKuliah.getSiakMataKuliah().getSksPraktikum() + kelasKuliah.getSiakMataKuliah().getSksTatapMuka();
 
-                List<KrsRincianMahasiswa> rincianMahasiswaList = new ArrayList<>();
+        // list mahasiswa di prodi ini
+        MahasiswaSpecification specBuilder = new MahasiswaSpecification();
+        Specification<Mahasiswa> spec = specBuilder.entitySearch(nama, null, periodeAkademik, sistemKuliah, null, null, kelasKuliah.getSiakProgramStudi().getNamaProgramStudi(), null);
+        List<Mahasiswa> eligibleMahasiswa = mahasiswaRepository.findAll(spec);
 
-                for (UUID mahasiswaId : request.getMahasiswaIds()){
-                    Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(mahasiswaId).orElseThrow(() -> new RuntimeException("Mahaiswa tidak ditemukan:" + mahasiswaId));
+        // list mahasiswa registered di kelas ini
+        Set<UUID> registeredMahasiswaIds = krsRincianMahasiswaRepository.findRegisteredMahasiswaIdsByKelasId(kelasId);
 
-                    KrsMahasiswa entity = mapper.toEntity(request);
+        // get periode
+        String kodePeriodeSebelumnya;
+        PeriodeAkademik periodeAktif = periodeAkademikRepository.findFirstByStatusActive()
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode aktif"));
 
-                    entity.setSiakMahasiswa(mahasiswa);
-                    entity.setSiakPeriodeAkademik(activePeriode);
-                    entity.setStatus(KrsKey.DRAFT.getLabel());
-                    entity.setUpdatedAt(LocalDateTime.now());
-                    entity.setIsDeleted(false);
-                    int totalSks = kelasKuliah.getSiakMataKuliah().getSksTatapMuka()
-                            + kelasKuliah.getSiakMataKuliah().getSksPraktikum();
-
-                    entity.setJumlahSksDiambil(totalSks);
-                    krsMahasiswaRepository.save(entity);
-
-                    KrsRincianMahasiswa rincianMahasiswa = mapper.toEntityRincianPeserta(request);
-                    rincianMahasiswa.setSiakKelasKuliah(kelasKuliah);
-                    rincianMahasiswa.setSiakKrsMahasiswa(entity);
-                    rincianMahasiswa.setCreatedAt(LocalDateTime.now());
-
-                    boolean isUlang = krsRincianMahasiswaRepository
-                            .existsBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdAndIsDeletedFalse(
-                                    kelasId, mahasiswa.getId());
-
-                    rincianMahasiswa.setKategori(isUlang ? KrsKey.ULANG.getLabel() : KrsKey.BARU.getLabel());
-                    rincianMahasiswa.setIsDeleted(false);
-
-                    rincianMahasiswaList.add(rincianMahasiswa);
-                }
-                krsRincianMahasiswaRepository.saveAll(rincianMahasiswaList);
-                service.saveUserActivity(servletRequest, MessageKey.CREATE_KRS);
-            }
-
-        @Override
-        public void deletePesertaKelas(UUID kelasId, PesertaKelasReqDto request, HttpServletRequest servletRequest) {
-            List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
-                    .findAllBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdInAndIsDeletedFalse(kelasId, request.getMahasiswaIds());
-
-            if (rincianList.isEmpty()) {
-                throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada peserta yang ditemukan untuk dihapus");
-            }
-
-            for (KrsRincianMahasiswa rincian : rincianList) {
-                rincian.setIsDeleted(true);
-                rincian.setUpdatedAt(LocalDateTime.now());
-                KrsMahasiswa krsMahasiswa = rincian.getSiakKrsMahasiswa();
-                if (krsMahasiswa != null) {
-                    krsMahasiswa.setIsDeleted(true);
-                    krsMahasiswa.setUpdatedAt(LocalDateTime.now());
-                    krsMahasiswaRepository.save(krsMahasiswa);
-                }
-            }
-            krsRincianMahasiswaRepository.saveAll(rincianList);
-            service.saveUserActivity(servletRequest, MessageKey.DELETE_KRS);
+        if (periodeAktif.getKodePeriode().charAt(periodeAktif.getKodePeriode().length() - 1) == '1') {
+            String tahunAktif = periodeAktif.getKodePeriode().substring(0, 4);
+            Integer tahunSebelumnya = Integer.parseInt(tahunAktif) - 1;
+            kodePeriodeSebelumnya = tahunSebelumnya + "2";
+        } else {
+            String tahunAktif = periodeAktif.getKodePeriode();
+            int tahunSebelumnya = Integer.parseInt(tahunAktif) - 1;
+            kodePeriodeSebelumnya = Integer.toString(tahunSebelumnya);
         }
 
-        @Override
-        public void pindahKelasPeserta(UUID kelasId, PindahKelasReqDto request, HttpServletRequest servletRequest) {
-            List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
-                    .findAllBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdInAndIsDeletedFalse(kelasId, request.getMahasiswaIds());
+        PeriodeAkademik periodeSebelumnya = periodeAkademikRepository.findByKodePeriodeAndIsDeletedFalse(kodePeriodeSebelumnya)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode tidak ditemukan"));
 
-            KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(request.getKelasId())
-                    .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas tidak ditemukan"));
+        return eligibleMahasiswa.stream()
+                // Filter mahasiswa yang belum terdaftar di kelas ini
+                .filter(mahasiswa -> !registeredMahasiswaIds.contains(mahasiswa.getId()))
+                .map(mahasiswa -> {
+                    // Kalkulasi batas SKS dinamis
+                    Integer batasSks = determineBatasSks(mahasiswa, periodeSebelumnya);
 
-            if (rincianList.isEmpty()) {
-                throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada peserta yang ditemukan untuk dipindahkan ke kelas : " + kelasId);
-            }
+                    // Ambil SKS yang sudah diambil di periode aktif
+                    Integer sksDiambil = krsMahasiswaRepository
+                            .findBySiakMahasiswaAndSiakPeriodeAkademik(mahasiswa, periodeAktif)
+                            .map(KrsMahasiswa::getJumlahSksDiambil)
+                            .orElse(0);
 
-            for (KrsRincianMahasiswa rincian : rincianList) {
-                rincian.setIsDeleted(true);
-                rincian.setSiakKelasKuliah(kelasKuliah);
-                rincian.setUpdatedAt(LocalDateTime.now());
-                KrsMahasiswa krsMahasiswa = rincian.getSiakKrsMahasiswa();
-                if (krsMahasiswa != null) {
-                    krsMahasiswa.setIsDeleted(true);
-                    krsMahasiswa.setUpdatedAt(LocalDateTime.now());
-                    krsMahasiswaRepository.save(krsMahasiswa);
-                }
-            }
-            krsRincianMahasiswaRepository.saveAll(rincianList);
-            service.saveUserActivity(servletRequest, MessageKey.DELETE_KRS);
+                    // Pengecekan akhir kelayakan
+                    if ((sksDiambil + sksMataKuliah) > batasSks) {
+                        return null; // Tidak eligible
+                    }
+
+                    // Mapping ke DTO menggunakan Mapper terpisah
+                    return eligibleMahasiswaMapper.toDto(mahasiswa, batasSks, sksDiambil);
+                })
+                .filter(Objects::nonNull) // Hapus yang tidak eligible
+                .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public void addPesertaKelas(UUID kelasId, PesertaKelasReqDto request, HttpServletRequest servletRequest){
+        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(kelasId)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
+
+        PeriodeAkademik activePeriode = periodeAkademikRepository.findFirstByStatusActive()
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada periode aktif"));
+
+        List<KrsRincianMahasiswa> rincianMahasiswaList = new ArrayList<>();
+
+        for (UUID mahasiswaId : request.getMahasiswaIds()){
+            Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(mahasiswaId).orElseThrow(() -> new RuntimeException("Mahaiswa tidak ditemukan:" + mahasiswaId));
+
+            KrsMahasiswa entity = mapper.toEntity(request);
+
+            entity.setSiakMahasiswa(mahasiswa);
+            entity.setSiakPeriodeAkademik(activePeriode);
+            entity.setStatus(KrsKey.DRAFT.getLabel());
+            entity.setUpdatedAt(LocalDateTime.now());
+            entity.setIsDeleted(false);
+            int totalSks = kelasKuliah.getSiakMataKuliah().getSksTatapMuka()
+                    + kelasKuliah.getSiakMataKuliah().getSksPraktikum();
+
+            entity.setJumlahSksDiambil(totalSks);
+            krsMahasiswaRepository.save(entity);
+
+            KrsRincianMahasiswa rincianMahasiswa = mapper.toEntityRincianPeserta(request);
+            rincianMahasiswa.setSiakKelasKuliah(kelasKuliah);
+            rincianMahasiswa.setSiakKrsMahasiswa(entity);
+            rincianMahasiswa.setCreatedAt(LocalDateTime.now());
+
+            boolean isUlang = krsRincianMahasiswaRepository
+                    .existsBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdAndIsDeletedFalse(
+                            kelasId, mahasiswa.getId());
+
+            rincianMahasiswa.setKategori(isUlang ? KrsKey.ULANG.getLabel() : KrsKey.BARU.getLabel());
+            rincianMahasiswa.setIsDeleted(false);
+
+            rincianMahasiswaList.add(rincianMahasiswa);
         }
+        krsRincianMahasiswaRepository.saveAll(rincianMahasiswaList);
+        service.saveUserActivity(servletRequest, MessageKey.CREATE_KRS);
+    }
+
+    @Override
+    public void deletePesertaKelas(UUID kelasId, PesertaKelasReqDto request, HttpServletRequest servletRequest) {
+        List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
+                .findAllBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdInAndIsDeletedFalse(kelasId, request.getMahasiswaIds());
+
+        if (rincianList.isEmpty()) {
+            throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada peserta yang ditemukan untuk dihapus");
+        }
+
+        for (KrsRincianMahasiswa rincian : rincianList) {
+            rincian.setIsDeleted(true);
+            rincian.setUpdatedAt(LocalDateTime.now());
+            KrsMahasiswa krsMahasiswa = rincian.getSiakKrsMahasiswa();
+            if (krsMahasiswa != null) {
+                krsMahasiswa.setIsDeleted(true);
+                krsMahasiswa.setUpdatedAt(LocalDateTime.now());
+                krsMahasiswaRepository.save(krsMahasiswa);
+            }
+        }
+        krsRincianMahasiswaRepository.saveAll(rincianList);
+        service.saveUserActivity(servletRequest, MessageKey.DELETE_KRS);
+    }
+
+    @Override
+    public void pindahKelasPeserta(UUID kelasId, PindahKelasReqDto request, HttpServletRequest servletRequest) {
+        List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
+                .findAllBySiakKelasKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdInAndIsDeletedFalse(kelasId, request.getMahasiswaIds());
+
+        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(request.getKelasId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas tidak ditemukan"));
+
+        if (rincianList.isEmpty()) {
+            throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada peserta yang ditemukan untuk dipindahkan ke kelas : " + kelasId);
+        }
+
+        for (KrsRincianMahasiswa rincian : rincianList) {
+            rincian.setIsDeleted(true);
+            rincian.setSiakKelasKuliah(kelasKuliah);
+            rincian.setUpdatedAt(LocalDateTime.now());
+            KrsMahasiswa krsMahasiswa = rincian.getSiakKrsMahasiswa();
+            if (krsMahasiswa != null) {
+                krsMahasiswa.setIsDeleted(true);
+                krsMahasiswa.setUpdatedAt(LocalDateTime.now());
+                krsMahasiswaRepository.save(krsMahasiswa);
+            }
+        }
+        krsRincianMahasiswaRepository.saveAll(rincianList);
+        service.saveUserActivity(servletRequest, MessageKey.DELETE_KRS);
+    }
 
 
     @Override
@@ -679,5 +743,27 @@ public class KrsServiceImpl implements KrsService {
             }
         }
         return null;
+    }
+
+    private Integer determineBatasSks(Mahasiswa mahasiswa, PeriodeAkademik periodeSebelumnya) {
+        int DEFAULT_BATAS_SKS = 21;
+
+        // 1. Cari data hasil studi terakhir (semester tertinggi)
+        Optional<HasilStudi> hasilStudiTerbaru = hasilStudiRepository
+                .findLatestByMahasiswa(mahasiswa.getId());
+
+        // 2. Jika tidak ada data sama sekali, berarti mahasiswa baru
+        if (hasilStudiTerbaru.isEmpty()) {
+            return DEFAULT_BATAS_SKS; // return 21
+        }
+
+        // 3. Jika ada, ambil IPS dan Jenjang-nya
+        BigDecimal ips = hasilStudiTerbaru.get().getIps();
+        Jenjang jenjang = mahasiswa.getSiakProgramStudi().getSiakJenjang();
+
+        // 4. Cari aturan batas SKS di tabel BatasSks
+        return batasSksRepository.findFirstBySiakJenjangAndIpsMinLessThanEqualAndIpsMaxGreaterThanEqualAndIsDeletedFalse(jenjang, ips, ips)
+                .map(BatasSks::getBatasSks)
+                .orElse(DEFAULT_BATAS_SKS);
     }
 }

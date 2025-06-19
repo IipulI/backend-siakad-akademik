@@ -1,9 +1,6 @@
 package com.siakad.dto.transform.helper;
 
-import com.siakad.entity.Dosen;
-import com.siakad.entity.JadwalKuliah;
-import com.siakad.entity.KelasKuliah;
-import com.siakad.entity.KrsRincianMahasiswa;
+import com.siakad.entity.*;
 import com.siakad.repository.JadwalKuliahRepository;
 import com.siakad.repository.KrsRincianMahasiswaRepository;
 import lombok.RequiredArgsConstructor;
