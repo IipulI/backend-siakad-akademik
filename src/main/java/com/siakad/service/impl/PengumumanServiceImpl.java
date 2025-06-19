@@ -40,13 +40,13 @@ public class PengumumanServiceImpl implements PengumumanService {
     private final PengumumanTransform mapper;
 
 
+
     @Override
     public PengumumanResDto save(PengumumanReqDto dto, MultipartFile file, HttpServletRequest servletRequest) throws IOException {
-        User user = userRepository.findByIdAndIsDeletedFalse(dto.getSiakUserId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "User Not Found"));
+        User currentUser = service.getCurrentUser();
 
         Pengumuman entity = mapper.toEntity(dto);
-        entity.setSiakUser(user);
+        entity.setSiakUser(currentUser);
         entity.setIsDeleted(false);
         entity.setBanner(FileUtils.compress(file.getBytes()));
 
@@ -75,12 +75,11 @@ public class PengumumanServiceImpl implements PengumumanService {
         Pengumuman entity = pengumumanRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Pengumuman tidak ditemukan : " + id));
 
-        User user = userRepository.findByIdAndIsDeletedFalse(dto.getSiakUserId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "User Not Found"));
+        User currentUser = service.getCurrentUser();
 
         mapper.toEntity(dto, entity);
         entity.setId(id);
-        entity.setSiakUser(user);
+        entity.setSiakUser(currentUser);
         entity.setUpdatedAt(LocalDateTime.now());
         entity.setBanner(FileUtils.compress(file.getBytes()));
 

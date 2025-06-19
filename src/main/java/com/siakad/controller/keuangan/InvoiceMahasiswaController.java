@@ -144,15 +144,16 @@ public class InvoiceMahasiswaController {
 
     @Operation(summary = "Get One Data Tagihan Terbaru")
     @GetMapping("/tagihan-mahasiswa/{id}")
-    public ResponseEntity<ApiResDto<TagihanMahasiswaResDto>> getOneTagihanMahasiswa(
+    public ResponseEntity<ApiResDto<DetailRiwayatTagihanDto>> getOneTagihanMahasiswa(
             @PathVariable UUID id
     ) {
         try {
 
-            TagihanMahasiswaResDto one = service.getOne(id);
+            DetailRiwayatTagihanDto one = service.getOne(id);
+
 
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<TagihanMahasiswaResDto>builder()
+                    ApiResDto.<DetailRiwayatTagihanDto>builder()
                             .data(one)
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())

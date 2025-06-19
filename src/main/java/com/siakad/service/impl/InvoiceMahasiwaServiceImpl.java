@@ -133,14 +133,45 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
     }
 
     @Override
-    public TagihanMahasiswaResDto getOne(UUID id) {
+    public DetailRiwayatTagihanDto getOne(UUID id) {
         InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Invoice tidak ditemukan : " + id));
+                .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
 
-        InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository.findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
-                        .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tagihan tidak ditemukan : " + invoiceMahasiswa.getId()));
+        DetailRiwayatTagihanDto dto = new DetailRiwayatTagihanDto();
+        dto.setKodeInvoice(invoiceMahasiswa.getKodeInvoice());
+        dto.setPeriodeAkademik(invoiceMahasiswa.getSiakPeriodeAkademik().getNamaPeriode());
+        dto.setMetodeBayar(invoiceMahasiswa.getMetodeBayar());
+        dto.setTanggalBayar(invoiceMahasiswa.getTanggalBayar());
+        dto.setTotalBayar(invoiceMahasiswa.getTotalBayar());
+        dto.setNpm(invoiceMahasiswa.getSiakMahasiswa().getNpm());
+        dto.setNama(invoiceMahasiswa.getSiakMahasiswa().getNama());
 
-        return mapperTagihanMahasiswa.toDto(invoicePembayaranKomponenMahasiswa);
+        ProgramStudiResDto programStudiResDto = new ProgramStudiResDto();
+        programStudiResDto.setId(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getId());
+        programStudiResDto
+                .setNamaProgramStudi(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getNamaProgramStudi());
+
+        JenjangResDto jenjangResDto = new JenjangResDto();
+        jenjangResDto.setId(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getId());
+        jenjangResDto.setNama(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getNama());
+        jenjangResDto
+                .setJenjang(invoiceMahasiswa.getSiakMahasiswa().getSiakProgramStudi().getSiakJenjang().getJenjang());
+        programStudiResDto.setJenjang(jenjangResDto);
+        dto.setProgramStudiResDto(programStudiResDto);
+
+        List<InvoiceMahasiswa> invoices = invoiceMahasiswaRepository
+                .findAllBySiakMahasiswa_IdAndIsDeletedFalseAndTanggalBayarNotNull(invoiceMahasiswa.getSiakMahasiswa().getId());
+
+        List<TagihanKomponenDto> komponenList = invoices.stream()
+                .flatMap(invoice -> invoice.getInvoicePembayaranKomponenMahasiswaList().stream())
+                .map(komponen -> TagihanKomponenDto.builder()
+                        .kodeKomponen(komponen.getInvoiceKomponen().getKodeKomponen())
+                        .namaKomponen(komponen.getInvoiceKomponen().getNama())
+                        .tagihan(komponen.getInvoiceKomponen().getNominal())
+                        .build())
+                .toList();
+        dto.setTagihanKomponenDtos(komponenList);
+        return dto;
     }
 
     @Override

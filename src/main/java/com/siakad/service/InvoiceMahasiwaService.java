@@ -27,7 +27,7 @@ public interface InvoiceMahasiwaService {
 
     void deleteInvoiceMahasiswa(UUID id, HttpServletRequest servletRequest);
 
-    TagihanMahasiswaResDto getOne(UUID id);
+    DetailRiwayatTagihanDto getOne(UUID id);
 
     void tandaiLunas(TandaiLunasReqDto reqDto, HttpServletRequest servletRequest);
 
