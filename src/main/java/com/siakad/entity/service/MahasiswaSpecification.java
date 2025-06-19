@@ -23,6 +23,14 @@ public class MahasiswaSpecification extends QuerySpecification<Mahasiswa> {
         return attributeContains("siakProgramStudi.siakFakultas.namaFakultas", param);
     }
 
+    private Specification<Mahasiswa> byPeriodeMasuk(String param) {
+        return attributeContains("periodeMasuk", param);
+    }
+
+    private Specification<Mahasiswa> bySistemKuliah(String param) {
+        return attributeContains("sistemKuliah", param);
+    }
+
     private Specification<Mahasiswa> byAngkatan(String param) {
         return attributeContains("angkatan", param);
     }
@@ -35,7 +43,7 @@ public class MahasiswaSpecification extends QuerySpecification<Mahasiswa> {
         return attributeContains("nama", param);
     }
 
-    public Specification<Mahasiswa> entitySearch(String keyword, String fakultas, String angkatan, Integer semester, String programStudi, String npm) {
+    public Specification<Mahasiswa> entitySearch(String keyword, String fakultas, String periodeMasuk, String sistemKuliah, String angkatan, Integer semester, String programStudi, String npm) {
         Specification<Mahasiswa> spec = byIsDeleted();
 
         if (!Strings.isBlank(programStudi)){
@@ -44,6 +52,14 @@ public class MahasiswaSpecification extends QuerySpecification<Mahasiswa> {
 
         if(!Strings.isBlank(fakultas)){
             spec = spec.and(byFakultas(fakultas));
+        }
+
+        if(!Strings.isBlank(periodeMasuk)){
+            spec = spec.and(byPeriodeMasuk(periodeMasuk));
+        }
+
+        if(!Strings.isBlank(sistemKuliah)){
+            spec = spec.and(bySistemKuliah(sistemKuliah));
         }
 
         if(!Strings.isBlank(angkatan)){

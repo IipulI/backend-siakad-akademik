@@ -10,4 +10,7 @@ public class MataKuliahDto {
     private String tahunKurikulum;
     private String namaMataKuliah;
     private String kodeMataKuliah;
+    private Integer sksTatapMuka;
+    private Integer sksPraktikum;
+    private Integer semester;
 }

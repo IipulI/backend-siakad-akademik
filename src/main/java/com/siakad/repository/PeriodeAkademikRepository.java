@@ -17,6 +17,8 @@ public interface PeriodeAkademikRepository extends JpaRepository<PeriodeAkademik
         JpaSpecificationExecutor<PeriodeAkademik> {
     Optional<PeriodeAkademik> findByIdAndIsDeletedFalse(UUID id);
 
+    Optional<PeriodeAkademik> findByKodePeriodeAndIsDeletedFalse(String kodePeriode);
+
     @Query("""
     SELECT p FROM PeriodeAkademik p
     WHERE p.status = 'ACTIVE' AND p.isDeleted = false

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public.siak_jadwal_kuliah (
     jam_mulai TIME NOT NULL,
     jam_selesai TIME NOT NULL,
     hari VARCHAR(10) NOT NULL,
-    jenis_pertemuan VARCHAR(5) NOT NULL,
+    jenis_pertemuan VARCHAR(15) NOT NULL,
     metode_pembelajaran VARCHAR(10) NOT NULL,
     is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

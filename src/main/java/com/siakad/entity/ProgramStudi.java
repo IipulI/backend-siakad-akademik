@@ -6,6 +6,7 @@
     import org.hibernate.annotations.UpdateTimestamp;
 
     import java.time.LocalDateTime;
+    import java.util.List;
     import java.util.UUID;
 
     @Entity
@@ -28,6 +29,9 @@
         @ManyToOne
         @JoinColumn(name = "siak_jenjang_id", nullable = false)
         private Jenjang siakJenjang;
+
+        @OneToMany(mappedBy = "siakProgramStudi")
+        private List<MataKuliah> mataKuliahList;
 
         @Column(name = "kode_program_studi")
         private String kodeProgramStudi;

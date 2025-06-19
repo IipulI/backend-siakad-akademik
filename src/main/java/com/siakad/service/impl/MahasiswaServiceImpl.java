@@ -1,7 +1,9 @@
     package com.siakad.service.impl;
 
     import com.siakad.dto.request.MahasiswaReqDto;
+    import com.siakad.dto.response.MahasiswaChartDto;
     import com.siakad.dto.response.MahasiswaResDto;
+    import com.siakad.dto.response.chart.*;
     import com.siakad.dto.transform.MahasiswaTransform;
     import com.siakad.entity.*;
     import com.siakad.enums.ExceptionType;
@@ -24,9 +26,14 @@
     import org.springframework.web.multipart.MultipartFile;
 
     import java.io.IOException;
+    import java.math.BigDecimal;
     import java.time.LocalDateTime;
+    import java.util.List;
+    import java.util.Map;
     import java.util.Optional;
     import java.util.UUID;
+    import java.util.stream.Collectors;
+    import java.util.stream.Stream;
 
     @Slf4j
     @Service
@@ -41,6 +48,14 @@
         private final PasswordEncoder passwordEncoder;
         private final UserActivityService service;
         private final ProgramStudiRepository programStudiRepository;
+
+        private final HasilStudiRepository hasilStudiRepository;
+        private final KrsMahasiswaRepository krsMahasiswaRepository;
+        private final KrsRincianMahasiswaRepository krsRincianRepository;
+
+        // In a real app, these would come from the database (e.g., from ProgramStudi)
+        private static final int SKS_BATAS_LULUS = 144;
+        private static final BigDecimal IP_MINIMUM = new BigDecimal("2.50");
 
         @Override
         @Transactional
@@ -182,4 +197,84 @@
             return user;
         }
 
+        @Override
+        public MahasiswaChartDto getDashboardAkademik(UUID mahasiswaId){
+            List<HasilStudi> riwayatHasilStudi = hasilStudiRepository.findBySiakMahasiswaIdOrderBySemesterAsc(mahasiswaId);
+            List<Object[]> sksDiambilData = krsMahasiswaRepository.findSksDiambilPerSemester(mahasiswaId);
+            List<Object[]> distribusiNilaiData = krsRincianRepository.findGradeDistributionBySks(mahasiswaId);
+
+            PerkuliahanChartDto perkuliahanChart = buildPerkuliahanChart(sksDiambilData);
+            ProgresSksChartDto progresSksChart = buildProgresSksChart(riwayatHasilStudi);
+            IndeksPrestasiChartDto indeksPrestasiChart = buildIndeksPrestasiChart(riwayatHasilStudi);
+            SksTempuhChartDto sksTempuhChart = buildSksTempuhChart(riwayatHasilStudi, sksDiambilData);
+            DistribusiNilaiChartDto distribusiNilaiChart = buildDistribusiNilaiChart(distribusiNilaiData);
+
+
+            return MahasiswaChartDto.builder()
+                    .perkuliahan(perkuliahanChart)
+                    .progresSks(progresSksChart)
+                    .sksTempuh(sksTempuhChart)
+                    .indeksPrestasi(indeksPrestasiChart)
+                    .distribusiNilai(distribusiNilaiChart)
+                    .build();
+        }
+
+        private PerkuliahanChartDto buildPerkuliahanChart(List<Object[]> sksDiambilData) {
+            List<SksPerSemesterDto> sksList = sksDiambilData.stream()
+                    .map(row -> new SksPerSemesterDto((Integer) row[0], ((Number) row[1]).intValue()))
+                    .collect(Collectors.toList());
+
+            return PerkuliahanChartDto.builder()
+                    .sksDiambilPerSemester(sksList)
+                    .zonaPeringatan(new ZonaStudiDto(9))
+                    .zonaDropOut(new ZonaStudiDto(15))
+                    .build();
+        }
+
+        private ProgresSksChartDto buildProgresSksChart(List<HasilStudi> riwayatHasilStudi) {
+            List<SksLulusKumulatifDto> sksLulusList = riwayatHasilStudi.stream()
+                    .map(hs -> new SksLulusKumulatifDto(hs.getSemester(), hs.getSksLulus()))
+                    .collect(Collectors.toList());
+
+            return ProgresSksChartDto.builder()
+                    .batasLulus(SKS_BATAS_LULUS)
+                    .sksLulusKumulatif(sksLulusList)
+                    .build();
+        }
+
+        private IndeksPrestasiChartDto buildIndeksPrestasiChart(List<HasilStudi> riwayatHasilStudi) {
+            List<RiwayatIpDto> riwayatIpList = riwayatHasilStudi.stream()
+                    .map(hs -> new RiwayatIpDto(hs.getSemester(), hs.getIps(), hs.getIpk()))
+                    .collect(Collectors.toList());
+
+            return IndeksPrestasiChartDto.builder()
+                    .ipMinimum(IP_MINIMUM)
+                    .riwayat(riwayatIpList)
+                    .build();
+        }
+
+        private SksTempuhChartDto buildSksTempuhChart(List<HasilStudi> riwayatHasilStudi, List<Object[]> sksDiambilData) {
+            int sksLulus = riwayatHasilStudi.isEmpty() ? 0 : riwayatHasilStudi.get(riwayatHasilStudi.size() - 1).getSksLulus();
+            int sisaSksUntukLulus = SKS_BATAS_LULUS - sksLulus;
+
+            return SksTempuhChartDto.builder()
+                    .lulus(sksLulus)
+                    .belumLulus(sisaSksUntukLulus - sksLulus)
+                    .total(SKS_BATAS_LULUS)
+                    .build();
+        }
+
+        private DistribusiNilaiChartDto buildDistribusiNilaiChart(List<Object[]> distribusiNilaiData) {
+            Map<String, Integer> sksByGrade = distribusiNilaiData.stream()
+                    .collect(Collectors.toMap(
+                            row -> (String) row[0],
+                            row -> ((Number) row[1]).intValue()
+                    ));
+
+            List<DetailNilaiDto> detailList = Stream.of("A", "AB", "B", "BC", "C", "D", "E")
+                    .map(grade -> new DetailNilaiDto(grade, sksByGrade.getOrDefault(grade, 0)))
+                    .collect(Collectors.toList());
+
+            return DistribusiNilaiChartDto.builder().detail(detailList).build();
+        }
     }

@@ -3,6 +3,7 @@ package com.siakad.service;
 import com.siakad.dto.request.KrsReqDto;
 import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.request.PindahKelasReqDto;
+import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.enums.StatusMahasiswa;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ public interface KrsService {
     KrsMenungguResDto getAllKrsByStatusMenunggu();
     void updateStatus(HttpServletRequest servletRequest);
     List<PesertaKelas> getPesertaKelas(UUID kelasId);
+    List<EligiblePesertaKelasDto> getEligiblePesertaKelas(UUID kelasId, String nama, String periodeMasuk, String sistemKuliah);
     void addPesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest);
     void deletePesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest);
     void pindahKelasPeserta(UUID id, PindahKelasReqDto request, HttpServletRequest servletRequest);
@@ -28,4 +30,7 @@ public interface KrsService {
     List<FinalisasiMkDto> getAllFinalisasiMk(UUID mahasiswaId);
     List<StatusSemesterDto> getStatusSemester(UUID mahasiswaId);
     RiwayatKrsDto getRiwayatKrs(UUID mahasiswaId);
+
+    void updateStatusKrsSetuju(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest);
+    void updateStatusKrsKembalikan(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest);
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -27,4 +28,11 @@ public interface CapaianPembelajaranLulusanRepository extends JpaRepository<Capa
 
     boolean existsByProfilLulusanList_SiakProgramStudi_IdAndSiakTahunKurikulum_IdAndIsDeletedFalse(UUID prodiId, UUID tahunKurikulumId);
 
+
+    @Query("SELECT DISTINCT cpl.siakProgramStudi.id FROM CapaianPembelajaranLulusan cpl WHERE cpl.siakProgramStudi.id IN :prodiIds")
+    Set<UUID> findProdiIdsWithRelations(List<UUID> prodiIds);
+
+    // Query untuk mengecek status pemetaan PL-CPL
+    @Query("SELECT DISTINCT cpl.siakProgramStudi.id FROM CapaianPembelajaranLulusan cpl WHERE cpl.siakProgramStudi.id IN :prodiIds AND SIZE(cpl.profilLulusanList) > 0")
+    Set<UUID> findProdiIdsWithPemetaanPlCpl(List<UUID> prodiIds);
 }

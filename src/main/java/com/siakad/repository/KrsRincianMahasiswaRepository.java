@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -97,4 +98,28 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
           AND km.isDeleted = false
     """)
     List<KrsRincianMahasiswa> findAllActiveByMahasiswaId(@Param("mahasiswaId") UUID mahasiswaId);
+
+
+    @Query("SELECT krs.siakMahasiswa.id FROM KrsRincianMahasiswa r " +
+            "JOIN r.siakKrsMahasiswa krs " +
+            "WHERE r.siakKelasKuliah.id = :kelasId AND r.isDeleted = false")
+    Set<UUID> findRegisteredMahasiswaIdsByKelasId(@Param("kelasId") UUID kelasId);
+
+    @Query("SELECT krr FROM KrsRincianMahasiswa krr " +
+            "JOIN FETCH krr.siakKelasKuliah kk " +
+            "JOIN FETCH kk.siakMataKuliah mk " +
+            "JOIN FETCH mk.siakTahunKurikulum tk " +
+            "WHERE krr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
+            "AND krr.siakKrsMahasiswa.siakPeriodeAkademik.id = :periodeAkademikId " +
+            "AND krr.isDeleted = false")
+    List<KrsRincianMahasiswa> findAllByMahasiswaAndPeriodeWithDetails(UUID mahasiswaId, UUID periodeAkademikId);
+
+
+    @Query("SELECT krr.hurufMutu, SUM(kk.siakMataKuliah.sksTatapMuka + kk.siakMataKuliah.sksPraktikum) " +
+            "FROM KrsRincianMahasiswa krr " +
+            "JOIN krr.siakKelasKuliah kk " +
+            "WHERE krr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
+            "AND krr.hurufMutu IS NOT NULL " +
+            "GROUP BY krr.hurufMutu")
+    List<Object[]> findGradeDistributionBySks(UUID mahasiswaId);
 }

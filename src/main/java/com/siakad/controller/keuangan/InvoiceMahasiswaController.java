@@ -65,6 +65,8 @@ public class InvoiceMahasiswaController {
     @GetMapping("/mahasiswa")
     public ResponseEntity<ApiResDto<List<MahasiswaKeuanganResDto>>> getPaginated(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String periodeMasuk,
+            @RequestParam(required = false) String sistemKuliah,
             @RequestParam(required = false) String fakultas,
             @RequestParam(required = false) String angkatan,
             @RequestParam(required = false) Integer semester,
@@ -83,7 +85,7 @@ public class InvoiceMahasiswaController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
-            Page<MahasiswaKeuanganResDto> search = service.getPaginateMahasiswa(keyword, fakultas, angkatan, semester, programStudi, npm, pageable);
+            Page<MahasiswaKeuanganResDto> search = service.getPaginateMahasiswa(keyword, fakultas, periodeMasuk, sistemKuliah, angkatan, semester, programStudi, npm, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<MahasiswaKeuanganResDto>>builder()

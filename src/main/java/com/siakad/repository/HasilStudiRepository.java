@@ -7,8 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Repository
 public interface HasilStudiRepository extends JpaRepository<HasilStudi, UUID> {
@@ -54,5 +57,26 @@ public interface HasilStudiRepository extends JpaRepository<HasilStudi, UUID> {
 """)
     Integer sumSksDiambilByMahasiswa(UUID mahasiswaId);
 
+    /**
+     * This advanced query gets ONLY the latest HasilStudi record for each student in the list.
+     * It finds the max semester for each student in the subquery and joins back to it.
+     *
+     * @param mahasiswaIds The list of student UUIDs to find results for.
+     * @return A list of the most recent HasilStudi entities for the given students.
+     */
+    @Query("SELECT h FROM HasilStudi h WHERE h.siakMahasiswa.id IN :mahasiswaIds AND h.semester = " +
+            "(SELECT MAX(h2.semester) FROM HasilStudi h2 WHERE h2.siakMahasiswa.id = h.siakMahasiswa.id)")
+    List<HasilStudi> findLatestByMahasiswaIds(List<UUID> mahasiswaIds);
 
+    /**
+     * Helper method to convert the list of results into a Map for fast lookups in the service.
+     * The key is the Mahasiswa ID.
+     */
+    default Map<UUID, HasilStudi> findLatestMapByMahasiswaIds(List<UUID> mahasiswaIds) {
+        return findLatestByMahasiswaIds(mahasiswaIds).stream()
+                .collect(Collectors.toMap(hs -> hs.getSiakMahasiswa().getId(), Function.identity()));
+    }
+
+    // This single query gives us the data for both the IP and SKS Lulus charts
+    List<HasilStudi> findBySiakMahasiswaIdOrderBySemesterAsc(UUID mahasiswaId);
 }
