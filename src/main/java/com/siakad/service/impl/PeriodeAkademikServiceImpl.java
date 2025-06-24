@@ -113,11 +113,28 @@ public class PeriodeAkademikServiceImpl implements PeriodeAkademikService {
         firstByStatusActive.ifPresent(periodeAkademik -> periodeAkademik.setStatus(StatusPeriode.INACTIVE.name()));
 
         PeriodeAkademik periodeAkademik = periodeAkademikRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Perde akademik tidak ditemukan : " + id));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Periode akademik tidak ditemukan : " + id));
 
         periodeAkademik.setId(id);
         periodeAkademik.setStatus(StatusPeriode.ACTIVE.name());
         periodeAkademikRepository.save(periodeAkademik);
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_PERIODE_AKADEMIK);
     }
+
+    @Override
+    public PeriodeAkademikResDto getPeriodeActive() {
+        Optional<PeriodeAkademik> firstByStatusActive = periodeAkademikRepository.findFirstByStatusActive();
+
+        return firstByStatusActive.map(data -> PeriodeAkademikResDto.builder()
+                .id(data.getId())
+                .tahun(data.getSiakTahunAjaran().getTahun())
+                .namaPeriode(data.getNamaPeriode())
+                .kodePeriode(data.getKodePeriode())
+                .status(data.getStatus())
+                .tanggalMulai(data.getTanggalMulai())
+                .tanggalSelesai(data.getTanggalSelesai())
+                .build()
+        ).orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada priode aktif"));
+    }
+
 }

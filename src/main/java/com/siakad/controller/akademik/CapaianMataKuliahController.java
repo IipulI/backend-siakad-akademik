@@ -157,10 +157,12 @@ public class CapaianMataKuliahController {
     @Operation(summary = "Get all mata kuliah for add capaian")
     @GetMapping("/all")
     public ResponseEntity<ApiResDto<List<MataKuliahCpmkMappingDto>>> getAll(
-            @RequestParam(required = false) String tahunKurikulum
+            @RequestParam(required = false) String tahunKurikulum,
+            @RequestParam(required = false) String namaProgramStudi,
+            @RequestParam(required = false) String namaMataKuliah
     ) {
         try {
-            List<MataKuliahCpmkMappingDto> one = service.getMataKuliahWithCpmkStatus(tahunKurikulum);
+            List<MataKuliahCpmkMappingDto> one = service.getMataKuliahWithCpmkStatus(tahunKurikulum, namaProgramStudi, namaMataKuliah);
             return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<List<MataKuliahCpmkMappingDto>>builder()
                             .status(MessageKey.SUCCESS.getMessage())
