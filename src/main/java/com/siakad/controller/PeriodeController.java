@@ -21,10 +21,10 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasAnyRole('KEUANGAN_UNIV', 'KEUANGAN_FAK', 'KEUANGAN_PRODI','AKADEMIK_UNIV', 'AKADEMIK_FAK', 'AKADEMIK_PRODI', 'DOSEN', 'MAHASISWA' )")
 public class PeriodeController {
 
-    private PeriodeAkademikService service;
+    private final PeriodeAkademikService service;
 
     @Operation(summary = "Get Periode Akademik Active status")
-    @GetMapping
+    @GetMapping("/active-status")
     public ResponseEntity<ApiResDto<PeriodeAkademikResDto>> get() {
         try {
             PeriodeAkademikResDto periodeActive = service.getPeriodeActive();
