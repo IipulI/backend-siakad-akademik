@@ -22,5 +22,5 @@ public interface CapaianMataKuliahService {
 
     void delete(UUID idMataKuliah, UUID id, HttpServletRequest servletRequest);
 
-    List<MataKuliahCpmkMappingDto> getMataKuliahWithCpmkStatus(String tahunKurikulum);
+    List<MataKuliahCpmkMappingDto> getMataKuliahWithCpmkStatus(String tahunKurikulum, String namaProgramStudi, String namaMataKuliah);
 }

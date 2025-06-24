@@ -115,7 +115,7 @@ public class CapaianMataKuliahServiceImpl implements CapaianMataKuliahService {
     }
 
     @Override
-    public List<MataKuliahCpmkMappingDto> getMataKuliahWithCpmkStatus(String tahunKurikulum) {
-        return mataKuliahRepository.findAllMataKuliahWithCpmkStatus(tahunKurikulum);
+    public List<MataKuliahCpmkMappingDto> getMataKuliahWithCpmkStatus(String tahunKurikulum, String namaProgramStudi, String namaMataKuliah) {
+        return mataKuliahRepository.findAllMataKuliahWithCpmkStatus(tahunKurikulum, namaProgramStudi, namaMataKuliah);
     }
 }

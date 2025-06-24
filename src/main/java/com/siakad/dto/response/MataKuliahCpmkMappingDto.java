@@ -7,5 +7,6 @@ public interface MataKuliahCpmkMappingDto {
     String getKodeMataKuliah();
     String getNamaMataKuliah();
     String getTahunKurikulum();
+    String getNamaProgramStudi();
     Boolean getHasCpmk();
 }

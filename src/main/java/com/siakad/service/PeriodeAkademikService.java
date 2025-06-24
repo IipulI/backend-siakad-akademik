@@ -18,4 +18,5 @@ public interface PeriodeAkademikService {
     void delete(UUID id, HttpServletRequest servletRequest);
     List<PeriodeDto> getAll();
     void changeStatus(UUID id, HttpServletRequest servletRequest);
+    PeriodeAkademikResDto getPeriodeActive();
 }
