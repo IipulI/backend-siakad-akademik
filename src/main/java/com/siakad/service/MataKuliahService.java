@@ -3,6 +3,7 @@ package com.siakad.service;
 import com.siakad.dto.request.KurikulumProdiReqDto;
 import com.siakad.dto.request.MataKuliahReqDto;
 import com.siakad.dto.response.KurikulumProdiResDto;
+import com.siakad.dto.response.MataKuliahCplCpmkResDto;
 import com.siakad.dto.response.MataKuliahResDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
@@ -19,4 +20,5 @@ public interface MataKuliahService {
     void delete(UUID id, HttpServletRequest servletRequest);
     void updateKurikulum(UUID id, KurikulumProdiReqDto request, HttpServletRequest servletRequest);
     List<KurikulumProdiResDto> getKurikulumPerSemester(String programStudi, String tahunKurikulum);
+    MataKuliahCplCpmkResDto getMataKuliahCplCpmk(UUID id);
 }

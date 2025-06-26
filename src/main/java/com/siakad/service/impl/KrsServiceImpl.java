@@ -236,7 +236,6 @@ public class KrsServiceImpl implements KrsService {
         return mapper.toDtoMenunggu(all);
     }
 
-
     @Override
     public void updateStatus(HttpServletRequest servletRequest) {
         User user = service.getCurrentUser();
@@ -643,8 +642,8 @@ public class KrsServiceImpl implements KrsService {
     }
 
     @Override
-    public RiwayatKrsDto getRiwayatKrs(UUID mahasiswaId) {
-        List<KrsRincianMahasiswa> krsMahasiswaList = krsRincianMahasiswaRepository.findAllActiveByMahasiswaId(mahasiswaId);
+    public RiwayatKrsDto getRiwayatKrs(UUID mahasiswaId, String namaPeriode ) {
+        List<KrsRincianMahasiswa> krsMahasiswaList = krsRincianMahasiswaRepository.findAllActiveByMahasiswaIdAndPeriodeAkademik(mahasiswaId, namaPeriode);
 
         List<KrsDto> result = new ArrayList<>();
         int totalSks = 0;

@@ -423,9 +423,11 @@ public class MahasiswaController {
     @Operation(summary = "Get Riwayat Krs by Mahasiswa ID")
     @GetMapping("/riwayat-krs/{mahasiswaId}")
     public ResponseEntity<ApiResDto<RiwayatKrsDto>> getRiwayatKrs  (
-            @PathVariable("mahasiswaId") UUID id) {
+            @PathVariable("mahasiswaId") UUID id,
+            @RequestParam("namaPeriode") String namaPeriode
+            ) {
         try {
-            RiwayatKrsDto riwayatKrs = krsService.getRiwayatKrs(id);
+            RiwayatKrsDto riwayatKrs = krsService.getRiwayatKrs(id, namaPeriode);
             return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<RiwayatKrsDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
