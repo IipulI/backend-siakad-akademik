@@ -17,4 +17,6 @@ public interface CapaianMataKuliahRepository extends JpaRepository<CapaianMataKu
 
     @Query("SELECT DISTINCT cpmk.siakMataKuliah.siakProgramStudi.id FROM CapaianMataKuliah cpmk WHERE cpmk.siakMataKuliah.siakProgramStudi.id IN :prodiIds")
     Set<UUID> findProdiIdsWithRelations(List<UUID> prodiIds);
+
+    List<CapaianMataKuliah> findBySiakMataKuliahIdAndIsDeletedFalse(UUID mataKuliahId);
 }

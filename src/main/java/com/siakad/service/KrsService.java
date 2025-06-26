@@ -29,7 +29,7 @@ public interface KrsService {
     void deleteKrs(UUID id, HttpServletRequest servletRequest);
     List<FinalisasiMkDto> getAllFinalisasiMk(UUID mahasiswaId);
     List<StatusSemesterDto> getStatusSemester(UUID mahasiswaId);
-    RiwayatKrsDto getRiwayatKrs(UUID mahasiswaId);
+    RiwayatKrsDto getRiwayatKrs(UUID mahasiswaId, String periodeAkademik);
 
     void updateStatusKrsSetuju(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest);
     void updateStatusKrsKembalikan(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest);
