@@ -6,6 +6,7 @@
     import com.siakad.dto.response.chart.*;
     import com.siakad.dto.transform.MahasiswaTransform;
     import com.siakad.entity.*;
+    import com.siakad.entity.service.MahasiswaSpecification;
     import com.siakad.enums.ExceptionType;
     import com.siakad.enums.MessageKey;
     import com.siakad.enums.RoleType;
@@ -21,6 +22,7 @@
     import org.springframework.data.domain.Page;
     import org.springframework.data.domain.PageRequest;
     import org.springframework.data.domain.Pageable;
+    import org.springframework.data.jpa.domain.Specification;
     import org.springframework.security.crypto.password.PasswordEncoder;
     import org.springframework.stereotype.Service;
     import org.springframework.web.multipart.MultipartFile;
@@ -95,9 +97,28 @@
 
 
         @Override
-        public Page<MahasiswaResDto> getPaginated(int page, int size) {
+        public Page<MahasiswaResDto> getPaginated(
+                String keyword,
+                String programStudi,
+                String jenisPendaftaran,
+                String kelasPerkuliahan,
+                String angkatan,
+                String jalurPendaftaran,
+                String statusMahasiswa,
+                String gelombang,
+                String jenisKelamin,
+                String sistemKuliah,
+                String kurikulum,
+                String periodeMasuk,
+                String periodeKeluar,
+                int page, int size) {
+            MahasiswaSpecification specBuilder = new MahasiswaSpecification();
+            Specification<Mahasiswa> spec = specBuilder.entitySearch(
+                    keyword, null, periodeMasuk, sistemKuliah, angkatan, null, programStudi, jenisPendaftaran, jalurPendaftaran, statusMahasiswa, gelombang, jenisKelamin, kurikulum, periodeKeluar
+            );
+
             Pageable pageable = PageRequest.of(page - 1, 10);
-            Page<Mahasiswa> all = mahasiswaRepository.findAllNotDeleted(pageable);
+            Page<Mahasiswa> all = mahasiswaRepository.findAll(spec, pageable);
             return all.map(mapper::toDto);
         }
 

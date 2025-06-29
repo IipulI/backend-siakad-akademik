@@ -26,6 +26,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -90,7 +91,7 @@ public class MataKuliahServiceImpl implements MataKuliahService {
     @Override
     public Page<MataKuliahResDto> search(String keyword, String programStudi, String jenisMataKuliah, String tahunKurikulum, Pageable pageable) {
         MataKuliahSpecification specBuilder = new MataKuliahSpecification();
-        Specification<MataKuliah> spec = specBuilder.entitySearch(keyword, programStudi, jenisMataKuliah, tahunKurikulum);
+        Specification<MataKuliah> spec = specBuilder.entitySearch(keyword, programStudi, jenisMataKuliah, tahunKurikulum, null);
         Page<MataKuliah> all = mataKuliahRepository.findAll(spec, pageable);
         return all.map(mapper::toDto);
     }
@@ -175,6 +176,7 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         mataKuliah.setSiakTahunKurikulum(tahunKurikulum);
         mataKuliah.setSiakProgramStudi(programStudi);
         mataKuliah.setSemester(request.getSemester());
+        mataKuliah.setNilaiMin(request.getNilaiMin());
         mataKuliah.setOpsiMataKuliah(request.getOpsiMataKuliah());
         mataKuliah.setUpdatedAt(LocalDateTime.now());
         mataKuliahRepository.save(mataKuliah);
@@ -203,5 +205,21 @@ public class MataKuliahServiceImpl implements MataKuliahService {
             dto.setMataKuliah(entry.getValue());
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<MataKuliahResDto> getPaginated(String keyword, UUID dosenId, Pageable pageable){
+        MataKuliahSpecification specBuilder = new MataKuliahSpecification();
+
+        List<MataKuliah> mataKuliahRelatedToDosen = mataKuliahRepository.findRelatedtoDosen(dosenId);
+
+        Collection<UUID> mataKuliahUuids = mataKuliahRelatedToDosen.stream()
+                .map(MataKuliah::getId)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Specification<MataKuliah> spec = specBuilder.entitySearch(keyword, null, null, null, mataKuliahUuids);
+        Page<MataKuliah> all = mataKuliahRepository.findAll(spec, pageable);
+        return all.map(mapper::toDto);
     }
 }

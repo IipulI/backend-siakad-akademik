@@ -70,18 +70,18 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
     }
 
     @Override
-    public Page<MahasiswaKeuanganResDto> getPaginateMahasiswa(String keyword, String fakultas, String periodeMasuk, String sistemKuliah, String angkatan, Integer semester, String programStudi, String npm, Pageable pageable) {
+    public Page<MahasiswaKeuanganResDto> getPaginateMahasiswa(String keyword, String fakultas, String periodeMasuk, String sistemKuliah, String angkatan, Integer semester, String programStudi, Pageable pageable) {
         MahasiswaSpecification specBuilder = new MahasiswaSpecification();
-        Specification<Mahasiswa> spec = specBuilder.entitySearch(keyword, fakultas, periodeMasuk, sistemKuliah, angkatan, semester, programStudi, npm);
+        Specification<Mahasiswa> spec = specBuilder.entitySearch(keyword, fakultas, periodeMasuk, sistemKuliah, angkatan, semester, programStudi, null, null, null, null, null, null, null);
 
         Page<Mahasiswa> all = mahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toKeuanganDto);
     }
 
     @Override
-    public Page<TagihanMahasiswaResDto> getPaginateTagihanMahasiswa(String keyword, String npm, String nama, Integer semester, String angkatan, String programStudi, String fakultas, String periodeAkademik, Pageable pageable) {
+    public Page<TagihanMahasiswaResDto> getPaginateTagihanMahasiswa(String keyword, Integer semester, String angkatan, String programStudi, String fakultas, String periodeAkademik, Pageable pageable) {
         InvoicePembayaranSpecification specBuilder = new InvoicePembayaranSpecification();
-        Specification<InvoicePembayaranKomponenMahasiswa> spec = specBuilder.entitySearch(keyword, npm, nama, semester, angkatan, programStudi, fakultas, periodeAkademik);
+        Specification<InvoicePembayaranKomponenMahasiswa> spec = specBuilder.entitySearch(keyword, semester, angkatan, programStudi, fakultas, periodeAkademik);
 
         Page<InvoicePembayaranKomponenMahasiswa> all = invoicePembayaranKomponenMahasiswaRepository.findAll(spec, pageable);
         return all.map(mapperTagihanMahasiswa::toDto);

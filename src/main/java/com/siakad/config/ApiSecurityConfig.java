@@ -69,7 +69,13 @@ public class ApiSecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Ensure you include http://localhost:8080 or your backend port if the frontend is served from there
-        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://localhost:5173", "https://entirely-dynamic-penguin.ngrok-free.app", "http://localhost:8080")); // Added backend host as allowed origin for self-hosted frontend
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:8081",
+                "http://localhost:5173",
+                "https://entirely-dynamic-penguin.ngrok-free.app",
+                "http://localhost:8080",
+                "https://nl-siak.uika-bogor.ac.id/"
+        )); // Added backend host as allowed origin for self-hosted frontend
         configuration.setAllowedMethods(List.of("*")); // Or specify HttpMethod.GET, HttpMethod.POST, etc.
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

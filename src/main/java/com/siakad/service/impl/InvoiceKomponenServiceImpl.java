@@ -42,10 +42,17 @@ public class InvoiceKomponenServiceImpl implements InvoiceKomponenService {
     }
 
     @Override
-    public Page<InvoiceKomponenResDto> getPaginated(int page, int size) {
+    public Page<InvoiceKomponenResDto> getPaginated(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<InvoiceKomponen> all = invoiceKomponenRepository.findAllNotDeleted(pageable);
+
+        Page<InvoiceKomponen> all;
+        if (keyword != null && !keyword.isEmpty()) {
+            all = invoiceKomponenRepository.findAllNotDeleted(keyword, pageable);
+        } else {
+            all = invoiceKomponenRepository.findAllAndIsDeletedIsFalse(pageable);
+        }
+
         return all.map(mapper::toDto);
     }
 

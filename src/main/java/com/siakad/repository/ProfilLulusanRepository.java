@@ -28,4 +28,6 @@ public interface ProfilLulusanRepository extends JpaRepository<ProfilLulusan, UU
 
     @Query("SELECT DISTINCT pl.siakProgramStudi.id FROM ProfilLulusan pl WHERE pl.siakProgramStudi.id IN :prodiIds")
     Set<UUID> findProdiIdsWithRelations(List<UUID> prodiIds);
+
+    boolean existsBySiakProgramStudiId(UUID prodiId);
 }

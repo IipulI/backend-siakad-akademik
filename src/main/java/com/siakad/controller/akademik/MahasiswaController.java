@@ -137,11 +137,39 @@ public class MahasiswaController {
     @Operation(summary = "Get Mahasiswa By Pagiantion")
     @GetMapping()
     public ResponseEntity<ApiResDto<List<MahasiswaResDto>>> getPaginated(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String programStudi,
+            @RequestParam(required = false) String jenisPendaftaran,
+            @RequestParam(required = false) String kelasPerkuliahan,
+            @RequestParam(required = false) String angkatan,
+            @RequestParam(required = false) String jalurPendaftaran,
+            @RequestParam(required = false) String statusMahasiswa,
+            @RequestParam(required = false) String gelombang,
+            @RequestParam(required = false) String jenisKelamin,
+            @RequestParam(required = false) String sistemKuliah,
+            @RequestParam(required = false) String kurikulum,
+            @RequestParam(required = false) String periodeMasuk,
+            @RequestParam(required = false) String periodeKeluar,
+            @RequestParam(required = false) Integer pagination,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         try {
-            Page<MahasiswaResDto> paginated = service.getPaginated(page, size);
+            Page<MahasiswaResDto> paginated = service.getPaginated(
+                    keyword,
+                    programStudi,
+                    jenisPendaftaran,
+                    kelasPerkuliahan,
+                    angkatan,
+                    jalurPendaftaran,
+                    statusMahasiswa,
+                    gelombang,
+                    jenisKelamin,
+                    sistemKuliah,
+                    kurikulum,
+                    periodeMasuk,
+                    periodeKeluar,
+                    page, size);
 
             return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<List<MahasiswaResDto>>builder()

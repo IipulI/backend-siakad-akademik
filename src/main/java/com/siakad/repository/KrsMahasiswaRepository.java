@@ -61,8 +61,8 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
 
     List<KrsMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswa_Id);
 
-    @Query("SELECT k FROM KrsMahasiswa k WHERE k.siakMahasiswa.id IN :mahasiswaIds AND k.siakPeriodeAkademik.id = :periodeId")
-    List<KrsMahasiswa> findByMahasiswaIdsAndPeriodeId(List<UUID> mahasiswaIds, UUID periodeId);
+    @Query("SELECT k FROM KrsMahasiswa k WHERE k.siakMahasiswa.id IN :mahasiswaIds AND k.siakPeriodeAkademik.namaPeriode = :periodeAkademik")
+    List<KrsMahasiswa> findByMahasiswaIdsAndPeriodeId(List<UUID> mahasiswaIds, String periodeAkademik);
 
     List<KrsMahasiswa> findBySiakMahasiswa_IdInAndSiakPeriodeAkademik_IdAndStatus(
             List<UUID> mahasiswaIds,

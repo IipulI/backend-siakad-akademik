@@ -2,6 +2,7 @@ package com.siakad.controller;
 
 import com.siakad.dto.response.ApiResDto;
 import com.siakad.dto.response.PeriodeAkademikResDto;
+import com.siakad.dto.response.PeriodeDto;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
@@ -14,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Periode Akademik")
+import java.util.List;
+
+@Tag(name = "Active Periode Akademik")
 @RestController
 @RequestMapping("/periode-akademik")
 @RequiredArgsConstructor
@@ -33,6 +36,25 @@ public class PeriodeController {
                             .status(MessageKey.SUCCESS.getMessage())
                             .data(periodeActive)
                             .message(MessageKey.READ.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get All Periode Akademik for dropdown")
+    @GetMapping("/dropdown")
+    public ResponseEntity<ApiResDto<List<PeriodeDto>>> getAllDropdown() {
+        try {
+            List<PeriodeDto> all = service.getAll();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<PeriodeDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(all)
                             .build()
             );
         } catch (ApplicationException e) {

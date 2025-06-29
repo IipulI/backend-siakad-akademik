@@ -8,4 +8,11 @@ import java.util.UUID;
 public class TahunKurikulumDto {
     private UUID id;
     private String tahun;
+
+    public TahunKurikulumDto(UUID id, String tahun) {
+        this.id = id;
+        this.tahun = tahun;
+    }
+
+    public TahunKurikulumDto() {}
 }

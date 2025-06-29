@@ -11,17 +11,19 @@ import java.util.UUID;
 @Data
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class JenjangResDto {
     private UUID id;
     private String nama;
     private String jenjang;
 
-    /**
-     * Static factory method untuk mengubah Entity menjadi DTO.
-     * @param entity Objek Jenjang dari database.
-     * @return Objek JenjangResDto.
-     */
+
+    // Specific constructor for direct DTO projection from query results
+    public JenjangResDto(UUID id, String nama, String jenjang) {
+        this.id = id;
+        this.nama = nama;
+        this.jenjang = jenjang;
+    }
+
     public static JenjangResDto fromEntity(Jenjang entity) {
         if (entity == null) {
             return null;

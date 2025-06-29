@@ -1,11 +1,8 @@
 package com.siakad.controller.akademik;
 
-import com.siakad.dto.request.KelasKuliahReqDto;
 import com.siakad.dto.request.PembimbingAkademikReqDto;
 import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
-import com.siakad.entity.KrsMahasiswa;
-import com.siakad.entity.User;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
@@ -29,7 +26,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Tag(name = "Pembimbing Akademik")
 @RestController
@@ -87,8 +83,8 @@ public class PembimbingAkademikController {
     @Operation(summary = "Get Pembimbing Akademik By Pagination")
     @GetMapping("/all")
     public ResponseEntity<ApiResDto<List<PembimbingAkademikResDto>>> getPaginated(
-            @RequestParam() UUID periodeAkademikId,
-            @RequestParam(required = false) UUID programStudiId,
+            @RequestParam() String periodeAkademik,
+            @RequestParam(required = false) String programStudi,
             @RequestParam(required = false) String angkatan,
             @RequestParam(required = false) String statusKrs,
             @RequestParam(required = false) String namaMahasiswa,
@@ -107,7 +103,7 @@ public class PembimbingAkademikController {
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
             Page<PembimbingAkademikResDto> data = service.getAllPaginated(
-                    programStudiId, periodeAkademikId, null, namaMahasiswa,
+                    periodeAkademik, programStudi, null, namaMahasiswa,
                     angkatan, statusMahasiswa, statusKrs, hasPembimbing, pageable);
 
             return ResponseEntity.ok(
@@ -155,7 +151,7 @@ public class PembimbingAkademikController {
             HttpServletRequest servletRequest
     ){
         try {
-            krsService.updateStatusKrsKembalikan(request, servletRequest);
+            krsService.updateStatusKrsTolak(request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiResDto.<KrsResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())

@@ -11,6 +11,14 @@ public class PeriodeAkademikSpecification extends QuerySpecification<PeriodeAkad
         return attributeContains("siakTahunAjaran.tahun", tahun);
     }
 
+    private Specification<PeriodeAkademik> byNamaPeriode(String namaPeriode) {
+        return attributeContains("namaPeriode", namaPeriode);
+    }
+
+    private Specification<PeriodeAkademik> byKodePeriode(String kodePeriode) {
+        return attributeContains("kodePeriode", kodePeriode);
+    }
+
     private Specification<PeriodeAkademik> notDeleted() {
         return attributeEqual("isDeleted", false);
     }
@@ -20,7 +28,8 @@ public class PeriodeAkademikSpecification extends QuerySpecification<PeriodeAkad
 
         if (!Strings.isBlank(keyword)) {
             spec = spec.and(
-                    Specification.where(byTahun(keyword))
+                    Specification.where(byKodePeriode(keyword))
+                            .or(byNamaPeriode(keyword))
             );
         }
 

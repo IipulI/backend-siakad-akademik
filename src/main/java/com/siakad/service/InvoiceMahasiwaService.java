@@ -17,9 +17,9 @@ public interface InvoiceMahasiwaService {
     @Transactional
     List<InvoiceMahasiswaResDto> create(InvoiceMahasiswaReqDto dto, HttpServletRequest servletRequest);
 
-    Page<MahasiswaKeuanganResDto> getPaginateMahasiswa(String keyword, String fakultas, String periodeMasuk, String sistemKuliah, String angkatan, Integer semester, String programStudi, String npm, Pageable pageable);
+    Page<MahasiswaKeuanganResDto> getPaginateMahasiswa(String keyword, String fakultas, String periodeMasuk, String sistemKuliah, String angkatan, Integer semester, String programStudi, Pageable pageable);
 
-    Page<TagihanMahasiswaResDto> getPaginateTagihanMahasiswa(String keyword, String npm, String nama, Integer semester, String angkatan, String programStudi, String fakultas, String periodeAkademik, Pageable pageable);
+    Page<TagihanMahasiswaResDto> getPaginateTagihanMahasiswa(String keyword, Integer semester, String angkatan, String programStudi, String fakultas, String periodeAkademik, Pageable pageable);
 
     RingkasanTagihanResDto getRingkasanTagihan();
 

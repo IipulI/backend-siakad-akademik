@@ -1,4 +1,4 @@
-package com.siakad.controller.Dosen;
+package com.siakad.controller.dosen;
 
 import com.siakad.dto.response.*;
 import com.siakad.entity.User;

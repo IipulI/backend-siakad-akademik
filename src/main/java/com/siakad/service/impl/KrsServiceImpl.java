@@ -275,7 +275,7 @@ public class KrsServiceImpl implements KrsService {
 
         // list mahasiswa di prodi ini
         MahasiswaSpecification specBuilder = new MahasiswaSpecification();
-        Specification<Mahasiswa> spec = specBuilder.entitySearch(nama, null, periodeAkademik, sistemKuliah, null, null, kelasKuliah.getSiakProgramStudi().getNamaProgramStudi(), null);
+        Specification<Mahasiswa> spec = specBuilder.entitySearch(nama, null, periodeAkademik, sistemKuliah, null, null, kelasKuliah.getSiakProgramStudi().getNamaProgramStudi(),  null, null, null, null, null, null, null);
         List<Mahasiswa> eligibleMahasiswa = mahasiswaRepository.findAll(spec);
 
         // list mahasiswa registered di kelas ini
@@ -682,7 +682,7 @@ public class KrsServiceImpl implements KrsService {
 
     private static final String STATUS_DIAJUKAN = "Diajukan";
     private static final String STATUS_DISETUJUI = "Disetujui";
-    private static final String STATUS_DIKEMBALIKAN = "Dikembalikan";
+    private static final String STATUS_DITOLAK = "Ditolak";
 
     @Override
     public void updateStatusKrsSetuju(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest){
@@ -690,8 +690,14 @@ public class KrsServiceImpl implements KrsService {
     }
 
     @Override
-    public void updateStatusKrsKembalikan(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest){
-        processBulkUpdate(request, servletRequest, STATUS_DIKEMBALIKAN);
+    public void updateStatusKrsTolak(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest){
+        processBulkUpdate(request, servletRequest, STATUS_DITOLAK);
+    }
+
+    @Override
+    public KrsMenungguResDto getDetailKrsMahasiswa(UUID mahasiswaId) {
+        List<KrsRincianMahasiswa> all = krsMahasiswaRepository.findAllRincianByStatusMenungguAndPeriodeAktifAndMahasiswa(mahasiswaId);
+        return mapper.toDtoMenunggu(all);
     }
 
     private void processBulkUpdate(UpdateStatusKrsReqDto dto, HttpServletRequest servletRequest, String newStatus) {
@@ -714,7 +720,7 @@ public class KrsServiceImpl implements KrsService {
         krsMahasiswaRepository.saveAll(krsToUpdate);
         if (Objects.equals(newStatus, STATUS_DISETUJUI)){
             service.saveUserActivity(servletRequest, MessageKey.APPROVE_KRS);
-        } else if (Objects.equals(newStatus, STATUS_DIKEMBALIKAN)){
+        } else if (Objects.equals(newStatus, STATUS_DITOLAK)){
             service.saveUserActivity(servletRequest, MessageKey.RETURN_KRS);
         }
     }
@@ -733,16 +739,6 @@ public class KrsServiceImpl implements KrsService {
                 ).orElseThrow(() -> new RuntimeException("Batas SKS belum diatur untuk IPS: " + ipsTerakhir));
 
         return batasSks.getBatasSks();
-    }
-
-    private PeriodeAkademik findPeriodeAkademikByName(String namaPeriode, List<KrsRincianMahasiswa> rincianList) {
-        for (KrsRincianMahasiswa rincian : rincianList) {
-            if (rincian.getSiakKrsMahasiswa() != null && rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik() != null &&
-                    rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik().getNamaPeriode().equals(namaPeriode)) {
-                return rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
-            }
-        }
-        return null;
     }
 
     private Integer determineBatasSks(Mahasiswa mahasiswa, PeriodeAkademik periodeSebelumnya) {

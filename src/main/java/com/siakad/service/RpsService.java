@@ -2,6 +2,7 @@ package com.siakad.service;
 
 import com.siakad.dto.request.KelasRpsReqDto;
 import com.siakad.dto.request.RpsReqDto;
+import com.siakad.dto.response.RpsDetailResDto;
 import com.siakad.dto.response.RpsResDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
@@ -22,4 +23,5 @@ public interface RpsService {
     void createKelas(KelasRpsReqDto reqDto, HttpServletRequest request);
     RpsResDto getRpsByKelas(UUID kelasId);
 
+    RpsDetailResDto getOneRpsDetail(UUID id, String whichId);
 }

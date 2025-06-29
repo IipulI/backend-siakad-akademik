@@ -93,7 +93,9 @@ public class KomposisiPenilaianController {
 
     @Operation(summary = "Get All Komposisi nilai")
     @GetMapping()
-    public ResponseEntity<ApiResDto<List<KomposisiPenilaianResDto>>> getAll() {
+    public ResponseEntity<ApiResDto<List<KomposisiPenilaianResDto>>> getAll(
+            @RequestParam(required = false) String tahunKurikulum
+    ) {
         try {
             List<KomposisiPenilaianResDto> all = service.getAll();
             return ResponseEntity.status(HttpStatus.OK).body(

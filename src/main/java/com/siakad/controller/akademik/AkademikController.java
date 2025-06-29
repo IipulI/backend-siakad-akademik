@@ -58,18 +58,64 @@ public class AkademikController {
             @RequestParam(required = false) String programStudi,
             @RequestParam(required = false) String jenjang
     ) {
-        List<ManajemenOBEResDto> result = akademikService.getStatusOverview(
-                tahunKurikulum,
-                programStudi,
-                jenjang
-        );
+        try {
+            List<ManajemenOBEResDto> result = akademikService.getStatusOverview(
+                    tahunKurikulum,
+                    programStudi,
+                    jenjang
+            );
 
-        return ResponseEntity.ok(
-                ApiResDto.<List<ManajemenOBEResDto>>builder()
-                        .status("SUCCESS")
-                        .message("Data status overview program studi berhasil diambil.")
-                        .data(result)
-                        .build()
-        );
+            return ResponseEntity.ok(
+                    ApiResDto.<List<ManajemenOBEResDto>>builder()
+                            .status("SUCCESS")
+                            .message("Data status overview program studi berhasil diambil.")
+                            .data(result)
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+
+    }
+
+    @Operation(summary = "Get one manajemen obe")
+    @GetMapping("/manajemen-obe/{id}")
+    public ResponseEntity<ApiResDto<ManajemenOBEResDto>> getOneStatusOverview(
+            @PathVariable UUID id,
+            @RequestParam(required = false) String tahunKurikulum
+    ){
+        try {
+            ManajemenOBEResDto result = akademikService.getOneStatusOverview(id, tahunKurikulum);
+
+            return ResponseEntity.ok(
+                    ApiResDto.<ManajemenOBEResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message("Data satu status overview program studi berhasil diambil")
+                            .data(result)
+                            .build()
+            );
+        }
+        catch (ApplicationException e){
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
     }
 }
+
+
+// TODO : DOSEN MATA KULIAH (tinggal cpl cpmk)
+// TODO : DOSEN PEMBIMIBING AKADEMIK (tinggal detail krs mahasiswa)
+// TODO : DOSEN JADWAL TAMBAH PARAM TANGGAL
+
+// DONE
+// TODO : Akademik mahasiswa kasih param
+// TODO : ALL get active periode akademik
+// TODO : DOSEN & AKADEMIK, PEMBIMIBING AKADEMIK GANTI UUID JADI STRING
+// TODO : PENGUMUMAN GET ALL
+

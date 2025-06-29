@@ -14,7 +14,22 @@ import java.util.UUID;
 
 public interface MahasiswaService {
     MahasiswaResDto create(MahasiswaReqDto request, MultipartFile fotoProfil, MultipartFile ijazahSekolah, HttpServletRequest servletRequest) throws IOException;
-    Page<MahasiswaResDto> getPaginated(int page, int size);
+    Page<MahasiswaResDto> getPaginated(
+            String keyword,
+            String programStudi,
+            String jenisPendaftaran,
+            String kelasPerkuliahan,
+            String angkatan,
+            String jalurPendaftaran,
+            String statusMahasiswa,
+            String gelombang,
+            String jenisKelamin,
+            String sistemKuliah,
+            String kurikulum,
+            String periodeMasuk,
+            String periodeKeluar,
+            int page, int size
+    );
     byte[] getFotoProfil(UUID id);
     byte[] getIjazahSekolah(UUID id);
     MahasiswaResDto getOne(UUID id);

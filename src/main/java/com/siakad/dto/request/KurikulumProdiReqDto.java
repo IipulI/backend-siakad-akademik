@@ -10,4 +10,5 @@ public class KurikulumProdiReqDto {
     private UUID siakTahunKurikulumId;
     private Integer semester;
     private Boolean opsiMataKuliah;
+    private String nilaiMin;
 }

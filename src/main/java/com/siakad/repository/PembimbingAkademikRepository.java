@@ -3,6 +3,7 @@ package com.siakad.repository;
 import com.siakad.entity.PembimbingAkademik;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public interface PembimbingAkademikRepository extends JpaRepository<PembimbingAk
 
     Optional<PembimbingAkademik> findBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswa);
 
-    List<PembimbingAkademik> findBySiakMahasiswaIdInAndSiakPeriodeAkademikId(List<UUID> mahasiswaIds, UUID periodeAkademikId);
+    List<PembimbingAkademik> findBySiakMahasiswaIdInAndSiakPeriodeAkademikNamaPeriode(List<UUID> mahasiswaIds, String namaPeriode);
 
     UUID id(UUID id);
 }
