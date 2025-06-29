@@ -30,6 +30,8 @@ public class AkademikController {
 
     private final KelasKuliahService service;
     private final AkademikService akademikService;
+    private final KrsService krsService;
+    private final MataKuliahService mataKuliahService;
 
     @Operation(summary = "Ganti semester")
     @PutMapping("/ganti-semester")
@@ -103,6 +105,51 @@ public class AkademikController {
             throw e;
         }
         catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Riwayat Krs by Mahasiswa ID")
+    @GetMapping("/riwayat-krs/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<RiwayatKrsDto>> getRiwayatKrs  (
+            @PathVariable("mahasiswaId") UUID id,
+            @RequestParam("namaPeriode") String namaPeriode
+    ) {
+        try {
+            RiwayatKrsDto riwayatKrs = krsService.getRiwayatKrs(id, namaPeriode);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<RiwayatKrsDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(riwayatKrs)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get MataKuliahCplCpmk")
+    @GetMapping("/cpl-cpmk/{mataKuliahId}")
+    public ResponseEntity<ApiResDto<MataKuliahCplCpmkResDto>> getRiwayatKrs  (
+            @PathVariable("mataKuliahId") UUID id
+    ) {
+        try {
+
+            MataKuliahCplCpmkResDto mataKuliahCplCpmk = mataKuliahService.getMataKuliahCplCpmk(id);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<MataKuliahCplCpmkResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(mataKuliahCplCpmk)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }

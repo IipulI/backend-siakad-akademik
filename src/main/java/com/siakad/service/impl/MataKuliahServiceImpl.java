@@ -2,19 +2,14 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.request.KurikulumProdiReqDto;
 import com.siakad.dto.request.MataKuliahReqDto;
-import com.siakad.dto.response.KurikulumProdiResDto;
-import com.siakad.dto.response.MataKuliahResDto;
+import com.siakad.dto.response.*;
 import com.siakad.dto.transform.MataKuliahTransform;
-import com.siakad.entity.MataKuliah;
-import com.siakad.entity.ProgramStudi;
-import com.siakad.entity.TahunKurikulum;
+import com.siakad.entity.*;
 import com.siakad.entity.service.MataKuliahSpecification;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.repository.MataKuliahRepository;
-import com.siakad.repository.ProgramStudiRepository;
-import com.siakad.repository.TahunKurikulumRepository;
+import com.siakad.repository.*;
 import com.siakad.service.MataKuliahService;
 import com.siakad.service.UserActivityService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,7 +34,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MataKuliahServiceImpl implements MataKuliahService {
 
-
+    private final CapaianMataKuliahRepository capaianMataKuliahRepository;
+    private final CapaianPembelajaranLulusanRepository capaianPembelajaranLulusanRepository;
     private final MataKuliahRepository mataKuliahRepository;
     private final TahunKurikulumRepository tahunKurikulumRepository;
     private final ProgramStudiRepository programStudiRepository;
@@ -221,5 +218,38 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         Specification<MataKuliah> spec = specBuilder.entitySearch(keyword, null, null, null, mataKuliahUuids);
         Page<MataKuliah> all = mataKuliahRepository.findAll(spec, pageable);
         return all.map(mapper::toDto);
+    }
+
+    @Override
+    public MataKuliahCplCpmkResDto getMataKuliahCplCpmk(UUID mataKuliahId) {
+        MataKuliahCplCpmkResDto response = new MataKuliahCplCpmkResDto();
+
+        List<CapaianMataKuliah> cpmkList = capaianMataKuliahRepository
+                .findBySiakMataKuliahIdAndIsDeletedFalse(mataKuliahId);
+
+        List<CapaianMataKuliahResDto> cpmkDtoList = cpmkList.stream()
+                .map(CapaianMataKuliahResDto::fromEntity)
+                .collect(Collectors.toList());
+        response.setCapaianMataKuliah(cpmkDtoList);
+
+        Set<CapaianPembelajaranLulusan> cplSet = cpmkList.stream()
+                .flatMap(cpmk -> cpmk.getCapaianPembelajaranLulusanList().stream())
+                .collect(Collectors.toSet());
+
+        List<CapaianPembelajaranLulusanResDto> cplDtoList = cplSet.stream()
+                .map(CapaianPembelajaranLulusanResDto::fromEntity)
+                .collect(Collectors.toList());
+        response.setCapaianPembelajaranLulusan(cplDtoList);
+
+        Set<ProfilLulusan> profilSet = cplSet.stream()
+                .flatMap(cpl -> cpl.getProfilLulusanList().stream())
+                .collect(Collectors.toSet());
+
+        List<ProfilLulusanResDto> profilDtoList = profilSet.stream()
+                .map(ProfilLulusanResDto::fromEntity)
+                .collect(Collectors.toList());
+        response.setProfilLulusan(profilDtoList);
+
+        return response;
     }
 }

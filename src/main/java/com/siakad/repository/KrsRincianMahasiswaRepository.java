@@ -100,6 +100,16 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
     List<KrsRincianMahasiswa> findAllActiveByMahasiswaId(@Param("mahasiswaId") UUID mahasiswaId);
 
 
+    @Query("""
+    SELECT k FROM KrsRincianMahasiswa k
+    WHERE k.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId
+    AND k.siakKrsMahasiswa.siakPeriodeAkademik.namaPeriode = :namaPeriode
+    AND k.isDeleted = false
+    """)
+    List<KrsRincianMahasiswa> findAllActiveByMahasiswaIdAndPeriodeAkademik(UUID mahasiswaId, String namaPeriode);
+
+
+
     @Query("SELECT krs.siakMahasiswa.id FROM KrsRincianMahasiswa r " +
             "JOIN r.siakKrsMahasiswa krs " +
             "WHERE r.siakKelasKuliah.id = :kelasId AND r.isDeleted = false")

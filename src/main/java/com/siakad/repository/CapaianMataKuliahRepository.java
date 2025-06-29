@@ -16,11 +16,10 @@ import java.util.UUID;
 public interface CapaianMataKuliahRepository extends JpaRepository<CapaianMataKuliah, UUID>, JpaSpecificationExecutor<CapaianMataKuliah> {
     Optional<CapaianMataKuliah> findByIdAndIsDeletedFalse(UUID id);
 
-
-
-    // Query relasi untuk get all prodi
     @Query("SELECT DISTINCT cpmk.siakMataKuliah.siakProgramStudi.id FROM CapaianMataKuliah cpmk WHERE cpmk.siakMataKuliah.siakProgramStudi.id IN :prodiIds")
     Set<UUID> findProdiIdsWithRelations(List<UUID> prodiIds);
+
+    List<CapaianMataKuliah> findBySiakMataKuliahIdAndIsDeletedFalse(UUID mataKuliahId);
 
 
     // query relasi untuk satu prodi
