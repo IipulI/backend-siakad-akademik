@@ -26,6 +26,13 @@ public interface PeriodeAkademikRepository extends JpaRepository<PeriodeAkademik
 """)
     Optional<PeriodeAkademik> findFirstByStatusActive();
 
+    @Query("""
+    SELECT p FROM PeriodeAkademik p
+    WHERE p.status = 'ACTIVE' AND p.isDeleted = false
+    ORDER BY p.tanggalMulai DESC
+""")
+    PeriodeAkademik findByStatusActive();
+
 
     List<PeriodeAkademik> findAllByIsDeletedFalse();
 

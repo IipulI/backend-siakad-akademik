@@ -3,6 +3,7 @@
     import com.siakad.dto.request.MahasiswaReqDto;
     import com.siakad.dto.response.MahasiswaChartDto;
     import com.siakad.dto.response.MahasiswaResDto;
+    import com.siakad.dto.response.ProfileInfo;
     import com.siakad.dto.response.chart.*;
     import com.siakad.dto.transform.MahasiswaTransform;
     import com.siakad.entity.*;
@@ -48,6 +49,8 @@
         private final PasswordEncoder passwordEncoder;
         private final UserActivityService service;
         private final ProgramStudiRepository programStudiRepository;
+        private final PeriodeAkademikRepository periodeAkademikRepository;
+        private final PembimbingAkademikRepository pembimbingAkademikRepository;
 
         private final HasilStudiRepository hasilStudiRepository;
         private final KrsMahasiswaRepository krsMahasiswaRepository;
@@ -218,6 +221,82 @@
                     .distribusiNilai(distribusiNilaiChart)
                     .build();
         }
+
+        @Transactional
+        @Override
+        public ProfileInfo getProfileInfo() {
+            User currentUser = service.getCurrentUser();
+            UUID mahasiswaId = currentUser.getSiakMahasiswa().getId();
+
+            PeriodeAkademik periodeAktif = periodeAkademikRepository.findByStatusActive();
+
+            List<PembimbingAkademik> pembimbingList =
+                    pembimbingAkademikRepository
+                            .findAllBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(
+                                    mahasiswaId, periodeAktif.getId());
+            PembimbingAkademik pembimbingAkademik =
+                    pembimbingList.isEmpty() ? null : pembimbingList.get(0);
+
+            // Ambil semua KrsMahasiswa
+            List<KrsMahasiswa> daftarKrs = krsMahasiswaRepository
+                    .findAllBySiakMahasiswa_IdAndIsDeletedFalse(mahasiswaId);
+
+            int totalSks = 0;
+            int sksLulus = 0;
+            BigDecimal totalBobot = BigDecimal.ZERO;
+            BigDecimal totalBobotLulus = BigDecimal.ZERO;
+
+            for (KrsMahasiswa krs : daftarKrs) {
+                List<KrsRincianMahasiswa> rincianList =
+                        krsRincianRepository.findAllBySiakKrsMahasiswa_IdAndIsDeletedFalse(krs.getId());
+
+                for (KrsRincianMahasiswa rincian : rincianList) {
+                    Integer sksPraktikum = rincian.getSiakKelasKuliah().getSiakMataKuliah().getSksPraktikum();
+                    Integer sksTatapMuka = rincian.getSiakKelasKuliah().getSiakMataKuliah().getSksTatapMuka();
+
+                    int sks = (sksPraktikum != null ? sksPraktikum : 0) + (sksTatapMuka != null ? sksTatapMuka : 0);
+                    if (sks == 0) continue;
+
+                    totalSks += sks;
+                    BigDecimal angkaMutu = rincian.getAngkaMutu();
+
+                    if (angkaMutu != null) {
+                        BigDecimal bobot = angkaMutu.multiply(BigDecimal.valueOf(sks));
+                        totalBobot = totalBobot.add(bobot);
+
+                        if (rincian.getHurufMutu() != null &&
+                                !rincian.getHurufMutu().equalsIgnoreCase("E")) {
+                            sksLulus += sks;
+                            totalBobotLulus = totalBobotLulus.add(bobot);
+                        }
+                    }
+                }
+            }
+
+            double ipk = totalSks == 0 ? 0 : totalBobot.doubleValue() / totalSks;
+            double ipkLulus = sksLulus == 0 ? 0 : totalBobotLulus.doubleValue() / sksLulus;
+
+            ProfileInfo profileInfo = new ProfileInfo();
+            profileInfo.setNim(currentUser.getSiakMahasiswa().getNpm());
+            profileInfo.setNamaMahasiswa(currentUser.getSiakMahasiswa().getNama());
+            profileInfo.setProgramStudi(currentUser.getSiakMahasiswa().getSiakProgramStudi().getNamaProgramStudi());
+            profileInfo.setStatusMahasiwa(currentUser.getSiakMahasiswa().getStatusMahasiswa());
+            profileInfo.setAngkatan(currentUser.getSiakMahasiswa().getAngkatan());
+            profileInfo.setTahunKurikulum(currentUser.getSiakMahasiswa().getKurikulum());
+            profileInfo.setSemester(currentUser.getSiakMahasiswa().getSemester());
+            profileInfo.setPembimbingAkademik(
+                    pembimbingAkademik != null ? pembimbingAkademik.getSiakDosen().getNama() : "-"
+            );
+
+            profileInfo.setTotalSks(totalSks);
+            profileInfo.setSksLulus(sksLulus);
+            profileInfo.setIpkLulus(ipkLulus);
+            profileInfo.setIpk(ipk);
+
+            return profileInfo;
+        }
+
+
 
         private PerkuliahanChartDto buildPerkuliahanChart(List<Object[]> sksDiambilData) {
             List<SksPerSemesterDto> sksList = sksDiambilData.stream()

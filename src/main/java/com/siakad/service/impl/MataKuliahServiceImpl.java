@@ -172,8 +172,25 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         mataKuliah.setSiakTahunKurikulum(tahunKurikulum);
         mataKuliah.setSiakProgramStudi(programStudi);
         mataKuliah.setSemester(request.getSemester());
+        mataKuliah.setNilaiMin(request.getNilaiMin());
         mataKuliah.setOpsiMataKuliah(request.getOpsiMataKuliah());
         mataKuliah.setUpdatedAt(LocalDateTime.now());
+        mataKuliahRepository.save(mataKuliah);
+
+        service.saveUserActivity(servletRequest, MessageKey.UPDATE_MATA_KULIAH);
+        mapper.toDto(mataKuliah);
+    }
+
+    @Override
+    public void deleteKurikulum(UUID id, HttpServletRequest servletRequest) {
+
+        MataKuliah mataKuliah = mataKuliahRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Mata Kuliah tidak ditemukan : " + id));
+
+        mataKuliah.setOpsiMataKuliah(null);
+        mataKuliah.setSemester(null);
+        mataKuliah.setNilaiMin(null);
+
         mataKuliahRepository.save(mataKuliah);
 
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_MATA_KULIAH);

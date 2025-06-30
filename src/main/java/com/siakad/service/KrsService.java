@@ -7,6 +7,7 @@ import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.enums.StatusMahasiswa;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -16,6 +17,8 @@ import java.util.UUID;
 public interface KrsService {
     void save(KrsReqDto dto, HttpServletRequest servletRequest);
     void update(KrsReqDto dto, HttpServletRequest servletRequest);
+    void deleteMultiple(KrsReqDto reqDto, HttpServletRequest servletRequest);
+
     Page<KrsResDto> getPaginated(String kelas, Pageable pageable);
     KrsMenungguResDto getAllKrsByStatusMenunggu();
     void updateStatus(HttpServletRequest servletRequest);
