@@ -81,6 +81,27 @@ public class KrsController {
         }
     }
 
+    @Operation(summary = "Delete Krs")
+    @PostMapping("/delete")
+    public ResponseEntity<ApiResDto<KrsResDto>> delete(
+            @Valid @RequestBody KrsReqDto request,
+            HttpServletRequest servletRequest
+    ) {
+        try {
+            service.deleteMultiple(request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<KrsResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.DELETED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @Operation(summary = "Get Krs by Pagination")
     @GetMapping()
     public ResponseEntity<ApiResDto<List<KrsResDto>>> getPaginated(
@@ -115,7 +136,7 @@ public class KrsController {
         }
     }
 
-    @Operation(summary = "Update Statu from draft to menunggu")
+    @Operation(summary = "Update Status from draft to menunggu")
     @PutMapping("/status")
     public ResponseEntity<ApiResDto<KrsResDto>> updateStatusFromDraftToMenunggu(
             HttpServletRequest servletRequest

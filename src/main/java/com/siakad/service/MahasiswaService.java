@@ -3,6 +3,7 @@ package com.siakad.service;
 import com.siakad.dto.request.MahasiswaReqDto;
 import com.siakad.dto.response.MahasiswaChartDto;
 import com.siakad.dto.response.MahasiswaResDto;
+import com.siakad.dto.response.ProfileInfo;
 import com.siakad.entity.User;
 import com.siakad.enums.RoleType;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,4 +24,5 @@ public interface MahasiswaService {
     User createUserWithRole(String username, String email, String password, RoleType roleType);
 
     MahasiswaChartDto getDashboardAkademik(UUID mahasiswaId);
+    ProfileInfo getProfileInfo();
 }   
