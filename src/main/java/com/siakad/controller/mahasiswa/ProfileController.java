@@ -103,29 +103,29 @@ public class ProfileController {
         }
     }
 
-    @Operation(summary = "Get Mahasiswa By Pagiantion")
-    @GetMapping()
-    public ResponseEntity<ApiResDto<List<MahasiswaResDto>>> getPaginated(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        try {
-            Page<MahasiswaResDto> paginated = service.getPaginated(page, size);
-
-            return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<List<MahasiswaResDto>>builder()
-                            .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.READ.getMessage())
-                            .data(paginated.getContent())
-                            .pagination(PaginationDto.fromPage(paginated))
-                            .build()
-            );
-        } catch (ApplicationException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-    }
+//    @Operation(summary = "Get Mahasiswa By Pagiantion")
+//    @GetMapping()
+//    public ResponseEntity<ApiResDto<List<MahasiswaResDto>>> getPaginated(
+//            @RequestParam(defaultValue = "1") int page,
+//            @RequestParam(defaultValue = "10") int size
+//    ) {
+//        try {
+//            Page<MahasiswaResDto> paginated = service.getPaginated(page, size);
+//
+//            return ResponseEntity.status(HttpStatus.OK).body(
+//                    ApiResDto.<List<MahasiswaResDto>>builder()
+//                            .status(MessageKey.SUCCESS.getMessage())
+//                            .message(MessageKey.READ.getMessage())
+//                            .data(paginated.getContent())
+//                            .pagination(PaginationDto.fromPage(paginated))
+//                            .build()
+//            );
+//        } catch (ApplicationException e) {
+//            throw e;
+//        } catch (Exception e) {
+//            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+//        }
+//    }
 
     @Operation(summary = "Update Mahasiswa")
     @PutMapping(value = "/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -14,5 +14,6 @@ public class KomposisiNilaiMataKuliahMhsResDto {
     private String namaMataKuliah;
     private String namaKelas;
     private List<KomponenKomposisiNilaiMataKuliahMhsDto> komposisiNilaiMataKuliahResDto;
+    private BigDecimal nilai;
     private BigDecimal nilaiAkhir;
 }

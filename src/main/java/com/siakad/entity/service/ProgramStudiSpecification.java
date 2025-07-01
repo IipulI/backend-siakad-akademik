@@ -7,15 +7,19 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ProgramStudiSpecification {
-    public static Specification<ProgramStudi> build(String tahunKurikulum, String namaProdi, String namaJenjang) {
+    public static Specification<ProgramStudi> build(UUID id, String tahunKurikulum, String namaProdi, String namaJenjang) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             root.fetch("siakJenjang"); // Eager fetch untuk performa
 
+            if (id != null) {
+                predicates.add(criteriaBuilder.equal(root.get("id"), id));
+            }
+
             if (StringUtils.hasText(tahunKurikulum)) {
-                // Filter prodi yang memiliki mata kuliah pada tahun kurikulum tertentu
                 predicates.add(criteriaBuilder.equal(root.join("mataKuliahList").join("siakTahunKurikulum").get("tahun"), tahunKurikulum));
             }
 

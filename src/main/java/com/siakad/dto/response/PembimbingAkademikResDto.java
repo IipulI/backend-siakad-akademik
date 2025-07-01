@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
 public class PembimbingAkademikResDto {
+    private UUID id;
     private String mahasiswa;
     private String angkatan;
     private String statusMahasiswa;

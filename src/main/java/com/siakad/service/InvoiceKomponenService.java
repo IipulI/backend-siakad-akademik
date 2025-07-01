@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface InvoiceKomponenService {
     InvoiceKomponenResDto create(InvoiceKomponenMahasiswaReqDto dto, HttpServletRequest servletRequest);
-    Page<InvoiceKomponenResDto> getPaginated(int page, int size);
+    Page<InvoiceKomponenResDto> getPaginated(String keyword, int page, int size);
     InvoiceKomponenResDto update(UUID id, InvoiceKomponenMahasiswaReqDto dto, HttpServletRequest servletRequest);
     void delete(UUID id, HttpServletRequest servletRequest);
 }

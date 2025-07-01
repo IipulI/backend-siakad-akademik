@@ -13,6 +13,7 @@
     public interface PembimbingAkademikTransform {
         PembimbingAkademik toEntity(PembimbingAkademikReqDto dto);
 
+        @Mapping(source = "siakMahasiswa.id", target = "id")
         @Mapping(source = "siakMahasiswa.nama", target = "mahasiswa")
         @Mapping(source = "siakMahasiswa.angkatan", target = "angkatan")
         @Mapping(source = "siakMahasiswa.statusMahasiswa", target = "statusMahasiswa")

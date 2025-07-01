@@ -71,7 +71,7 @@ public class InvoiceMahasiswaController {
             @RequestParam(required = false) String angkatan,
             @RequestParam(required = false) Integer semester,
             @RequestParam(required = false) String programStudi,
-            @RequestParam(required = false) String npm,
+//            @RequestParam(required = false) String npm,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
@@ -85,7 +85,7 @@ public class InvoiceMahasiswaController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
-            Page<MahasiswaKeuanganResDto> search = service.getPaginateMahasiswa(keyword, fakultas, periodeMasuk, sistemKuliah, angkatan, semester, programStudi, npm, pageable);
+            Page<MahasiswaKeuanganResDto> search = service.getPaginateMahasiswa(keyword, fakultas, periodeMasuk, sistemKuliah, angkatan, semester, programStudi, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<MahasiswaKeuanganResDto>>builder()
@@ -103,12 +103,10 @@ public class InvoiceMahasiswaController {
     }
 
 
-    @Operation(summary = "Get Mahasiswa")
+    @Operation(summary = "Get tagihan Mahasiswa")
     @GetMapping("/tagihan-mahasiswa")
     public ResponseEntity<ApiResDto<List<TagihanMahasiswaResDto>>> getPaginated(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String npm,
-            @RequestParam(required = false) String nama,
             @RequestParam(required = false) Integer semester,
             @RequestParam(required = false) String angkatan,
             @RequestParam(required = false) String programStudi,
@@ -127,7 +125,7 @@ public class InvoiceMahasiswaController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj);
 
-            Page<TagihanMahasiswaResDto> paginateTagihanMahasiswa = service.getPaginateTagihanMahasiswa(keyword, npm, nama, semester, angkatan, programStudi, fakultas, periodeAkademik, pageable);
+            Page<TagihanMahasiswaResDto> paginateTagihanMahasiswa = service.getPaginateTagihanMahasiswa(keyword, semester, angkatan, programStudi, fakultas, periodeAkademik, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<TagihanMahasiswaResDto>>builder()

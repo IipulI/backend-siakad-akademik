@@ -2,9 +2,11 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.request.KelasRpsReqDto;
 import com.siakad.dto.request.RpsReqDto;
+import com.siakad.dto.response.RpsDetailResDto;
 import com.siakad.dto.response.RpsMataKuliahDto;
 import com.siakad.dto.response.RpsResDto;
 import com.siakad.dto.transform.RpsTransform;
+import com.siakad.dto.transform.helper.RpsRawDataToDtoMapper;
 import com.siakad.entity.*;
 import com.siakad.entity.service.RpsSpecification;
 import com.siakad.enums.ExceptionType;
@@ -25,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +48,8 @@ public class RpsServiceImpl implements RpsService {
     private final UserActivityService service;
     private final RpsTransform mapper;
     private final KelasRpsRepository kelasRpsRepository;
+    private final UserActivityService userActivityService;
+    private final RpsRawDataToDtoMapper rpsRawDataToDtoMapper;
 
     @Override
     public void create(RpsReqDto reqDto, MultipartFile dokumenRps, HttpServletRequest request) throws IOException {
@@ -186,4 +191,24 @@ public class RpsServiceImpl implements RpsService {
         return mapper.toDto(kelasRps);
     }
 
+    @Override
+    public RpsDetailResDto getOneRpsDetail(UUID id, String whichId){
+        User user = userActivityService.getCurrentUser();
+
+        RpsDetailResDto result;
+        if ("mataKuliah".equals(whichId)){
+            // Fetch the raw Object[] from the native query
+            Object[] rawResult = rpsRepository.getRpsDetailProjectionByMataKuliahAndDosen(id, user.getSiakDosen().getId())
+                    .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "RPS detail not found for given mataKuliah and dosen."));
+
+            // Use the RpsRawDataToDtoMapper to convert the Object[] into RpsDetailResDto
+            result = rpsRawDataToDtoMapper.mapRawDataToRpsDetailResDto(rawResult); // Call the new mapper method
+        } else {
+            // This path uses the JPQL constructor expression and returns RpsDetailResDto directly
+            result = rpsRepository.getRpsDetailById(id)
+                    .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "RPS detail not found for ID: " + id));
+        }
+
+        return result;
+    }
 }

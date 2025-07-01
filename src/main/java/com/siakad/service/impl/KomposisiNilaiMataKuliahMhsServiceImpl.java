@@ -26,9 +26,9 @@ public class KomposisiNilaiMataKuliahMhsServiceImpl implements KomposisiNilaiMat
 
 
     @Override
-    public List<KomposisiNilaiMataKuliahMhsResDto> getKomposisiMataKuliah(UUID mahasiswaId, UUID periodeAkademikId){
+    public List<KomposisiNilaiMataKuliahMhsResDto> getKomposisiMataKuliah(UUID mahasiswaId, String namaPeriode){
         List<KrsRincianMahasiswa> enrollments = krsRincianMahasiswaRepository
-                .findAllByMahasiswaAndPeriodeWithDetails(mahasiswaId, periodeAkademikId);
+                .findAllByMahasiswaAndPeriodeWithDetails(mahasiswaId, namaPeriode);
 
         if (enrollments.isEmpty()) {
             return Collections.emptyList();
@@ -65,6 +65,7 @@ public class KomposisiNilaiMataKuliahMhsServiceImpl implements KomposisiNilaiMat
                     .namaMataKuliah(mataKuliah.getNamaMataKuliah())
                     .namaKelas(kelas.getNama())
                     .komposisiNilaiMataKuliahResDto(komponenDtoList)
+                    .nilai(enrollment.getNilai())
                     .nilaiAkhir(enrollment.getNilaiAkhir())
                     .build();
         }).collect(Collectors.toList());

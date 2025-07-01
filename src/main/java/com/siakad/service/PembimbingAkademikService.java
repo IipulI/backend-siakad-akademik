@@ -15,7 +15,7 @@ public interface PembimbingAkademikService {
     Page<PembimbingAkademikResDto> getAllByPaginate(String periodeAkademik, String programStudi, Integer semester, String angkatan, Pageable pageable);
 
     Page<PembimbingAkademikResDto> getAllPaginated(
-            UUID programStudiId, UUID periodeAkademikId, UUID dosenId, String namaMahasiswa,
+            String programStudi, String periodeAkademik, UUID dosenId, String namaMahasiswa,
             String angkatan, String statusMahasiswa, String statusKrs,
             Boolean hasPembimbing, Pageable pageable);
 }

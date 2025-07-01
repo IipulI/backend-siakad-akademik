@@ -4,6 +4,8 @@ import com.siakad.dto.response.JenjangResDto;
 import com.siakad.dto.response.ManajemenOBEResDto;
 import com.siakad.entity.ProgramStudi;
 import com.siakad.entity.service.ProgramStudiSpecification;
+import com.siakad.enums.ExceptionType;
+import com.siakad.exception.ApplicationException;
 import com.siakad.repository.CapaianMataKuliahRepository;
 import com.siakad.repository.CapaianPembelajaranLulusanRepository;
 import com.siakad.repository.ProfilLulusanRepository;
@@ -33,7 +35,7 @@ public class AkademikServiceImpl implements AkademikService {
 
     @Override
     public List<ManajemenOBEResDto> getStatusOverview(String tahunKurikulum, String namaProdi, String namaJenjang) {
-        Specification<ProgramStudi> spec = ProgramStudiSpecification.build(tahunKurikulum, namaProdi, namaJenjang);
+        Specification<ProgramStudi> spec = ProgramStudiSpecification.build(null, tahunKurikulum, namaProdi, namaJenjang);
         List<ProgramStudi> programStudiList = programStudiRepository.findAll(spec);
 
         if (programStudiList.isEmpty()) {
@@ -61,5 +63,32 @@ public class AkademikServiceImpl implements AkademikService {
                     .statusCpmk(prodiWithCpmk.contains(currentId))
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    // 081231193264
+
+    @Override
+    public ManajemenOBEResDto getOneStatusOverview(UUID id, String tahunKurikulum) {
+        Specification<ProgramStudi> spec = ProgramStudiSpecification.build(id, tahunKurikulum, null, null);
+        ProgramStudi programStudi = programStudiRepository.findOne(spec)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,
+                        "Tahun Ajaran tidak ditemukan : " + id));
+
+        boolean hasPl = profilLulusanRepository.existsBySiakProgramStudiId(id);
+        boolean hasCpl = cplRepository.existsBySiakProgramStudiId(id);
+        boolean hasPlCpl = cplRepository.existsPemetaanPlCplByProdiId(id);
+        boolean hasCpmk = cpmkRepository.existsCpmkByProdiId(id);
+
+        ManajemenOBEResDto result = ManajemenOBEResDto.builder()
+                .id(programStudi.getId())
+                .kodeProgramStudi(programStudi.getKodeProgramStudi())
+                .jenjang(JenjangResDto.fromEntity(programStudi.getSiakJenjang()))
+                .statusPl(hasPl)
+                .statusCpl(hasCpl)
+                .statusPlCpl(hasPlCpl)
+                .statusCpmk(hasCpmk)
+                .build();
+
+        return result;
     }
 }

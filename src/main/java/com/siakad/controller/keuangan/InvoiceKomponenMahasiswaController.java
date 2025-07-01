@@ -55,12 +55,13 @@ public class InvoiceKomponenMahasiswaController {
 
     @Operation(summary = "Get Invoice Komponen Mahasiswa By Pagination")
     @GetMapping
-    public ResponseEntity<ApiResDto<List<InvoiceKomponenResDto>>> save(
+    public ResponseEntity<ApiResDto<List<InvoiceKomponenResDto>>> getAllKomponen(
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         try {
-            Page<InvoiceKomponenResDto> paginated = service.getPaginated(page, size);
+            Page<InvoiceKomponenResDto> paginated = service.getPaginated(keyword, page, size);
 
             return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<List<InvoiceKomponenResDto>>builder()

@@ -5,6 +5,9 @@ import com.siakad.util.QuerySpecification;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.Collection;
+import java.util.UUID;
+
 public class MataKuliahSpecification extends QuerySpecification<MataKuliah> {
 
     private Specification<MataKuliah> byTahunKurikulum(String tahunKurikulum) {
@@ -23,6 +26,18 @@ public class MataKuliahSpecification extends QuerySpecification<MataKuliah> {
         return attributeContains("namaMataKuliah", namaMataKuliah);
     }
 
+    private Specification<MataKuliah> byKodeMataKuliah(String kodeMataKuliah) {
+        return attributeContains("kodeMataKuliah", kodeMataKuliah);
+    }
+
+    private Specification<MataKuliah> byUuidsIn(Collection<UUID> uuids) {
+        // Ensure uuids is not null or empty before attempting to create the 'in' clause
+        if (uuids == null || uuids.isEmpty()) {
+            return Specification.where(null); // Return a no-op specification if no UUIDs provided
+        }
+        return (root, query, criteriaBuilder) -> root.get("id").in(uuids);
+    }
+
     private Specification<MataKuliah> notDeleted() {
         return attributeEqual("isDeleted", false);
     }
@@ -30,7 +45,8 @@ public class MataKuliahSpecification extends QuerySpecification<MataKuliah> {
     public Specification<MataKuliah> entitySearch(String keyword,
                                                   String programStudi,
                                                   String jenisMataKuliah,
-                                                  String tahunKurikulum
+                                                  String tahunKurikulum,
+                                                  Collection<UUID> mataKuliahUuids
                                                   ) {
         Specification<MataKuliah> spec = notDeleted();
 
@@ -49,7 +65,12 @@ public class MataKuliahSpecification extends QuerySpecification<MataKuliah> {
         if (!Strings.isBlank(keyword)) {
             spec = spec.and(
                     Specification.where(byMataKuliah(keyword))
+                            .or(byKodeMataKuliah(keyword))
             );
+        }
+
+        if (mataKuliahUuids != null && !mataKuliahUuids.isEmpty()) {
+            spec = spec.and(byUuidsIn(mataKuliahUuids));
         }
 
         return spec;

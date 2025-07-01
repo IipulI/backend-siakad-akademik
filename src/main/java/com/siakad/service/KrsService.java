@@ -5,7 +5,6 @@ import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.request.PindahKelasReqDto;
 import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
-import com.siakad.enums.StatusMahasiswa;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -15,6 +14,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface KrsService {
+    // Mahasiswa
+    KrsInfoResDto infoKrs(UUID mahasiswaID);
+
     void save(KrsReqDto dto, HttpServletRequest servletRequest);
     void update(KrsReqDto dto, HttpServletRequest servletRequest);
     void deleteMultiple(KrsReqDto reqDto, HttpServletRequest servletRequest);
@@ -22,6 +24,8 @@ public interface KrsService {
     Page<KrsResDto> getPaginated(String kelas, Pageable pageable);
     KrsMenungguResDto getAllKrsByStatusMenunggu();
     void updateStatus(HttpServletRequest servletRequest);
+
+    // Admin Akademik
     List<PesertaKelas> getPesertaKelas(UUID kelasId);
     List<EligiblePesertaKelasDto> getEligiblePesertaKelas(UUID kelasId, String nama, String periodeMasuk, String sistemKuliah);
     void addPesertaKelas(UUID id, PesertaKelasReqDto request, HttpServletRequest servletRequest);
@@ -34,6 +38,8 @@ public interface KrsService {
     List<StatusSemesterDto> getStatusSemester(UUID mahasiswaId);
     RiwayatKrsDto getRiwayatKrs(UUID mahasiswaId, String periodeAkademik);
 
+    // Dosen Service
     void updateStatusKrsSetuju(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest);
-    void updateStatusKrsKembalikan(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest);
+    void updateStatusKrsTolak(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest);
+    KrsMenungguResDto getDetailKrsMahasiswa(UUID mahasiswaId);
 }

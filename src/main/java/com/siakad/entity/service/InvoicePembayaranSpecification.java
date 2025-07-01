@@ -7,6 +7,13 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class InvoicePembayaranSpecification extends QuerySpecification<InvoicePembayaranKomponenMahasiswa> {
 
+    private static boolean isNumeric(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return false;
+        }
+        return str.trim().matches("\\d+");
+    }
+
     private Specification<InvoicePembayaranKomponenMahasiswa> byIsDeleted(){
         return attributeEqual("isDeleted", false);
     }
@@ -40,19 +47,27 @@ public class InvoicePembayaranSpecification extends QuerySpecification<InvoicePe
         return  attributeContains("invoiceMahasiswa.siakMahasiswa.siakProgramStudi.siakFakultas.namaFakultas", param);
     }
 
-    private Specification<InvoicePembayaranKomponenMahasiswa> byKelasKuliah(String param) {
-        return  attributeContains("rincianKrsMahasiswa.siakKelasKuliah.nama", param);
+    private Specification<InvoicePembayaranKomponenMahasiswa> byKodeInvoice(String param) {
+        return attributeContains("invoiceMahasiswa.kodeInvoice", param);
     }
 
-    public Specification<InvoicePembayaranKomponenMahasiswa> entitySearch(String keyword, String npm, String nama, Integer semester, String angkatan, String programStudi, String fakultas, String periodeAkademik){
+    public Specification<InvoicePembayaranKomponenMahasiswa> entitySearch(String keyword, Integer semester, String angkatan, String programStudi, String fakultas, String periodeAkademik){
         Specification<InvoicePembayaranKomponenMahasiswa> spec = byIsDeleted();
 
-        if (!Strings.isBlank(npm)){
-            spec = spec.and(byNpm(npm));
-        }
+        if (!Strings.isBlank(keyword)) {
+            String trimmedKeyword = keyword.trim();
 
-        if (!Strings.isBlank(nama)){
-            spec = spec.and(byNama(nama));
+            if (isNumeric(trimmedKeyword)) {
+                spec = spec.and(byNpm(trimmedKeyword));
+            }
+            else {
+                Specification<InvoicePembayaranKomponenMahasiswa> stringSearchSpec =
+                        Specification
+                                .where(byNama(trimmedKeyword))
+                                .or(byKodeInvoice(trimmedKeyword));
+
+                spec = spec.and(stringSearchSpec);
+            }
         }
 
         if (!Strings.isBlank(periodeAkademik)) {
@@ -73,12 +88,6 @@ public class InvoicePembayaranSpecification extends QuerySpecification<InvoicePe
 
         if (!Strings.isBlank(fakultas)){
             spec = spec.and(byFakultas(fakultas));
-        }
-
-        if (!Strings.isBlank(keyword)){
-            spec = spec.and(
-                    Specification.where(byKelasKuliah(keyword))
-            );
         }
 
         return spec;

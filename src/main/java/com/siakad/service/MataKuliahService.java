@@ -22,4 +22,7 @@ public interface MataKuliahService {
     void deleteKurikulum(UUID id, HttpServletRequest servletRequest);
     List<KurikulumProdiResDto> getKurikulumPerSemester(String programStudi, String tahunKurikulum);
     MataKuliahCplCpmkResDto getMataKuliahCplCpmk(UUID id);
+
+    // Dosen get mata kuliah
+    Page<MataKuliahResDto> getPaginated(String keyword, UUID dosenId, Pageable pageable);
 }

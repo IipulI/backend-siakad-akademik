@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +39,8 @@ public interface RpsTransform {
     @Mapping(source = "siakRps.pustakaPendukung", target = "pustakaPendukung")
     @Mapping(source = "id", target = "id", qualifiedByName = "mapKelasRpsIdToUUID")
     RpsResDto toDto(KelasRps entity);
+
+    RpsDetailResDto toDetailDto(Rps entity);
 
     KelasRpsResponseDto toDtoKelas(Rps entity);
 
