@@ -89,6 +89,7 @@
 
             mahasiswa.setEmailPribadi(user.getEmail());
             mahasiswa.setSiakProgramStudi(programStudi);
+            mahasiswa.setKurikulum(request.getKurikulum());
             mahasiswa.setSiakUser(user);
             mahasiswa.setIsDeleted(false);
             mahasiswaRepository.save(mahasiswa);
@@ -180,6 +181,7 @@
             mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
             mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
             mahasiswa.setSiakProgramStudi(programStudi);
+            mahasiswa.setKurikulum(request.getKurikulum());
             mahasiswaRepository.save(mahasiswa);
             service.saveUserActivity(servletRequest, MessageKey.UPDATE_MAHASISWA);
 
