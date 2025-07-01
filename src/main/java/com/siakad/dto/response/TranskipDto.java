@@ -10,4 +10,5 @@ public class TranskipDto {
     private List<RincianKrsDto> rincianKrsDto;
     private BigDecimal ipk;
     private Integer totalSks;
+    private BigDecimal totalAngkaMutu;
 }

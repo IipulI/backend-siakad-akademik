@@ -18,6 +18,7 @@ public interface MahasiswaTransform {
     Mahasiswa toEntity(MahasiswaReqDto dto);
 
     @Mapping(source = "siakProgramStudi.namaProgramStudi", target = "namaProgramStudi")
+    @Mapping(source = "siakProgramStudi.siakJenjang.nama", target = "jenjang")
     @Mapping(source = "keluarga", target = "keluargaMahasiswaList")
     MahasiswaResDto toDto(Mahasiswa mahasiswa);
 

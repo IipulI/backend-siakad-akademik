@@ -3,6 +3,7 @@ import jakarta.validation.constraints.Email;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -60,5 +61,6 @@ public class MahasiswaResDto {
     private String alamatSekolah;
     private String teleponSekolah;
     private String noIjazahSekolah;
+    private String jenjang;
     private List<KeluargaMahasiswaResDto> keluargaMahasiswaList;
 }
