@@ -15,6 +15,7 @@ public class MahasiswaResDto {
     private String nama;
     private String npm;
     private String periodeMasuk;
+    private String kurikulum;
     private String sistemKuliah;
     private String kelas;
     private String jenisPendaftaran;

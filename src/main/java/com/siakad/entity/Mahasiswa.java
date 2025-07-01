@@ -37,6 +37,8 @@ public class Mahasiswa {
     private String nama;
     private String npm;
     private String periodeMasuk;
+
+    @Column(name = "kurikulum")
     private String kurikulum;
     private String sistemKuliah;
     private String kelas;

@@ -32,7 +32,7 @@ public abstract class KrsTransform {
     public abstract KrsRincianMahasiswa toEntityRincianPeserta(PesertaKelasReqDto dto);
 
     @Mapping(source = "siakKelasKuliah.siakMataKuliah", target = "mataKuliah")
-    @Mapping(source = "siakKelasKuliah.siakMataKuliah.nilaiMin", target = "riwayatMatakuliah")
+    @Mapping(source = "hurufMutu", target = "riwayatMatakuliah")
     @Mapping(source = "siakKelasKuliah.nama", target = "namaKelas")
     @Mapping(target = "hari", ignore = true)
     @Mapping(target = "jamMulai", ignore = true)

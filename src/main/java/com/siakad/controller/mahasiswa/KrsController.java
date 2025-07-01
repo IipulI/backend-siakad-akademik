@@ -105,7 +105,7 @@ public class KrsController {
     @Operation(summary = "Get Krs by Pagination")
     @GetMapping()
     public ResponseEntity<ApiResDto<List<KrsResDto>>> getPaginated(
-            @RequestParam(required = false) String kelas,
+            @RequestParam(required = false) String mataKuliah,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
@@ -119,7 +119,7 @@ public class KrsController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
-            Page<KrsResDto> search = service.getPaginated(kelas, pageable);
+            Page<KrsResDto> search = service.getPaginated(mataKuliah, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<KrsResDto>>builder()
