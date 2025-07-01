@@ -6,8 +6,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class KrsSpecification extends QuerySpecification<KrsRincianMahasiswa> {
 
-    private Specification<KrsRincianMahasiswa> byKelas(String param) {
-        return attributeContains("siakKelasKuliah.nama", param);
+    private Specification<KrsRincianMahasiswa> byMataKuliah(String param) {
+        return attributeContains("siakKelasKuliah.siakMataKuliah.namaMataKuliah", param);
     }
 
     private Specification<KrsRincianMahasiswa> byIsDeleted() {
@@ -19,7 +19,7 @@ public class KrsSpecification extends QuerySpecification<KrsRincianMahasiswa> {
 
         if (keyword != null && !keyword.isEmpty()) {
             spec = spec.and(
-                    Specification.where(byKelas(keyword))
+                    Specification.where(byMataKuliah(keyword))
             );
         }
 
