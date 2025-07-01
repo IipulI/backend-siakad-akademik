@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +16,9 @@ import java.util.UUID;
 public interface RpsRepository extends JpaRepository<Rps, UUID>,
         JpaSpecificationExecutor<Rps> {
     Optional<Rps> findByIdAndIsDeletedFalse(UUID id);
+
+    List<Rps> findAllBySiakMataKuliah_IdAndIsDeletedFalse(UUID mataKuliahId);
+
 
     @Query(value = """
          SELECT

@@ -17,6 +17,8 @@ public interface PembimbingAkademikRepository extends JpaRepository<PembimbingAk
 
     Optional<PembimbingAkademik> findBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswa);
 
+    List<PembimbingAkademik> findAllBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(UUID mahasiswaId, UUID periodeId);
+
     List<PembimbingAkademik> findBySiakMahasiswaIdInAndSiakPeriodeAkademikNamaPeriode(List<UUID> mahasiswaIds, String namaPeriode);
 
     UUID id(UUID id);

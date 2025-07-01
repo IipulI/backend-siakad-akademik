@@ -19,6 +19,7 @@ public interface MataKuliahService {
     MataKuliahResDto update(MataKuliahReqDto request, UUID id, HttpServletRequest servletRequest);
     void delete(UUID id, HttpServletRequest servletRequest);
     void updateKurikulum(UUID id, KurikulumProdiReqDto request, HttpServletRequest servletRequest);
+    void deleteKurikulum(UUID id, HttpServletRequest servletRequest);
     List<KurikulumProdiResDto> getKurikulumPerSemester(String programStudi, String tahunKurikulum);
     MataKuliahCplCpmkResDto getMataKuliahCplCpmk(UUID id);
 

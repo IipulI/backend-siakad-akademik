@@ -22,6 +22,8 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
 
     Optional<KrsRincianMahasiswa> findByIdAndIsDeletedFalse(UUID id);
 
+    List<KrsRincianMahasiswa> findAllBySiakKrsMahasiswa_IdAndSiakKelasKuliah_IdInAndIsDeletedFalse(UUID krsId, List<UUID> kelasIds);
+
     List<KrsRincianMahasiswa> findAllBySiakKrsMahasiswa_IdAndIsDeletedFalse(UUID id);
     Optional<KrsRincianMahasiswa> findBySiakKrsMahasiswa_IdAndSiakKelasKuliah_Id(UUID krsId, UUID kelasId);
     boolean existsBySiakKelasKuliah_SiakMataKuliah_IdAndSiakKrsMahasiswa_SiakMahasiswa_IdAndSiakKrsMahasiswa_IdNotAndIsDeletedFalse(

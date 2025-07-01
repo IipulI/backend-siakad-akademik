@@ -3,6 +3,7 @@ package com.siakad.service.impl;
 import com.siakad.dto.request.KelasRpsReqDto;
 import com.siakad.dto.request.RpsReqDto;
 import com.siakad.dto.response.RpsDetailResDto;
+import com.siakad.dto.response.RpsMataKuliahDto;
 import com.siakad.dto.response.RpsResDto;
 import com.siakad.dto.transform.RpsTransform;
 import com.siakad.dto.transform.helper.RpsRawDataToDtoMapper;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -87,6 +89,21 @@ public class RpsServiceImpl implements RpsService {
 
         return mapper.toDto(rps);
     }
+
+    @Override
+    public List<RpsMataKuliahDto> getRpsByMataKuliah(UUID mataKuliahId) {
+        List<Rps> rpsList = rpsRepository.findAllBySiakMataKuliah_IdAndIsDeletedFalse(mataKuliahId);
+
+        return rpsList.stream().map(rps -> {
+            RpsMataKuliahDto dto = new RpsMataKuliahDto();
+            dto.setId(rps.getId());
+            dto.setPeriodeAkademik(mapper.periodeAkademikToDto(rps.getSiakPeriodeAkademik()));
+            dto.setDosenPenyusun(mapper.dosenListToDtoList(rps.getDosenList()));
+            dto.setKelas(mapper.kelasKuliahListToDtoList(rps.getKelasKuliahList()));
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
 
     @Override
     public RpsResDto update(UUID id, RpsReqDto reqDto, MultipartFile dokumenRps, HttpServletRequest servletRequest) throws IOException {

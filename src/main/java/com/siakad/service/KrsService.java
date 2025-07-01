@@ -6,6 +6,7 @@ import com.siakad.dto.request.PindahKelasReqDto;
 import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,6 +19,8 @@ public interface KrsService {
 
     void save(KrsReqDto dto, HttpServletRequest servletRequest);
     void update(KrsReqDto dto, HttpServletRequest servletRequest);
+    void deleteMultiple(KrsReqDto reqDto, HttpServletRequest servletRequest);
+
     Page<KrsResDto> getPaginated(String kelas, Pageable pageable);
     KrsMenungguResDto getAllKrsByStatusMenunggu();
     void updateStatus(HttpServletRequest servletRequest);

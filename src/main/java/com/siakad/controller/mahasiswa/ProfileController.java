@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
-import com.siakad.dto.response.ApiResDto;
-import com.siakad.dto.response.KeluargaMahasiswaResDto;
-import com.siakad.dto.response.MahasiswaResDto;
-import com.siakad.dto.response.PaginationDto;
+import com.siakad.dto.response.*;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
@@ -190,6 +187,25 @@ public class ProfileController {
             var data = keluargaService.getOne(id, idKeluarga);
             return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<KeluargaMahasiswaResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(data)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Profile Info")
+    @GetMapping("/info")
+    public ResponseEntity<ApiResDto<ProfileInfo>> getProfileInfo() {
+        try {
+            var data = service.getProfileInfo();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<ProfileInfo>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(data)

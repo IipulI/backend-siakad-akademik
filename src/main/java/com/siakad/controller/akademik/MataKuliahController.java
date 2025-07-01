@@ -2,14 +2,12 @@ package com.siakad.controller.akademik;
 
 import com.siakad.dto.request.KurikulumProdiReqDto;
 import com.siakad.dto.request.MataKuliahReqDto;
-import com.siakad.dto.response.ApiResDto;
-import com.siakad.dto.response.KurikulumProdiResDto;
-import com.siakad.dto.response.MataKuliahResDto;
-import com.siakad.dto.response.PaginationDto;
+import com.siakad.dto.response.*;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
 import com.siakad.service.MataKuliahService;
+import com.siakad.service.RpsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +35,7 @@ import java.util.UUID;
 public class MataKuliahController {
 
     private final MataKuliahService service;
+    private final RpsService rpsService;
 
     @Operation(summary = "Add Mata Kuliah")
     @PostMapping("/mata-kuliah")
@@ -156,14 +155,35 @@ public class MataKuliahController {
     }
 
     @Operation(summary = "Add Kurikulum Prodi")
-    @PutMapping("/kurikulum-prodi/{id}")
-    public ResponseEntity<ApiResDto<MataKuliahResDto>> update(
+    @PutMapping("/kurikulum-prodi/add/{id}")
+    public ResponseEntity<ApiResDto<MataKuliahResDto>> updateKurikulum(
             @PathVariable UUID id,
             @Valid @RequestBody KurikulumProdiReqDto request,
             HttpServletRequest servletRequest
     ) {
         try {
             service.updateKurikulum(id, request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<MataKuliahResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Delete Kurikulum Prodi")
+    @PutMapping("/kurikulum-prodi/delete/{id}")
+    public ResponseEntity<ApiResDto<MataKuliahResDto>> deleteKurikulum(
+            @PathVariable UUID id,
+            HttpServletRequest servletRequest
+    ) {
+        try {
+            service.deleteKurikulum(id, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiResDto.<MataKuliahResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
@@ -198,4 +218,25 @@ public class MataKuliahController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
+    @Operation(summary = "Get Rps Mata Kuliah")
+    @GetMapping("/mata-kuliah/{id}/rps")
+    public ResponseEntity<ApiResDto<List<RpsMataKuliahDto>>> getRps(@PathVariable UUID id) {
+        try {
+            List<RpsMataKuliahDto> rpsByMataKuliah = rpsService.getRpsByMataKuliah(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<RpsMataKuliahDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(rpsByMataKuliah)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+
 }

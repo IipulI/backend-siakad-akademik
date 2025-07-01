@@ -14,7 +14,6 @@ import com.siakad.entity.service.MahasiswaSpecification;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.KrsKey;
 import com.siakad.enums.MessageKey;
-import com.siakad.enums.StatusMahasiswa;
 import com.siakad.exception.ApplicationException;
 import com.siakad.repository.*;
 import com.siakad.service.KrsService;
@@ -184,13 +183,11 @@ public class KrsServiceImpl implements KrsService {
 
         // Ambil entitas KRS Mahasiswa
         KrsMahasiswa krs = krsMahasiswaRepository
-                .findBySiakMahasiswa_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId())
+                .findBySiakMahasiswa_IdAndSiakPeriodeAkademikIdAndIsDeletedFalse(user.getSiakMahasiswa().getId(), activePeriode.getId())
                 .orElseThrow(() -> new RuntimeException("KRS Mahasiswa tidak ditemukan: " + user.getSiakMahasiswa().getId()));
 
         LocalDateTime now = LocalDateTime.now();
 
-        // Update KRS utama
-        krs.setSiakPeriodeAkademik(activePeriode);
         krs.setStatus(KrsKey.DRAFT.getLabel());
         krs.setUpdatedAt(now);
         krsMahasiswaRepository.save(krs);
@@ -254,6 +251,29 @@ public class KrsServiceImpl implements KrsService {
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_KRS);
     }
 
+    @Transactional
+    @Override
+    public void deleteMultiple(KrsReqDto reqDto, HttpServletRequest httpServletRequest) {
+        User user = service.getCurrentUser();
+
+        KrsMahasiswa krs = krsMahasiswaRepository
+                .findBySiakMahasiswa_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId())
+                .orElseThrow(() -> new RuntimeException("KRS Mahasiswa tidak ditemukan: " + user.getSiakMahasiswa().getId()));
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
+                .findAllBySiakKrsMahasiswa_IdAndSiakKelasKuliah_IdInAndIsDeletedFalse(krs.getId(), reqDto.getKelasIds());
+
+        for (KrsRincianMahasiswa rincian : rincianList) {
+            rincian.setIsDeleted(true);
+            rincian.setUpdatedAt(now);
+        }
+
+        krsRincianMahasiswaRepository.saveAll(rincianList);
+
+        service.saveUserActivity(httpServletRequest, MessageKey.DELETE_KRS);
+    }
 
 
     @Override
