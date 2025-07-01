@@ -282,9 +282,18 @@ public class KrsServiceImpl implements KrsService {
 
 
     @Override
-    public Page<KrsResDto> getPaginated(String mataKuliah, Pageable pageable) {
+    public Page<KrsResDto> getPaginated(String keyword, Pageable pageable) {
         KrsSpecification specBuilder = new KrsSpecification();
-        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(mataKuliah);
+
+        User user = service.getCurrentUser();
+
+        List<String> semesters = switch (user.getSiakMahasiswa().getSemester()) {
+            case 1, 3, 5, 7, 9, 11, 13 -> Arrays.asList("1", "3", "5", "7", "9", "11", "13");
+            case 2, 4, 6, 8, 10, 12, 14 -> Arrays.asList("2", "4", "6", "8", "10", "12");
+            default -> Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
+        };
+
+        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(keyword, semesters);
         Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toDto);
     }
