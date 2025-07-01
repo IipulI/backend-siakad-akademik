@@ -508,4 +508,25 @@ public class MahasiswaController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
+    @Operation(summary = "Get Profile Info")
+    @GetMapping("/{id}/info")
+    public ResponseEntity<ApiResDto<ProfileInfo>> getProfileInfo(
+            @PathVariable UUID id
+    ) {
+        try {
+            var data = service.getProfileInfoByMahasiswa(id);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<ProfileInfo>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(data)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 }

@@ -85,6 +85,7 @@ public class HasilStudiServiceImpl implements HasilStudiService {
             }
 
             for (KrsRincianMahasiswa selected : selectedList) {
+                int semester = selected.getSiakKrsMahasiswa().getSemester();
                 var mataKuliah = selected.getSiakKelasKuliah().getSiakMataKuliah();
                 int sks = mataKuliah.getSksPraktikum() + mataKuliah.getSksTatapMuka();
                 BigDecimal angkaMutu = selected.getAngkaMutu() != null ? selected.getAngkaMutu() : BigDecimal.ZERO;
@@ -96,6 +97,7 @@ public class HasilStudiServiceImpl implements HasilStudiService {
                 dto.setSks(sks);
                 dto.setHurufMutu(selected.getHurufMutu());
                 dto.setAngkaMutu(angkaMutu);
+                dto.setSemester(semester);
                 dto.setJumlahAngkaMutu(jumlahAngkaMutu);
 
                 rincianKrsDtoList.add(dto);
@@ -117,6 +119,7 @@ public class HasilStudiServiceImpl implements HasilStudiService {
         TranskipDto transkipDto = new TranskipDto();
         transkipDto.setRincianKrsDto(rincianKrsDtoList);
         transkipDto.setTotalSks(totalSks);
+        transkipDto.setTotalAngkaMutu(totalAngkaMutu);
         transkipDto.setIpk(ipk);
 
         return transkipDto;
