@@ -78,8 +78,13 @@ public class KrsServiceImpl implements KrsService {
             statusKrs = (String) actualDataRow[5];
         }
 
+        if(actualDataRow[4] == null){
+            batasSks = (Integer) 21;
+        } else {
+            batasSks = (Integer) actualDataRow[4];
+        }
+
         semester = (Integer) actualDataRow[1];
-        batasSks = (Integer) actualDataRow[4];
         periodeAkademik = (String) actualDataRow[6];
         pembimbingAkademik = (String) actualDataRow[3];
 
@@ -157,7 +162,7 @@ public class KrsServiceImpl implements KrsService {
 
         private Integer getMaxSksYangDiizinkan(User user) {
             BigDecimal ipsTerakhir = hasilStudiRepository
-                    .findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(user.getSiakMahasiswa().getId())
+                    .findHasilStudiBySiakMahasiswa_IdOrderBySemesterDesc(user.getSiakMahasiswa().getId())
                     .map(HasilStudi::getIps)
                     .orElse(BigDecimal.ZERO);
 
@@ -782,7 +787,7 @@ public class KrsServiceImpl implements KrsService {
 
     private Integer getBatasSks(UUID mahasiswaId) {
         BigDecimal ipsTerakhir = hasilStudiRepository
-                .findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(mahasiswaId)
+                .findHasilStudiBySiakMahasiswa_IdOrderBySemesterDesc(mahasiswaId)
                 .map(HasilStudi::getIps)
                 .orElse(BigDecimal.ZERO);
 
