@@ -97,4 +97,42 @@ public interface MahasiswaRepository extends JpaRepository<Mahasiswa, UUID>,
     @Query("SELECT m.siakProgramStudi.siakJenjang FROM Mahasiswa m WHERE m.id = :mahasiswaId")
     Jenjang findJenjangByMahasiswaId(@Param("mahasiswaId") UUID mahasiswaId);
 
+
+    @Query(value = """
+        SELECT
+                   m.nama,
+                   m.semester,
+                   m.id as mahasiswa_id,
+                   d.nama as dosen_pembimbing,
+                   (
+                       select batas_sks from siak_batas_sks as bs
+                                        where bs.siak_jenjang_id = ps.siak_jenjang_id
+                                        and (ips_min <= (Select hs.ips from siak_hasil_studi as hs
+                                                           where hs.siak_mahasiswa_id = m.id
+                                                           order by semester desc
+                                                           limit 1)
+                                               and ips_max >= (Select hs.ips from siak_hasil_studi as hs
+                                                           where hs.siak_mahasiswa_id = m.id
+                                                           order by semester desc
+                                                           limit 1)
+                                            )
+                   ) as batas_sks,
+                   (
+                       select km.status from siak_krs_mahasiswa as km
+                                        left join siak_periode_akademik as spa on km.siak_periode_akademik_id = spa.id
+                                        where km.siak_mahasiswa_id = m.id
+                                           and spa.status = 'ACTIVE'
+                                        limit 1
+                   ) as status,
+                   paa.nama_periode
+                   from siak_mahasiswa as m
+               inner join siak_program_studi as ps on m.siak_program_studi_id = ps.id
+               inner join siak_pembimbing_akademik as pa on m.id = pa.siak_mahasiswa_id
+               inner join siak_dosen as d on pa.siak_dosen_id = d.id
+               inner join siak_periode_akademik as paa on m.periode_masuk=paa.kode_periode
+            where m.id = :id
+            limit 1
+    """, nativeQuery = true)
+    Optional<Object[]> getKrsInfo(@Param("id") UUID id);
+
 }

@@ -7,6 +7,7 @@ import com.siakad.entity.User;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
+import com.siakad.service.KomposisiNilaiMataKuliahMhsService;
 import com.siakad.service.KrsService;
 import com.siakad.service.ProfilLulusanService;
 import com.siakad.service.UserActivityService;
@@ -37,7 +38,33 @@ import java.util.UUID;
 public class KrsController {
 
     private final KrsService service;
+    private final KrsService krsService;
     private final UserActivityService userActivityService;
+    private final KomposisiNilaiMataKuliahMhsService komposisiNilaiMataKuliahMhsService;
+
+    @Operation(summary = "Get Info krs")
+    @GetMapping("/info-krs")
+    public ResponseEntity<ApiResDto<KrsInfoResDto>> infoKrs(){
+        try {
+            User user = userActivityService.getCurrentUser();
+
+            KrsInfoResDto result = service.infoKrs(user.getSiakMahasiswa().getId());
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<KrsInfoResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(result)
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 
     @Operation(summary = "Add Krs")
     @PostMapping
@@ -115,9 +142,9 @@ public class KrsController {
         }
     }
 
-    @Operation(summary = "Update Statu from draft to menunggu")
+    @Operation(summary = "Update Status from draft to diajukan")
     @PutMapping("/status")
-    public ResponseEntity<ApiResDto<KrsResDto>> updateStatusFromDraftToMenunggu(
+    public ResponseEntity<ApiResDto<KrsResDto>> updateStatusFromDraftToDiajukan(
             HttpServletRequest servletRequest
     ) {
         try {
@@ -174,6 +201,55 @@ public class KrsController {
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Riwayat Krs by Mahasiswa ID")
+    @GetMapping("/riwayat-krs/")
+    public ResponseEntity<ApiResDto<RiwayatKrsDto>> getRiwayatKrs  (
+            @RequestParam("namaPeriode") String namaPeriode
+    ) {
+        try {
+            User user = userActivityService.getCurrentUser();
+
+            RiwayatKrsDto riwayatKrs = krsService.getRiwayatKrs(user.getSiakMahasiswa().getId(), namaPeriode);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<RiwayatKrsDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(riwayatKrs)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Mahasiswa Komposisi Nilai")
+    @GetMapping("/komposisi-nilai")
+    public ResponseEntity<ApiResDto<List<KomposisiNilaiMataKuliahMhsResDto>>> getKomposisiNilaiMahasiswa(
+            @RequestParam String namaPeriode
+    ) {
+        try {
+            User user = userActivityService.getCurrentUser();
+
+            List<KomposisiNilaiMataKuliahMhsResDto> nilai = komposisiNilaiMataKuliahMhsService.getKomposisiMataKuliah(user.getSiakMahasiswa().getId(), namaPeriode);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<KomposisiNilaiMataKuliahMhsResDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(nilai)
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }

@@ -147,6 +147,7 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
 
         List<PembimbingAkademikResDto> dtoList = mahasiswaList.stream().map(mahasiswa -> {
             PembimbingAkademikResDto dto = new PembimbingAkademikResDto();
+            dto.setId(mahasiswa.getId());
             dto.setMahasiswa(mahasiswa.getNama());
             dto.setAngkatan(mahasiswa.getAngkatan());
             dto.setStatusMahasiswa(mahasiswa.getStatusMahasiswa());

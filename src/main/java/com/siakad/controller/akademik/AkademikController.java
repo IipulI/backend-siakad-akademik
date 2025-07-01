@@ -133,7 +133,7 @@ public class AkademikController {
 
     @Operation(summary = "Get MataKuliahCplCpmk")
     @GetMapping("/cpl-cpmk/{mataKuliahId}")
-    public ResponseEntity<ApiResDto<MataKuliahCplCpmkResDto>> getRiwayatKrs  (
+    public ResponseEntity<ApiResDto<MataKuliahCplCpmkResDto>> getCplCpmkMataKuliah  (
             @PathVariable("mataKuliahId") UUID id
     ) {
         try {

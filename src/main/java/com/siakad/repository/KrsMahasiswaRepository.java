@@ -26,7 +26,7 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
     @Query("""
     SELECT krm FROM KrsRincianMahasiswa krm 
     JOIN krm.siakKrsMahasiswa km 
-    WHERE km.status = 'Menunggu'  
+    WHERE km.status = 'Diajukan'  
       AND km.siakPeriodeAkademik.status = 'ACTIVE' 
       AND km.siakMahasiswa.id = :mahasiswaId
     """)

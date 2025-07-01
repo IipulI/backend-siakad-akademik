@@ -34,6 +34,7 @@ public class DosenMataKuliahController {
 
     private final MataKuliahService service;
     private final UserActivityService userActivityService;
+    private final MataKuliahService mataKuliahService;
     private final RpsService rpsService;
 
     @Operation(summary = "Get list mata kuliah")
@@ -113,6 +114,29 @@ public class DosenMataKuliahController {
             throw e;
         }
         catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get MataKuliahCplCpmk")
+    @GetMapping("{id}/cpl-cpmk/")
+    public ResponseEntity<ApiResDto<MataKuliahCplCpmkResDto>> getCplCpmkMataKuliah  (
+            @PathVariable("id") UUID id
+    ) {
+        try {
+
+            MataKuliahCplCpmkResDto mataKuliahCplCpmk = mataKuliahService.getMataKuliahCplCpmk(id);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<MataKuliahCplCpmkResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(mataKuliahCplCpmk)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }

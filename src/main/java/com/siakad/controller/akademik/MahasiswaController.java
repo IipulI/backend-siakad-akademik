@@ -405,10 +405,10 @@ public class MahasiswaController {
     @GetMapping("{mahasiswaId}/komposisi-nilai")
     public ResponseEntity<ApiResDto<List<KomposisiNilaiMataKuliahMhsResDto>>> getKomposisiNilaiMahasiswa(
             @PathVariable UUID mahasiswaId,
-            @RequestParam UUID periodeAkademikId
+            @RequestParam String namaPeriode
     ) {
         try {
-            List<KomposisiNilaiMataKuliahMhsResDto> nilai = komposisiNilaiMataKuliahMhsService.getKomposisiMataKuliah(mahasiswaId, periodeAkademikId);
+            List<KomposisiNilaiMataKuliahMhsResDto> nilai = komposisiNilaiMataKuliahMhsService.getKomposisiMataKuliah(mahasiswaId, namaPeriode);
 
             return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<List<KomposisiNilaiMataKuliahMhsResDto>>builder()

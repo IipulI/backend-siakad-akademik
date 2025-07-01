@@ -9,7 +9,7 @@ public class RpsDetailResDto {
     private UUID id;
     private TahunKurikulumDto tahunKurikulum;
     private PeriodeAkademikDto periodeAkademik;
-    private ProgramStudiResDto programStudi; // Changed to ProgramStudiResDto
+    private ProgramStudiResDto programStudi;
     private LocalDate tanggalPenyusun;
     private String deskripsiMataKuliah;
     private String tujuanMataKuliah;

@@ -120,9 +120,9 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
             "JOIN FETCH kk.siakMataKuliah mk " +
             "JOIN FETCH mk.siakTahunKurikulum tk " +
             "WHERE krr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
-            "AND krr.siakKrsMahasiswa.siakPeriodeAkademik.id = :periodeAkademikId " +
+            "AND krr.siakKrsMahasiswa.siakPeriodeAkademik.namaPeriode = :namaPeriode " +
             "AND krr.isDeleted = false")
-    List<KrsRincianMahasiswa> findAllByMahasiswaAndPeriodeWithDetails(UUID mahasiswaId, UUID periodeAkademikId);
+    List<KrsRincianMahasiswa> findAllByMahasiswaAndPeriodeWithDetails(UUID mahasiswaId, String namaPeriode);
 
 
     @Query("SELECT krr.hurufMutu, SUM(kk.siakMataKuliah.sksTatapMuka + kk.siakMataKuliah.sksPraktikum) " +
