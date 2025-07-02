@@ -77,4 +77,6 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
     List<Object[]> findSksDiambilPerSemester(UUID mahasiswaId);
 
     Optional<KrsMahasiswa> findBySiakMahasiswaAndSiakPeriodeAkademik(Mahasiswa mahasiswa, PeriodeAkademik periodeAkademik);
+
+    Optional<KrsMahasiswa> findBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(UUID mahasiswaId, UUID periodeId);
 }

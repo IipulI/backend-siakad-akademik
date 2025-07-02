@@ -16,6 +16,9 @@ public interface DashboardService {
 
     // -- Mahasiswa
     TagihanMahasiswaDto getTagihanMahasiswa();
+
+    TagihanMhsDto getTagihanMhs();
+
     GrafikAkademikDto getGrafikAkademik();
     TagihanKomponenMahasiswaDto getTagihanKomponenMahasiswa();
     List<RiwayatTagihanDto> getRiwayatTagihan();

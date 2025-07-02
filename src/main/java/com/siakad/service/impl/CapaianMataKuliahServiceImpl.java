@@ -38,11 +38,12 @@ public class CapaianMataKuliahServiceImpl implements CapaianMataKuliahService {
     private final CapaianPembelajaranLulusanRepository capaianPembelajaranLulusanRepository;
     private final UserActivityService service;
     private final CapaianMataKuliahTransform mapper;
+    private static final String MESSAGE_MATAKULIAH = "Mata kuliah tidak ditemukkan : ";
 
     @Override
     public CapaianMataKuliahResDto save(UUID idMataKuliah, CapaianMataKuliahReqDto dto, HttpServletRequest servletRequest) {
         MataKuliah mataKuliah = mataKuliahRepository.findByIdAndIsDeletedFalse(idMataKuliah)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Mata kuliah tidak ditemukkan : " + idMataKuliah));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, MESSAGE_MATAKULIAH + idMataKuliah));
 
         CapaianMataKuliah entity = mapper.toEntity(dto);
         entity.setSiakMataKuliah(mataKuliah);
@@ -59,7 +60,7 @@ public class CapaianMataKuliahServiceImpl implements CapaianMataKuliahService {
     @Override
     public CapaianMataKuliahResDto getOne(UUID idMataKuliah, UUID id) {
         mataKuliahRepository.findByIdAndIsDeletedFalse(idMataKuliah)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Mata kuliah tidak ditemukkan : " + idMataKuliah));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, MESSAGE_MATAKULIAH + idMataKuliah));
 
         CapaianMataKuliah capaianMataKuliah = capaianMataKuliahRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Capaian Mata kuliah tidak ditemukan : " + id));
@@ -84,7 +85,7 @@ public class CapaianMataKuliahServiceImpl implements CapaianMataKuliahService {
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Capaian Mata kuliah tidak ditemukan : " + id));
 
         MataKuliah mataKuliah = mataKuliahRepository.findByIdAndIsDeletedFalse(idMataKuliah)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Mata kuliah tidak ditemukkan : " + idMataKuliah));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, MESSAGE_MATAKULIAH + idMataKuliah));
 
         mapper.toEntity(dto, capaianMataKuliah);
         capaianMataKuliah.setSiakMataKuliah(mataKuliah);
@@ -102,7 +103,7 @@ public class CapaianMataKuliahServiceImpl implements CapaianMataKuliahService {
     @Override
     public void delete(UUID idMataKuliah, UUID id, HttpServletRequest servletRequest) {
         MataKuliah mataKuliah = mataKuliahRepository.findByIdAndIsDeletedFalse(idMataKuliah)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Mata Kuliah tidak ditemukkan : " + idMataKuliah));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, MESSAGE_MATAKULIAH + idMataKuliah));
 
         CapaianMataKuliah capaianMataKuliah = capaianMataKuliahRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Capaian Mata Kuliah tidak ditemukkan : " + idMataKuliah));

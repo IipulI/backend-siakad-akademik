@@ -14,7 +14,6 @@ public interface PengumumanService {
     PengumumanResDto save(PengumumanReqDto dto, MultipartFile file, HttpServletRequest servletRequest) throws IOException;
 
     Page<PengumumanResDto> search(String keyword, String status, Pageable pageable);
-
     PengumumanResDto getOne(UUID id);
     PengumumanResDto update(UUID id, PengumumanReqDto dto, MultipartFile file, HttpServletRequest servletRequest) throws IOException;
     void delete(UUID id, HttpServletRequest servletRequest);
