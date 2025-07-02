@@ -2,6 +2,7 @@ package com.siakad.dto.transform.helper;
 
 import com.siakad.dto.response.KrsResDto;
 import com.siakad.entity.JadwalKuliah;
+import com.siakad.entity.KelasKuliah;
 import com.siakad.entity.KrsRincianMahasiswa;
 import com.siakad.repository.JadwalKuliahRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,25 @@ public class JadwalKuliahMapperHelper {
     public void mapJadwalKuliahToDto(KrsResDto dto, KrsRincianMahasiswa entity) {
         List<JadwalKuliah> jadwalList = jadwalKuliahRepository
                 .findBySiakKelasKuliahId(entity.getSiakKelasKuliah().getId());
+
+        if (!jadwalList.isEmpty()) {
+            JadwalKuliah jadwal = jadwalList.get(0);
+            dto.setHari(jadwal.getHari());
+            dto.setJamMulai(jadwal.getJamMulai().toString());
+            dto.setJamSelesai(jadwal.getJamSelesai().toString());
+
+            if (jadwal.getSiakDosen() != null) {
+                dto.setDosenPengajar(jadwal.getSiakDosen().getNama());
+            } else {
+                dto.setDosenPengajar("Belum ada dosen");
+            }
+        }
+
+    }
+
+    public void mapJadwalKuliahKelasToDto(KrsResDto dto, KelasKuliah entity) {
+        List<JadwalKuliah> jadwalList = jadwalKuliahRepository
+                .findBySiakKelasKuliahId(entity.getId());
 
         if (!jadwalList.isEmpty()) {
             JadwalKuliah jadwal = jadwalList.get(0);

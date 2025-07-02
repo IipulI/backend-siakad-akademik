@@ -23,6 +23,10 @@ public class KelasKuliahSpecification extends QuerySpecification<KelasKuliah> {
         return attributeContains("siakMataKuliah.siakTahunKurikulum.tahun", param);
     }
 
+    private Specification<KelasKuliah> byMataKuliah(String param) {
+        return attributeContains("siakMataKuliah.namaMataKuliah", param);
+    }
+
     private Specification<KelasKuliah> byProgramStudi(String param) {
         return attributeContains("siakProgramStudi.namaProgramStudi", param);
     }
@@ -94,6 +98,28 @@ public class KelasKuliahSpecification extends QuerySpecification<KelasKuliah> {
 
         if (!Strings.isBlank(dosen)) {
             spec = spec.and(byDosen(dosen));
+        }
+
+        return spec;
+    }
+
+
+    public  Specification<KelasKuliah> entitySearchKelas(String mataKuliah,
+                                                         String programStudi,
+                                                         String periodeAkademik
+    ){
+        Specification<KelasKuliah> spec = notDeleted();
+
+        if (!Strings.isBlank(mataKuliah)){
+            spec = spec.and(byMataKuliah(mataKuliah));
+        }
+
+        if (!Strings.isBlank(programStudi)){
+            spec = spec.and(byProgramStudi(programStudi));
+        }
+
+        if (!Strings.isBlank(periodeAkademik)){
+            spec = spec.and(byPeriodeAkademik(periodeAkademik));
         }
 
         return spec;

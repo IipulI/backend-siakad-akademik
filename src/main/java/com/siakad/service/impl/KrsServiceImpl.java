@@ -9,6 +9,7 @@ import com.siakad.dto.transform.helper.EligibleMahasiswaMapper;
 import com.siakad.dto.transform.KrsTransform;
 import com.siakad.dto.transform.PesertaKelasTransform;
 import com.siakad.entity.*;
+import com.siakad.entity.service.KelasKuliahSpecification;
 import com.siakad.entity.service.KrsSpecification;
 import com.siakad.entity.service.MahasiswaSpecification;
 import com.siakad.enums.ExceptionType;
@@ -282,7 +283,7 @@ public class KrsServiceImpl implements KrsService {
 
 
     @Override
-    public Page<KrsResDto> getPaginated(String keyword, Pageable pageable) {
+    public Page<KrsResDto> getPaginated(String mataKuliah, Pageable pageable) {
         KrsSpecification specBuilder = new KrsSpecification();
 
         User user = service.getCurrentUser();
@@ -294,10 +295,23 @@ public class KrsServiceImpl implements KrsService {
             default -> Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
         };
 
-        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(keyword, semesters, mahasiswa.getId());
+        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(mataKuliah, semesters, mahasiswa.getId());
         Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toDto);
     }
+
+    @Override
+    public Page<KrsResDto> getPaginatedKelas(String mataKuliah, Pageable pageable) {
+
+        String programStudi = service.getCurrentUser().getSiakMahasiswa().getSiakProgramStudi().getNamaProgramStudi();
+
+        PeriodeAkademik periodeAktif = periodeAkademikRepository.findFirstByStatusActive().orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada periode Aktif"));
+        KelasKuliahSpecification specBuilder = new KelasKuliahSpecification();
+        Specification<KelasKuliah> spec = specBuilder.entitySearchKelas(mataKuliah, programStudi, periodeAktif.getNamaPeriode());
+        Page<KelasKuliah> all = kelasKuliahRepository.findAll(spec, pageable);
+        return all.map(mapper::toDtoKelas);
+    }
+
 
     @Override
     public KrsMenungguResDto getAllKrsByStatusMenunggu() {

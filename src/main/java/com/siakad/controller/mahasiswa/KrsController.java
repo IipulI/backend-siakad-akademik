@@ -1,7 +1,6 @@
 package com.siakad.controller.mahasiswa;
 
 import com.siakad.dto.request.KrsReqDto;
-import com.siakad.dto.request.ProfilLulusanReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.entity.User;
 import com.siakad.enums.ExceptionType;
@@ -9,7 +8,6 @@ import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
 import com.siakad.service.KomposisiNilaiMataKuliahMhsService;
 import com.siakad.service.KrsService;
-import com.siakad.service.ProfilLulusanService;
 import com.siakad.service.UserActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +26,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Tag(name = "KRS")
 @RestController
@@ -132,7 +129,7 @@ public class KrsController {
     @Operation(summary = "Get Krs by Pagination")
     @GetMapping()
     public ResponseEntity<ApiResDto<List<KrsResDto>>> getPaginated(
-            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String mataKuliah,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
@@ -146,7 +143,44 @@ public class KrsController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
-            Page<KrsResDto> search = service.getPaginated(keyword, pageable);
+            Page<KrsResDto> search = service.getPaginated(mataKuliah, pageable);
+
+            return ResponseEntity.ok(
+                    ApiResDto.<List<KrsResDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(search.getContent())
+                            .pagination(PaginationDto.fromPage(search))
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+
+
+
+    @Operation(summary = "Get Krs by Pagination")
+    @GetMapping("/kelas")
+    public ResponseEntity<ApiResDto<List<KrsResDto>>> getPaginateKelas(
+            @RequestParam(required = false) String mataKuliah,
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+
+        try {
+            // Parse sort parameter
+            String[] sortParams = sort.split(",");
+            Sort.Direction direction = sortParams.length > 1 ?
+                    Sort.Direction.fromString(sortParams[1]) : Sort.Direction.DESC;
+            Sort sortObj = Sort.by(direction, sortParams[0]);
+
+            Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
+
+            Page<KrsResDto> search = service.getPaginatedKelas(mataKuliah, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<KrsResDto>>builder()
