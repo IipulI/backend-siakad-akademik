@@ -10,6 +10,6 @@ public interface JadwalKuliahService {
     public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanMahasiswa(UUID mahasiswaId, String namaPeriode);
     public List<JadwalMingguanResDto> getJadwalHarianMahasiswa(UUID mahasiswaId, String namaPeriode, String hari);
 
-    public List<JadwalMingguanResDto> getJadwalHarianDosen(UUID dosenId, UUID periodeAkademikId, String hari);
-    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanDosen(UUID dosenId, UUID periodeAkademikId);
+    public List<JadwalMingguanResDto> getJadwalHarianDosen(UUID dosenId, String namaPeriode, String hari);
+    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanDosen(UUID dosenId, String namaPeriode);
 }

@@ -1,10 +1,12 @@
 package com.siakad.repository;
 
-import com.siakad.dto.response.PesertaKelas;
+import com.siakad.dto.response.KelasKuliahWithTakenStatusDto;
 import com.siakad.entity.JadwalKuliah;
 import com.siakad.entity.KelasKuliah;
 import com.siakad.entity.KrsRincianMahasiswa;
 import com.siakad.entity.Mahasiswa;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -211,4 +213,64 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
             AND pa.nama_periode = :namaPeriode;
     """, nativeQuery = true)
     List<Object[]> getSuntingFindByMahasiswaIdAndNamaPeriode(@Param("id") UUID id, @Param("namaPeriode") String namaPeriode);
+
+    @Query(value = "SELECT NEW com.siakad.dto.response.KelasKuliahWithTakenStatusDto(" +
+            // KelasKuliah fields (kl)
+            "kl.id, kl.nama, kl.kapasitas, kl.sistemKuliah, kl.statusKelas, kl.jumlahPertemuan, kl.tanggalMulai, kl.tanggalSelesai, " +
+            // MataKuliah fields (mk)
+            "mk.id, mk.semester, mk.kodeMataKuliah, mk.namaMataKuliah, mk.jenisMataKuliah, mk.nilaiMin, mk.sksTatapMuka, mk.sksPraktikum, mk.adaPraktikum, mk.opsiMataKuliah, " +
+            // JadwalKuliah fields (jkl)
+            "jkl.hari, jkl.jamMulai, jkl.jamSelesai, d.nama, " +
+            // PeriodeAkademik (pa) and TahunAjaran (sa) fields
+            "pa.id, pa.namaPeriode, sa.tahun, " +
+            // ProgramStudi (ps) and TahunKurikulum (tk) fields
+            "ps.namaProgramStudi, tk.tahun, " +
+            // isTakenByCurrentUser flag (using EXISTS)
+            "CASE WHEN EXISTS (" +
+            "   SELECT 1 FROM KrsRincianMahasiswa studentKrs " +
+            "   JOIN studentKrs.siakKrsMahasiswa studentKrsMhs " +
+            "   WHERE studentKrsMhs.siakMahasiswa.id = :idMahasiswa " +
+            "   AND studentKrs.siakKelasKuliah.siakMataKuliah.id = mk.id " +
+            "   AND studentKrs.isDeleted = FALSE) THEN TRUE ELSE FALSE END, " +
+            // lastTakenNilai (this DTO field will hold hurufMutu)
+            " (SELECT skrm.hurufMutu FROM KrsRincianMahasiswa skrm " +
+            "  JOIN skrm.siakKrsMahasiswa skm " +
+            "  WHERE skm.siakMahasiswa.id = :idMahasiswa " +
+            "  AND skrm.siakKelasKuliah.siakMataKuliah.id = mk.id " +
+            "  AND skrm.isDeleted = FALSE " +
+            "  ORDER BY skrm.createdAt DESC " +
+            "  LIMIT 1) " +
+            ") " +
+            "FROM KelasKuliah kl " +
+            "JOIN kl.siakMataKuliah mk " +
+            "JOIN kl.siakPeriodeAkademik pa " +
+            "JOIN pa.siakTahunAjaran sa " +
+            "JOIN mk.siakProgramStudi ps " +
+            "JOIN mk.siakTahunKurikulum tk " +
+            "LEFT JOIN kl.siakJadwalKuliah jkl ON jkl.jenisPertemuan = 'kuliah' AND jkl.isDeleted = FALSE " +
+            "LEFT JOIN jkl.siakDosen d " +
+            "WHERE kl.isDeleted = FALSE " +
+            "AND (:keyword IS NULL OR :keyword = '' OR mk.namaMataKuliah LIKE %:keyword% OR mk.kodeMataKuliah LIKE %:keyword%) " +
+            "AND (:semesters IS NULL OR mk.semester IN :semesters) " +
+            // UPDATED ORDER BY CLAUSE
+            "ORDER BY " +
+            "    CASE WHEN " +
+            "        (SELECT COUNT(studentKrs.id) FROM KrsRincianMahasiswa studentKrs " +
+            "         JOIN studentKrs.siakKrsMahasiswa studentKrsMhs " +
+            "         WHERE studentKrsMhs.siakMahasiswa.id = :idMahasiswa " +
+            "         AND studentKrs.siakKelasKuliah.siakMataKuliah.id = mk.id " +
+            "         AND studentKrs.isDeleted = FALSE) > 0 THEN 1 ELSE 0 END ASC, " + // 3. "Not Taken" first
+            "    mk.semester ASC, " +                  // 1. By Course Semester (e.g., 1, 2, 3...)
+            "    mk.namaMataKuliah ASC, " +           // 2. By Course Name (alphabetical)
+            "    (SELECT skrm.nilaiAkhir FROM KrsRincianMahasiswa skrm JOIN skrm.siakKrsMahasiswa skm " +
+            "     WHERE skm.siakMahasiswa.id = :idMahasiswa AND skrm.siakKelasKuliah.siakMataKuliah.id = mk.id " +
+            "     AND skrm.isDeleted = FALSE ORDER BY skrm.createdAt DESC LIMIT 1) ASC, " + // 4. Lowest numerical grade
+            "    kl.sistemKuliah ASC, " +              // 5. By Class Type/System (e.g., "Reguler" before "Karyawan")
+            "    kl.nama ASC"                          // 6. Final tie-breaker by Class Name
+            , nativeQuery = false)
+    Page<KelasKuliahWithTakenStatusDto> findKelasKuliahWithTakenStatusAndLastNilai(
+            @Param("keyword") String keyword,
+            @Param("semesters") List<Integer> semesters,
+            @Param("idMahasiswa") UUID idMahasiswa,
+            Pageable pageable);
 }

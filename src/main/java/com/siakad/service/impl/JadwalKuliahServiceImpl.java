@@ -75,7 +75,7 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
     }
 
     @Override
-    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanDosen(UUID dosenId, UUID periodeAkademikId){
+    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanDosen(UUID dosenId, String namaPeriode){
         List<String> daysOfWeek = Arrays.asList("senin", "selasa", "rabu", "kamis", "jumat", "sabtu");
 
         Map<String, List<JadwalMingguanResDto>> jadwalByDay = new LinkedHashMap<>();
@@ -84,7 +84,7 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
         }
 
         List<JadwalKuliah> semuaJadwalRelevant = jadwalKuliahRepository
-                .getjadwalKuliahDosenMingguan(dosenId, periodeAkademikId);
+                .getjadwalKuliahDosenMingguan(dosenId, namaPeriode);
 
         for (JadwalKuliah jadwal : semuaJadwalRelevant) {
             JadwalMingguanResDto itemDto = mapToJadwalDto(jadwal);
@@ -101,9 +101,9 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
     }
 
     @Override
-    public List<JadwalMingguanResDto> getJadwalHarianDosen(UUID dosenId, UUID periodeAkademikId, String hari) {
+    public List<JadwalMingguanResDto> getJadwalHarianDosen(UUID dosenId, String namaPeriode, String hari) {
         List<JadwalKuliah> jadwalHarianList = jadwalKuliahRepository
-                .getjadwalKuliahDosenHarian(dosenId, periodeAkademikId, hari);
+                .getjadwalKuliahDosenHarian(dosenId, namaPeriode, hari);
 
         return jadwalHarianList.stream()
                 .map(this::mapToJadwalDto)
