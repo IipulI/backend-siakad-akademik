@@ -158,11 +158,10 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public TagihanMhsDto getTagihanMhs() {
-        User currentUser = service.getCurrentUser();
+    public TagihanMhsDto getTagihanMhs(UUID mahasiswaId) {
 
         InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository
-                .findBySiakMahasiswa_IdAndIsDeletedFalse(currentUser.getSiakMahasiswa().getId())
+                .findBySiakMahasiswa_IdAndIsDeletedFalse(mahasiswaId)
                 .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
 
         InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository

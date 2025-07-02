@@ -538,7 +538,7 @@ public class MahasiswaController {
     @GetMapping("/tagihan/{mahasiswaId}")
     public ResponseEntity<ApiResDto<TagihanMhsDto>> getTagihanMhs(@PathVariable("mahasiswaId") UUID id) {
         try {
-            TagihanMhsDto tagihanMhsDto = dashboardService.getTagihanMhs();
+            TagihanMhsDto tagihanMhsDto = dashboardService.getTagihanMhs(id);
             return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<TagihanMhsDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
