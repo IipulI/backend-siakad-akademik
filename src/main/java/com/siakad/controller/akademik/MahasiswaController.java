@@ -470,6 +470,31 @@ public class MahasiswaController {
         }
     }
 
+    @Operation(summary = "Get data sunting KRS")
+    @GetMapping("/sunting-krs/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<List<SuntingKrsResDto>>> getSuntingKrs(
+            @PathVariable("mahasiswaId") UUID id,
+            @RequestParam(required = false) String namaPeriode
+    ) {
+        try {
+            List<SuntingKrsResDto> suntingKrs = krsService.getSuntingKrs(id, namaPeriode);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<SuntingKrsResDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(suntingKrs)
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @Operation(summary = "Delete Krs")
     @DeleteMapping("/krs/{mahasiswaId}")
     public ResponseEntity<ApiResDto<Objects>> deletedKrs(@PathVariable("mahasiswaId") UUID id, HttpServletRequest request) {

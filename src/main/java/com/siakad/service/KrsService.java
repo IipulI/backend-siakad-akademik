@@ -21,7 +21,7 @@ public interface KrsService {
     void update(KrsReqDto dto, HttpServletRequest servletRequest);
     void deleteMultiple(KrsReqDto reqDto, HttpServletRequest servletRequest);
 
-    Page<KrsResDto> getPaginated(String kelas, Pageable pageable);
+    Page<KrsResDto> getPaginated(String keyword, Pageable pageable);
     KrsMenungguResDto getAllKrsByStatusMenunggu();
     void updateStatus(HttpServletRequest servletRequest);
 
@@ -37,6 +37,7 @@ public interface KrsService {
     List<FinalisasiMkDto> getAllFinalisasiMk(UUID mahasiswaId);
     List<StatusSemesterDto> getStatusSemester(UUID mahasiswaId);
     RiwayatKrsDto getRiwayatKrs(UUID mahasiswaId, String periodeAkademik);
+    List<SuntingKrsResDto> getSuntingKrs(UUID mahasiswaId, String namaPeriode);
 
     // Dosen Service
     void updateStatusKrsSetuju(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest);

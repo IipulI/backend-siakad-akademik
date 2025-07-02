@@ -67,7 +67,7 @@ public class MahasiswaPembimbingAkademikSpecification {
 
                 // If statusKrs is "Diajukan", it means any status that is NOT "Draft".
                 if ("Diajukan".equalsIgnoreCase(statusKrs)) {
-                    krsSubquery.where(krsSubquery.getRestriction(), criteriaBuilder.notEqual(krsSubquery.from(KrsMahasiswa.class).get("status"), "Draft"));
+                    krsSubquery.where(krsSubquery.getRestriction(), criteriaBuilder.notEqual(krsSubquery.from(KrsMahasiswa.class).get("status"), "Diajukan"));
                     predicates.add(criteriaBuilder.exists(krsSubquery));
                 }
                 // If statusKrs is "Disetujui", it means the status must be exactly that.

@@ -28,7 +28,7 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
     }
 
     @Override
-    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanMahasiswa(UUID mahasiswaId, UUID periodeAkademikId) {
+    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanMahasiswa(UUID mahasiswaId, String namaPeriode) {
         List<String> daysOfWeek = Arrays.asList("senin", "selasa", "rabu", "kamis", "jumat", "sabtu");
 
         Map<String, List<JadwalMingguanResDto>> jadwalByDay = new LinkedHashMap<>();
@@ -36,7 +36,7 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
             jadwalByDay.put(day, new ArrayList<>());
         }
 
-        Set<UUID> kelasKuliahIds = getEnrolledKelasKuliahIds(mahasiswaId, periodeAkademikId);
+        Set<UUID> kelasKuliahIds = getEnrolledKelasKuliahIds(mahasiswaId, namaPeriode);
         if (kelasKuliahIds.isEmpty()) {
             return jadwalByDay;
         }
@@ -59,8 +59,8 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
     }
 
     @Override
-    public List<JadwalMingguanResDto> getJadwalHarianMahasiswa(UUID mahasiswaId, UUID periodeAkademikId, String hari) {
-        Set<UUID> kelasKuliahIds = getEnrolledKelasKuliahIds(mahasiswaId, periodeAkademikId);
+    public List<JadwalMingguanResDto> getJadwalHarianMahasiswa(UUID mahasiswaId, String namaPeriode, String hari) {
+        Set<UUID> kelasKuliahIds = getEnrolledKelasKuliahIds(mahasiswaId, namaPeriode);
         if (kelasKuliahIds.isEmpty()) {
             return Collections.emptyList();
         }
@@ -112,10 +112,10 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
     }
 
 
-    private Set<UUID> getEnrolledKelasKuliahIds(UUID mahasiswaId, UUID periodeAkademikId) {
+    private Set<UUID> getEnrolledKelasKuliahIds(UUID mahasiswaId, String namaPeriode) {
         List<KrsRincianMahasiswa> rincianKrsList = krsRincianMahasiswaRepository
                 .findBySiakKrsMahasiswaSiakMahasiswaIdAndSiakKrsMahasiswaSiakPeriodeAkademikIdAndIsDeletedFalse(
-                        mahasiswaId, periodeAkademikId);
+                        mahasiswaId, namaPeriode);
 
         return rincianKrsList.stream()
                 .filter(rincian -> rincian.getSiakKelasKuliah() != null)

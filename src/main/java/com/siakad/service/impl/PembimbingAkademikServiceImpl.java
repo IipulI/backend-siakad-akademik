@@ -136,7 +136,6 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
                 .stream()
                 .collect(Collectors.toMap(krs -> krs.getSiakMahasiswa().getId(), Function.identity()));
 
-        System.out.println("Query trouble?");
         Map<UUID, PembimbingAkademik> paMap = pembimbingAkademikRepository.findBySiakMahasiswaIdInAndSiakPeriodeAkademikNamaPeriode(mahasiswaIds, periodeAkademik)
                 .stream()
                 .collect(Collectors.toMap(pa -> pa.getSiakMahasiswa().getId(), Function.identity()));
@@ -171,7 +170,7 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
             }
 
             KrsMahasiswa krs = krsMap.get(mahasiswa.getId());
-            dto.setStatusDiajukan(krs != null && !"Diajukan".equalsIgnoreCase(krs.getStatus()));
+            dto.setStatusDiajukan(krs != null && "Diajukan".equalsIgnoreCase(krs.getStatus()));
             dto.setStatusDisetujui(krs != null && "Disetujui".equalsIgnoreCase(krs.getStatus()));
 
             PembimbingAkademik pa = paMap.get(mahasiswa.getId());

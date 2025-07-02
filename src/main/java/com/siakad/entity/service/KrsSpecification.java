@@ -4,6 +4,7 @@ import com.siakad.entity.KrsRincianMahasiswa;
 import com.siakad.util.QuerySpecification;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.UUID;
 import java.util.List;
 
 public class KrsSpecification extends QuerySpecification<KrsRincianMahasiswa> {
@@ -29,15 +30,27 @@ public class KrsSpecification extends QuerySpecification<KrsRincianMahasiswa> {
         return attributeEqual("isDeleted", false);
     }
 
-    public Specification<KrsRincianMahasiswa> entitySearch(String keyword, List<String> semesters) {
+//    private Specification<KrsRincianMahasiswa> byIdMahasiswa(UUID idMahasiswa) {
+//        return (root, query, cb) -> {
+//            if (idMahasiswa == null) return null;
+//            return cb.equal(
+//                    root.get("siakKrsMahasiswa").get("siakMahasiswa").get("id"),
+//                    idMahasiswa
+//            );
+//        };
+//    }
+
+    public Specification<KrsRincianMahasiswa> entitySearch(String keyword, List<String> semesters, UUID idMahasiswa) {
         Specification<KrsRincianMahasiswa> spec = byIsDeleted();
 
         if (keyword != null && !keyword.isEmpty()) {
-            spec = spec.and(
-                    Specification.where(byMataKuliah(keyword))
-                            .or(byKodeMataKuliah(keyword))
-            );
+            spec = spec.and(byMataKuliah(keyword))
+                    .or(byKodeMataKuliah(keyword));
         }
+
+//        if (idMahasiswa != null) {
+//            spec = spec.and(byIdMahasiswa(idMahasiswa));
+//        }
 
         if (semesters != null && !semesters.isEmpty()){
             spec = spec.and(bySemesterIn(semesters));

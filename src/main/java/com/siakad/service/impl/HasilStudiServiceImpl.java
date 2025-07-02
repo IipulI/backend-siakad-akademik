@@ -33,14 +33,15 @@ public class HasilStudiServiceImpl implements HasilStudiService {
     private final HasilStudiTransform mapper;
 
     @Override
-    public HasilStudiDto getHasilStudi(UUID periodeAkademikId) {
+    public HasilStudiDto getHasilStudi(String namaPeriode) {
         User user = userActivityService.getCurrentUser();
         HasilStudi hasilStudi = hasilStudiRepository
-                .findBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId(), periodeAkademikId)
+                .findBySiakMahasiswaAndByNamaPeriode(user.getSiakMahasiswa().getId(), namaPeriode)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Hasil studi not found"));
 
+
         List<KrsRincianMahasiswa> rincianList = krsRincianMahasiswaRepository
-                .findAllBySiakKrsMahasiswa_SiakMahasiswa_IdAndSiakKrsMahasiswa_SiakPeriodeAkademik_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId(), periodeAkademikId);
+                .findByMahasiswaAndByNamaPeriode(user.getSiakMahasiswa().getId(), namaPeriode);
 
         return mapper.hasilStudiToDtoWithRincian(hasilStudi, rincianList);
     }

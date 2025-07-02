@@ -286,14 +286,15 @@ public class KrsServiceImpl implements KrsService {
         KrsSpecification specBuilder = new KrsSpecification();
 
         User user = service.getCurrentUser();
+        Mahasiswa mahasiswa = user.getSiakMahasiswa();
 
-        List<String> semesters = switch (user.getSiakMahasiswa().getSemester()) {
+        List<String> semesters = switch (mahasiswa.getSemester()) {
             case 1, 3, 5, 7, 9, 11, 13 -> Arrays.asList("1", "3", "5", "7", "9", "11", "13");
             case 2, 4, 6, 8, 10, 12, 14 -> Arrays.asList("2", "4", "6", "8", "10", "12");
             default -> Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
         };
 
-        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(keyword, semesters);
+        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(keyword, semesters, mahasiswa.getId());
         Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toDto);
     }
@@ -748,6 +749,61 @@ public class KrsServiceImpl implements KrsService {
         dto.setTotalSks(totalSks);
         return dto;
     }
+
+    @Override
+    public List<SuntingKrsResDto> getSuntingKrs(UUID mahasiswaId, String namaPeriode) {
+        List<Object[]> rawResults = krsRincianMahasiswaRepository.getSuntingFindByMahasiswaIdAndNamaPeriode(mahasiswaId, namaPeriode);
+
+        if (rawResults.isEmpty()) {
+            throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "KRS tidak ditemukan untuk mahasiswa " + mahasiswaId + " pada periode " + namaPeriode);
+        }
+
+        List<SuntingKrsResDto> dtoList = new ArrayList<>();
+
+        for (Object[] actualResult : rawResults) {
+            // Create a new DTO for each row
+            SuntingKrsResDto dto = new SuntingKrsResDto();
+
+            // Index 0: tk.tahun (INTEGER in DB -> Integer in Java)
+            if (actualResult[0] instanceof Integer) {
+                dto.setKurikulum((Integer) actualResult[0]);
+            } else if (actualResult[0] instanceof String) { // Defensive check, though less likely if DB type is INTEGER
+                dto.setKurikulum(Integer.parseInt((String) actualResult[0]));
+            }
+
+            // Index 1: mk.kode_mata_kuliah (VARCHAR -> String)
+            dto.setKodeMataKuliah((String) actualResult[1]);
+
+            // Index 2: mk.nama_mata_kuliah (VARCHAR -> String)
+            dto.setNamaMataKuliah((String) actualResult[2]);
+
+            // Index 4: kk.nama (VARCHAR -> String)
+            dto.setNamaKelas((String) actualResult[4]);
+
+            // Calculate SKS (Index 5: mk.sks_tatap_muka, Index 6: mk.sks_praktikum)
+            Integer sksTatapMuka = (Integer) actualResult[5];
+            Integer sksPraktikum = (Integer) actualResult[6];
+            dto.setSks((sksTatapMuka != null ? sksTatapMuka : 0) + (sksPraktikum != null ? sksPraktikum : 0));
+
+            // Index 7: rkm.nilai (NUMERIC -> BigDecimal)
+            dto.setNilaiNumerik((BigDecimal) actualResult[7]);
+
+            // Index 8: sp_student.huruf_mutu (VARCHAR -> String)
+            dto.setNilaiHuruf((String) actualResult[8]);
+
+            // Index 9: sp_student.angka_mutu (NUMERIC -> BigDecimal)
+            dto.setNilaiMutu((BigDecimal) actualResult[9]);
+
+            // Index 11: is_passed (BOOLEAN -> Boolean) - can be null
+            dto.setLulus((Boolean) actualResult[11]); // Will be true, false, or null
+
+            // Add the populated DTO to the list
+            dtoList.add(dto);
+        }
+
+        return dtoList;
+    }
+
 
     private static final String STATUS_DIAJUKAN = "Diajukan";
     private static final String STATUS_DISETUJUI = "Disetujui";
