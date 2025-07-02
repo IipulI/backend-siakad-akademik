@@ -136,6 +136,40 @@ public class KrsController {
         }
     }
 
+    @Operation(summary = "Get Krs by Pagination")
+    @GetMapping("/kelas")
+    public ResponseEntity<ApiResDto<List<KrsResDto>>> getPaginateKelas(
+            @RequestParam(required = false) String mataKuliah,
+            @RequestParam(defaultValue = "1") @Min(1) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+
+        try {
+            // Parse sort parameter
+            String[] sortParams = sort.split(",");
+            Sort.Direction direction = sortParams.length > 1 ?
+                    Sort.Direction.fromString(sortParams[1]) : Sort.Direction.DESC;
+            Sort sortObj = Sort.by(direction, sortParams[0]);
+
+            Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
+
+            Page<KrsResDto> search = service.getPaginatedKelas(mataKuliah, pageable);
+
+            return ResponseEntity.ok(
+                    ApiResDto.<List<KrsResDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(search.getContent())
+                            .pagination(PaginationDto.fromPage(search))
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @Operation(summary = "Update Status from draft to menunggu")
     @PutMapping("/status")
     public ResponseEntity<ApiResDto<KrsResDto>> updateStatusFromDraftToMenunggu(

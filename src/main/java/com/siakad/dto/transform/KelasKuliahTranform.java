@@ -27,6 +27,7 @@ public interface KelasKuliahTranform {
     @Mapping(target = "statusPenilaian", expression = "java(helper.tentukanStatusPenilaian(entity))")
     KelasKuliahResDto toDto(KelasKuliah entity, @Context KelasKuliahMapperHelper helper);
 
+
     KelasKuliahDto toDtoKelasKuliah(KelasKuliah entity);
 
     KomponenPenilaianResDto toDto(KelasKuliah entity);

@@ -39,4 +39,15 @@ public class KrsSpecification extends QuerySpecification<KrsRincianMahasiswa> {
 
         return spec;
     }
+
+    public Specification<KrsRincianMahasiswa> entitySearchKelas(String keyword) {
+        Specification<KrsRincianMahasiswa> spec = byIsDeleted();
+
+        if (keyword != null && !keyword.isEmpty()) {
+            spec = spec.and(byMataKuliah(keyword));
+        }
+
+
+        return spec;
+    }
 }

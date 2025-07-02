@@ -5,10 +5,12 @@ import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.dto.request.PindahKelasReqDto;
+import com.siakad.dto.transform.KelasKuliahTranform;
 import com.siakad.dto.transform.helper.EligibleMahasiswaMapper;
 import com.siakad.dto.transform.KrsTransform;
 import com.siakad.dto.transform.PesertaKelasTransform;
 import com.siakad.entity.*;
+import com.siakad.entity.service.KelasKuliahSpecification;
 import com.siakad.entity.service.KrsSpecification;
 import com.siakad.entity.service.MahasiswaSpecification;
 import com.siakad.enums.ExceptionType;
@@ -53,6 +55,7 @@ public class KrsServiceImpl implements KrsService {
     private final HasilStudiRepository hasilStudiRepository;
     private final PembimbingAkademikRepository pembimbingAkademikRepository;
     private final JadwalKuliahRepository jadwalKuliahRepository;
+    private final KelasKuliahTranform kelasKuliahMapper;
     private final JenjangRepository jenjangRepository;
 
     private final EligibleMahasiswaMapper eligibleMahasiswaMapper;
@@ -242,14 +245,25 @@ public class KrsServiceImpl implements KrsService {
 
     @Override
     public Page<KrsResDto> getPaginated(String mataKuliah, Pageable pageable) {
-
         UUID mahasiswaId = service.getCurrentUser().getSiakMahasiswa().getId();
-
         KrsSpecification specBuilder = new KrsSpecification();
         Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(mataKuliah, mahasiswaId);
         Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toDto);
     }
+
+    @Override
+    public Page<KrsResDto> getPaginatedKelas(String mataKuliah, Pageable pageable) {
+
+        String programStudi = service.getCurrentUser().getSiakMahasiswa().getSiakProgramStudi().getNamaProgramStudi();
+
+        PeriodeAkademik periodeAktif = periodeAkademikRepository.findFirstByStatusActive().orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada periode Aktif"));
+        KelasKuliahSpecification specBuilder = new KelasKuliahSpecification();
+        Specification<KelasKuliah> spec = specBuilder.entitySearchKelas(mataKuliah, programStudi, periodeAktif.getNamaPeriode());
+        Page<KelasKuliah> all = kelasKuliahRepository.findAll(spec, pageable);
+        return all.map(mapper::toDtoKelas);
+    }
+
 
     @Override
     public KrsMenungguResDto getAllKrsByStatusMenunggu() {

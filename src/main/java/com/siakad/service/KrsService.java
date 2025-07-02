@@ -20,6 +20,9 @@ public interface KrsService {
     void deleteMultiple(KrsReqDto reqDto, HttpServletRequest servletRequest);
 
     Page<KrsResDto> getPaginated(String kelas, Pageable pageable);
+
+    Page<KrsResDto> getPaginatedKelas(String mataKuliah, Pageable pageable);
+
     KrsMenungguResDto getAllKrsByStatusMenunggu();
     void updateStatus(HttpServletRequest servletRequest);
     List<PesertaKelas> getPesertaKelas(UUID kelasId);

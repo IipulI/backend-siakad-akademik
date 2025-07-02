@@ -7,10 +7,7 @@ import com.siakad.dto.response.KrsMenungguResDto;
 import com.siakad.dto.response.KrsResDto;
 import com.siakad.dto.response.MataKuliahResDto;
 import com.siakad.dto.transform.helper.JadwalKuliahMapperHelper;
-import com.siakad.entity.JadwalKuliah;
-import com.siakad.entity.KrsMahasiswa;
-import com.siakad.entity.KrsRincianMahasiswa;
-import com.siakad.entity.MataKuliah;
+import com.siakad.entity.*;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -50,9 +47,25 @@ public abstract class KrsTransform {
 
     public abstract List<JadwalKuliah> jadwalKuliahList(List<JadwalKuliah> entityList);
 
+
+
     @AfterMapping
     protected void afterMapping(@MappingTarget KrsResDto dto, KrsRincianMahasiswa entity) {
         jadwalKuliahHelper.mapJadwalKuliahToDto(dto, entity);
+    }
+
+    @Mapping(source = "siakMataKuliah", target = "mataKuliah")
+    @Mapping(source = "nama", target = "namaKelas")
+    @Mapping(target = "hari", ignore = true)
+    @Mapping(target = "jamMulai", ignore = true)
+    @Mapping(target = "jamSelesai", ignore = true)
+    @Mapping(target = "dosenPengajar", ignore = true)
+    public abstract KrsResDto toDtoKelas(KelasKuliah entity);
+
+
+    @AfterMapping
+    protected void afterMapping(@MappingTarget KrsResDto dto, KelasKuliah entity) {
+        jadwalKuliahHelper.mapJadwalKuliahKelasToDto(dto, entity);
     }
 
     public KrsMenungguResDto toDtoMenunggu(List<KrsRincianMahasiswa> rincianList) {
