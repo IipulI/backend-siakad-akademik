@@ -534,6 +534,25 @@ public class MahasiswaController {
         }
     }
 
+    @Operation(summary = "Get tagihan komponen mahasiswa")
+    @GetMapping("/tagihan/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<TagihanMhsDto>> getTagihanMhs(@PathVariable("mahasiswaId") UUID id) {
+        try {
+            TagihanMhsDto tagihanMhsDto = dashboardService.getTagihanMhs();
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<TagihanMhsDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(tagihanMhsDto)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @Operation(summary = "Get Profile Info")
     @GetMapping("/{id}/info")
     public ResponseEntity<ApiResDto<ProfileInfo>> getProfileInfo(

@@ -158,6 +158,31 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    public TagihanMhsDto getTagihanMhs() {
+        User currentUser = service.getCurrentUser();
+
+        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository
+                .findBySiakMahasiswa_IdAndIsDeletedFalse(currentUser.getSiakMahasiswa().getId())
+                .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
+
+        InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository
+                .findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
+                .orElseThrow(() -> new RuntimeException("Invoice Mahasiswa tidak ditemukan"));
+
+
+        TagihanMhsDto dto = new TagihanMhsDto();
+        dto.setKodeInvoice(invoiceMahasiswa.getKodeInvoice());
+        dto.setTanggalTenggat(invoiceMahasiswa.getTanggalTenggat());
+        dto.setTanggalBayar(invoiceMahasiswa.getTanggalBayar());
+        dto.setKodeKomponen(invoicePembayaranKomponenMahasiswa.getInvoiceKomponen().getKodeKomponen());
+        dto.setNamaTagihan(invoicePembayaranKomponenMahasiswa.getInvoiceKomponen().getNama());
+        dto.setNominalTagihan(invoicePembayaranKomponenMahasiswa.getTagihan());
+        dto.setLunas(invoiceMahasiswa.getStatus());
+
+        return dto;
+    }
+
+    @Override
     public GrafikAkademikDto getGrafikAkademik() {
         User currentUser = service.getCurrentUser();
         UUID mahasiswaId = currentUser.getSiakMahasiswa().getId();

@@ -104,10 +104,17 @@ public class KrsServiceImpl implements KrsService {
     public void save(KrsReqDto dto, HttpServletRequest servletRequest) {
         User user = service.getCurrentUser();
 
+        UUID mahasiswaId = user.getSiakMahasiswa().getId();
+
         PeriodeAkademik activePeriode = periodeAkademikRepository.findFirstByStatusActive()
                 .orElseThrow(() -> new RuntimeException("Tidak ada periode aktif"));
 
         KrsMahasiswa entity;
+
+        krsMahasiswaRepository
+                .findBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(mahasiswaId, activePeriode.getId()).orElseThrow(
+                         ()-> new ApplicationException(ExceptionType.BAD_REQUEST, "Kamu sudah mengisi untuk periode ini")
+                 );
 
         if (krsMahasiswaRepository.existsBySiakMahasiswa_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId())) {
             entity = krsMahasiswaRepository.findBySiakMahasiswa_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId())

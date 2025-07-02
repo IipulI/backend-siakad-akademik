@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -41,7 +40,7 @@ public class AkademikServiceImpl implements AkademikService {
         if (programStudiList.isEmpty()) {
             return Collections.emptyList();
         }
-        List<UUID> prodiIds = programStudiList.stream().map(ProgramStudi::getId).collect(Collectors.toList());
+        List<UUID> prodiIds = programStudiList.stream().map(ProgramStudi::getId).toList();
 
         // Ambil semua status dalam 4 query batch yang efisien
         Set<UUID> prodiWithPl = profilLulusanRepository.findProdiIdsWithRelations(prodiIds);
@@ -62,7 +61,7 @@ public class AkademikServiceImpl implements AkademikService {
                     .statusPlCpl(prodiWithPlCpl.contains(currentId))
                     .statusCpmk(prodiWithCpmk.contains(currentId))
                     .build();
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     // 081231193264

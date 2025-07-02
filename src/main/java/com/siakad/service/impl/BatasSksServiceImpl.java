@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,7 +30,7 @@ public class BatasSksServiceImpl implements BatasSksService {
     private final JenjangRepository jenjangRepository;
     private final BatasSksTransform mapper;
     private final UserActivityService service;
-
+    private static final String MESSAGE_BATAS_SKS = "Batas Sks tidak ditemukkan :";
     @Override
     public BatasSksResDto save(BatasSksReqDto dto, HttpServletRequest request) {
         Jenjang jenjang = jenjangRepository.findByIdAndIsDeletedFalse(dto.getSiakJenjangId())
@@ -47,13 +46,13 @@ public class BatasSksServiceImpl implements BatasSksService {
 
     @Override
     public List<BatasSksResDto> getAll() {
-        return batasSksRepository.findAllByIsDeletedFalse().stream().map(mapper::toDto).collect(Collectors.toList());
+        return batasSksRepository.findAllByIsDeletedFalse().stream().map(mapper::toDto).toList();
     }
 
     @Override
     public BatasSksResDto getOne(UUID id) {
         BatasSks batasSks = batasSksRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Batas Sks tidak ditemukkan :" + id));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND,MESSAGE_BATAS_SKS  + id));
 
         return mapper.toDto(batasSks);
     }
@@ -61,10 +60,10 @@ public class BatasSksServiceImpl implements BatasSksService {
     @Override
     public BatasSksResDto update(UUID id, BatasSksReqDto dto, HttpServletRequest request) {
         BatasSks batasSks = batasSksRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Batas Sks tidak ditemukkan :" + id));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, MESSAGE_BATAS_SKS + id));
 
         Jenjang jenjang = jenjangRepository.findByIdAndIsDeletedFalse(dto.getSiakJenjangId())
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Jenjang tidak ditemukkan : " + dto.getSiakJenjangId()));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, MESSAGE_BATAS_SKS+ dto.getSiakJenjangId()));
 
         mapper.toEntity(dto, batasSks);
         batasSks.setSiakJenjang(jenjang);
@@ -79,7 +78,7 @@ public class BatasSksServiceImpl implements BatasSksService {
     @Override
     public void delete(UUID id, HttpServletRequest request) {
         BatasSks batasSks = batasSksRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Batas Sks tidak ditemukkan :" + id));
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, MESSAGE_BATAS_SKS + id));
 
         batasSks.setIsDeleted(true);
         BatasSks saved = batasSksRepository.save(batasSks);
