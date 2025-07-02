@@ -16,11 +16,7 @@ import java.util.UUID;
 
 public class MahasiswaPembimbingAkademikSpecification {
 
-    /**
-     * Builds a dynamic query for the Mahasiswa entity based on optional filter criteria.
-     * NOW INCLUDES filtering by angkatan and statusMahasiswa.
-     */
-    public static Specification<Mahasiswa> build(UUID programStudiId, UUID periodeAkademikId, UUID dosenId, String namaMahasiswa,
+    public static Specification<Mahasiswa> build(String programStudi, String periodeAkademik, UUID dosenId, String namaMahasiswa,
                                                  String angkatan, String statusMahasiswa, String statusKrs,
                                                  Boolean hasPembimbing) {
 
@@ -32,12 +28,12 @@ public class MahasiswaPembimbingAkademikSpecification {
             Subquery<String> periodeSubquery = query.subquery(String.class);
             Root<PeriodeAkademik> periodeRoot = periodeSubquery.from(PeriodeAkademik.class);
             periodeSubquery.select(periodeRoot.get("kodePeriode"));
-            periodeSubquery.where(criteriaBuilder.equal(periodeRoot.get("id"), periodeAkademikId));
+            periodeSubquery.where(criteriaBuilder.equal(periodeRoot.get("namaPeriode"), periodeAkademik));
             predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("periodeMasuk"), periodeSubquery));
 
             // Optional filters
-            if (programStudiId != null) {
-                predicates.add(criteriaBuilder.equal(root.get("siakProgramStudi").get("id"), programStudiId));
+            if (programStudi != null) {
+                predicates.add(criteriaBuilder.equal(root.get("siakProgramStudi").get("namaProgramStudi"), programStudi));
             }
             if (dosenId != null) {
                 Subquery<Integer> dosenSubquery = query.subquery(Integer.class);
@@ -46,8 +42,7 @@ public class MahasiswaPembimbingAkademikSpecification {
 
                 dosenSubquery.where(
                         criteriaBuilder.equal(paRoot.get("siakMahasiswa"), root),
-                        criteriaBuilder.equal(paRoot.get("siakDosen").get("id"), dosenId),
-                        criteriaBuilder.equal(paRoot.get("siakPeriodeAkademik").get("id"), periodeAkademikId)
+                        criteriaBuilder.equal(paRoot.get("siakDosen").get("id"), dosenId)
                 );
                 predicates.add(criteriaBuilder.exists(dosenSubquery));
             }
@@ -67,12 +62,12 @@ public class MahasiswaPembimbingAkademikSpecification {
                 krsSubquery.select(criteriaBuilder.literal(1));
                 krsSubquery.where(
                         criteriaBuilder.equal(krsSubquery.from(KrsMahasiswa.class).get("siakMahasiswa"), root),
-                        criteriaBuilder.equal(krsSubquery.from(KrsMahasiswa.class).get("siakPeriodeAkademik").get("id"), periodeAkademikId)
+                        criteriaBuilder.equal(krsSubquery.from(KrsMahasiswa.class).get("siakPeriodeAkademik").get("namaPeriode"), periodeAkademik)
                 );
 
                 // If statusKrs is "Diajukan", it means any status that is NOT "Draft".
                 if ("Diajukan".equalsIgnoreCase(statusKrs)) {
-                    krsSubquery.where(krsSubquery.getRestriction(), criteriaBuilder.notEqual(krsSubquery.from(KrsMahasiswa.class).get("status"), "Draft"));
+                    krsSubquery.where(krsSubquery.getRestriction(), criteriaBuilder.notEqual(krsSubquery.from(KrsMahasiswa.class).get("status"), "Diajukan"));
                     predicates.add(criteriaBuilder.exists(krsSubquery));
                 }
                 // If statusKrs is "Disetujui", it means the status must be exactly that.
@@ -88,7 +83,7 @@ public class MahasiswaPembimbingAkademikSpecification {
                 paSubquery.select(criteriaBuilder.literal(1));
                 paSubquery.where(
                         criteriaBuilder.equal(paSubquery.from(PembimbingAkademik.class).get("siakMahasiswa"), root),
-                        criteriaBuilder.equal(paSubquery.from(PembimbingAkademik.class).get("siakPeriodeAkademik").get("id"), periodeAkademikId)
+                        criteriaBuilder.equal(paSubquery.from(PembimbingAkademik.class).get("siakPeriodeAkademik").get("periodeAkademik"), periodeAkademik)
                 );
                 predicates.add(hasPembimbing ? criteriaBuilder.exists(paSubquery) : criteriaBuilder.not(criteriaBuilder.exists(paSubquery)));
             }

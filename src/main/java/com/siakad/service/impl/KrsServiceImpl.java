@@ -5,7 +5,6 @@ import com.siakad.dto.request.PesertaKelasReqDto;
 import com.siakad.dto.request.UpdateStatusKrsReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.dto.request.PindahKelasReqDto;
-import com.siakad.dto.transform.KelasKuliahTranform;
 import com.siakad.dto.transform.helper.EligibleMahasiswaMapper;
 import com.siakad.dto.transform.KrsTransform;
 import com.siakad.dto.transform.PesertaKelasTransform;
@@ -55,10 +54,50 @@ public class KrsServiceImpl implements KrsService {
     private final HasilStudiRepository hasilStudiRepository;
     private final PembimbingAkademikRepository pembimbingAkademikRepository;
     private final JadwalKuliahRepository jadwalKuliahRepository;
-    private final KelasKuliahTranform kelasKuliahMapper;
     private final JenjangRepository jenjangRepository;
 
     private final EligibleMahasiswaMapper eligibleMahasiswaMapper;
+
+    // Mahasiswa
+    @Override
+    public KrsInfoResDto infoKrs(UUID mahasiswaId){
+        Object[] rawResult = mahasiswaRepository.getKrsInfo(mahasiswaId)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "RPS detail not found for given mataKuliah and dosen."));
+
+        Object[] actualDataRow = (Object[]) rawResult[0];
+
+        String statusKrs;
+        Integer semester;
+        Integer batasSks;
+        String periodeAkademik;
+        String pembimbingAkademik;
+
+
+        if (actualDataRow[5] == null){
+            statusKrs = "Belum Diajukan";
+        } else {
+            statusKrs = (String) actualDataRow[5];
+        }
+
+        if(actualDataRow[4] == null){
+            batasSks = (Integer) 21;
+        } else {
+            batasSks = (Integer) actualDataRow[4];
+        }
+
+        semester = (Integer) actualDataRow[1];
+        periodeAkademik = (String) actualDataRow[6];
+        pembimbingAkademik = (String) actualDataRow[3];
+
+        KrsInfoResDto krsInfoResDto = new KrsInfoResDto();
+        krsInfoResDto.setStatusKrs(statusKrs);
+        krsInfoResDto.setSemester(semester);
+        krsInfoResDto.setBatasSks(batasSks);
+        krsInfoResDto.setPeriodeAkademik(periodeAkademik);
+        krsInfoResDto.setPembimbingAkademik(pembimbingAkademik);
+
+        return krsInfoResDto;
+    }
 
     @Transactional
     @Override
@@ -124,7 +163,7 @@ public class KrsServiceImpl implements KrsService {
 
         private Integer getMaxSksYangDiizinkan(User user) {
             BigDecimal ipsTerakhir = hasilStudiRepository
-                    .findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(user.getSiakMahasiswa().getId())
+                    .findHasilStudiBySiakMahasiswa_IdOrderBySemesterDesc(user.getSiakMahasiswa().getId())
                     .map(HasilStudi::getIps)
                     .orElse(BigDecimal.ZERO);
 
@@ -245,9 +284,18 @@ public class KrsServiceImpl implements KrsService {
 
     @Override
     public Page<KrsResDto> getPaginated(String mataKuliah, Pageable pageable) {
-        UUID mahasiswaId = service.getCurrentUser().getSiakMahasiswa().getId();
         KrsSpecification specBuilder = new KrsSpecification();
-        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(mataKuliah, mahasiswaId);
+
+        User user = service.getCurrentUser();
+        Mahasiswa mahasiswa = user.getSiakMahasiswa();
+
+        List<String> semesters = switch (mahasiswa.getSemester()) {
+            case 1, 3, 5, 7, 9, 11, 13 -> Arrays.asList("1", "3", "5", "7", "9", "11", "13");
+            case 2, 4, 6, 8, 10, 12, 14 -> Arrays.asList("2", "4", "6", "8", "10", "12");
+            default -> Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
+        };
+
+        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(mataKuliah, semesters, mahasiswa.getId());
         Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
         return all.map(mapper::toDto);
     }
@@ -285,7 +333,7 @@ public class KrsServiceImpl implements KrsService {
 
         entity.setSiakMahasiswa(user.getSiakMahasiswa());
         entity.setSiakPeriodeAkademik(firstByStatusActive);
-        entity.setStatus(KrsKey.MENUNGGU.getLabel());
+        entity.setStatus(KrsKey.DIAJUKAN.getLabel());
         entity.setUpdatedAt(LocalDateTime.now());
         krsMahasiswaRepository.save(entity);
         service.saveUserActivity(servletRequest, MessageKey.UPDATE_KRS);
@@ -311,7 +359,7 @@ public class KrsServiceImpl implements KrsService {
 
         // list mahasiswa di prodi ini
         MahasiswaSpecification specBuilder = new MahasiswaSpecification();
-        Specification<Mahasiswa> spec = specBuilder.entitySearch(nama, null, periodeAkademik, sistemKuliah, null, null, kelasKuliah.getSiakProgramStudi().getNamaProgramStudi(), null);
+        Specification<Mahasiswa> spec = specBuilder.entitySearch(nama, null, periodeAkademik, sistemKuliah, null, null, kelasKuliah.getSiakProgramStudi().getNamaProgramStudi(),  null, null, null, null, null, null, null);
         List<Mahasiswa> eligibleMahasiswa = mahasiswaRepository.findAll(spec);
 
         // list mahasiswa registered di kelas ini
@@ -716,9 +764,64 @@ public class KrsServiceImpl implements KrsService {
         return dto;
     }
 
+    @Override
+    public List<SuntingKrsResDto> getSuntingKrs(UUID mahasiswaId, String namaPeriode) {
+        List<Object[]> rawResults = krsRincianMahasiswaRepository.getSuntingFindByMahasiswaIdAndNamaPeriode(mahasiswaId, namaPeriode);
+
+        if (rawResults.isEmpty()) {
+            throw new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "KRS tidak ditemukan untuk mahasiswa " + mahasiswaId + " pada periode " + namaPeriode);
+        }
+
+        List<SuntingKrsResDto> dtoList = new ArrayList<>();
+
+        for (Object[] actualResult : rawResults) {
+            // Create a new DTO for each row
+            SuntingKrsResDto dto = new SuntingKrsResDto();
+
+            // Index 0: tk.tahun (INTEGER in DB -> Integer in Java)
+            if (actualResult[0] instanceof Integer) {
+                dto.setKurikulum((Integer) actualResult[0]);
+            } else if (actualResult[0] instanceof String) { // Defensive check, though less likely if DB type is INTEGER
+                dto.setKurikulum(Integer.parseInt((String) actualResult[0]));
+            }
+
+            // Index 1: mk.kode_mata_kuliah (VARCHAR -> String)
+            dto.setKodeMataKuliah((String) actualResult[1]);
+
+            // Index 2: mk.nama_mata_kuliah (VARCHAR -> String)
+            dto.setNamaMataKuliah((String) actualResult[2]);
+
+            // Index 4: kk.nama (VARCHAR -> String)
+            dto.setNamaKelas((String) actualResult[4]);
+
+            // Calculate SKS (Index 5: mk.sks_tatap_muka, Index 6: mk.sks_praktikum)
+            Integer sksTatapMuka = (Integer) actualResult[5];
+            Integer sksPraktikum = (Integer) actualResult[6];
+            dto.setSks((sksTatapMuka != null ? sksTatapMuka : 0) + (sksPraktikum != null ? sksPraktikum : 0));
+
+            // Index 7: rkm.nilai (NUMERIC -> BigDecimal)
+            dto.setNilaiNumerik((BigDecimal) actualResult[7]);
+
+            // Index 8: sp_student.huruf_mutu (VARCHAR -> String)
+            dto.setNilaiHuruf((String) actualResult[8]);
+
+            // Index 9: sp_student.angka_mutu (NUMERIC -> BigDecimal)
+            dto.setNilaiMutu((BigDecimal) actualResult[9]);
+
+            // Index 11: is_passed (BOOLEAN -> Boolean) - can be null
+            dto.setLulus((Boolean) actualResult[11]); // Will be true, false, or null
+
+            // Add the populated DTO to the list
+            dtoList.add(dto);
+        }
+
+        return dtoList;
+    }
+
+
     private static final String STATUS_DIAJUKAN = "Diajukan";
     private static final String STATUS_DISETUJUI = "Disetujui";
-    private static final String STATUS_DIKEMBALIKAN = "Dikembalikan";
+    private static final String STATUS_DITOLAK = "Ditolak";
 
     @Override
     public void updateStatusKrsSetuju(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest){
@@ -726,8 +829,14 @@ public class KrsServiceImpl implements KrsService {
     }
 
     @Override
-    public void updateStatusKrsKembalikan(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest){
-        processBulkUpdate(request, servletRequest, STATUS_DIKEMBALIKAN);
+    public void updateStatusKrsTolak(UpdateStatusKrsReqDto request, HttpServletRequest servletRequest){
+        processBulkUpdate(request, servletRequest, STATUS_DITOLAK);
+    }
+
+    @Override
+    public KrsMenungguResDto getDetailKrsMahasiswa(UUID mahasiswaId) {
+        List<KrsRincianMahasiswa> all = krsMahasiswaRepository.findAllRincianByStatusMenungguAndPeriodeAktifAndMahasiswa(mahasiswaId);
+        return mapper.toDtoMenunggu(all);
     }
 
     private void processBulkUpdate(UpdateStatusKrsReqDto dto, HttpServletRequest servletRequest, String newStatus) {
@@ -750,14 +859,14 @@ public class KrsServiceImpl implements KrsService {
         krsMahasiswaRepository.saveAll(krsToUpdate);
         if (Objects.equals(newStatus, STATUS_DISETUJUI)){
             service.saveUserActivity(servletRequest, MessageKey.APPROVE_KRS);
-        } else if (Objects.equals(newStatus, STATUS_DIKEMBALIKAN)){
+        } else if (Objects.equals(newStatus, STATUS_DITOLAK)){
             service.saveUserActivity(servletRequest, MessageKey.RETURN_KRS);
         }
     }
 
     private Integer getBatasSks(UUID mahasiswaId) {
         BigDecimal ipsTerakhir = hasilStudiRepository
-                .findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(mahasiswaId)
+                .findHasilStudiBySiakMahasiswa_IdOrderBySemesterDesc(mahasiswaId)
                 .map(HasilStudi::getIps)
                 .orElse(BigDecimal.ZERO);
 
@@ -769,16 +878,6 @@ public class KrsServiceImpl implements KrsService {
                 ).orElseThrow(() -> new RuntimeException("Batas SKS belum diatur untuk IPS: " + ipsTerakhir));
 
         return batasSks.getBatasSks();
-    }
-
-    private PeriodeAkademik findPeriodeAkademikByName(String namaPeriode, List<KrsRincianMahasiswa> rincianList) {
-        for (KrsRincianMahasiswa rincian : rincianList) {
-            if (rincian.getSiakKrsMahasiswa() != null && rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik() != null &&
-                    rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik().getNamaPeriode().equals(namaPeriode)) {
-                return rincian.getSiakKrsMahasiswa().getSiakPeriodeAkademik();
-            }
-        }
-        return null;
     }
 
     private Integer determineBatasSks(Mahasiswa mahasiswa, PeriodeAkademik periodeSebelumnya) {

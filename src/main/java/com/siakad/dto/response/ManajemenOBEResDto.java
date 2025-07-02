@@ -11,6 +11,7 @@ public class ManajemenOBEResDto {
     private UUID id;
     private String kodeProgramStudi;
     private String programStudi;
+    private String tahunKurikulum;
     private JenjangResDto jenjang;
     private boolean statusPl;
     private boolean statusCpl;

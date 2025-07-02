@@ -29,10 +29,20 @@ public interface CapaianPembelajaranLulusanRepository extends JpaRepository<Capa
     boolean existsByProfilLulusanList_SiakProgramStudi_IdAndSiakTahunKurikulum_IdAndIsDeletedFalse(UUID prodiId, UUID tahunKurikulumId);
 
 
+    // Query relasi untuk get all prodi
     @Query("SELECT DISTINCT cpl.siakProgramStudi.id FROM CapaianPembelajaranLulusan cpl WHERE cpl.siakProgramStudi.id IN :prodiIds")
     Set<UUID> findProdiIdsWithRelations(List<UUID> prodiIds);
 
-    // Query untuk mengecek status pemetaan PL-CPL
     @Query("SELECT DISTINCT cpl.siakProgramStudi.id FROM CapaianPembelajaranLulusan cpl WHERE cpl.siakProgramStudi.id IN :prodiIds AND SIZE(cpl.profilLulusanList) > 0")
     Set<UUID> findProdiIdsWithPemetaanPlCpl(List<UUID> prodiIds);
+
+
+
+    // query relasi untuk satu prodi
+    boolean existsBySiakProgramStudiId(UUID prodiId);
+
+    @Query("SELECT CASE WHEN COUNT(cpl) > 0 THEN true ELSE false END " +
+            "FROM CapaianPembelajaranLulusan cpl " +
+            "WHERE cpl.siakProgramStudi.id = :prodiId AND SIZE(cpl.profilLulusanList) > 0")
+    boolean existsPemetaanPlCplByProdiId(@Param("prodiId") UUID prodiId);
 }

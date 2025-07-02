@@ -1,10 +1,7 @@
 package com.siakad.controller.dosen;
 
 import com.siakad.dto.request.UpdateStatusKrsReqDto;
-import com.siakad.dto.response.ApiResDto;
-import com.siakad.dto.response.KrsResDto;
-import com.siakad.dto.response.PaginationDto;
-import com.siakad.dto.response.PembimbingAkademikResDto;
+import com.siakad.dto.response.*;
 import com.siakad.entity.User;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
@@ -45,11 +42,11 @@ public class DosenPembimbingAkademikController {
     @Operation(summary = "Get Pembimbing Akademik By Pagination")
     @GetMapping("/all")
     public ResponseEntity<ApiResDto<List<PembimbingAkademikResDto>>> getPaginated(
-            @RequestParam() UUID periodeAkademikId,
-            @RequestParam(required = false) UUID programStudiId,
+            @RequestParam() String periodeAkademik,
+            @RequestParam(required = false) String programStudi,
             @RequestParam(required = false) String angkatan,
             @RequestParam(required = false) String statusKrs,
-            @RequestParam(required = false) String namaMahasiswa,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Boolean hasPembimbing,
             @RequestParam(required = false) String statusMahasiswa,
             @RequestParam(defaultValue = "1") @Min(1) int page,
@@ -68,7 +65,7 @@ public class DosenPembimbingAkademikController {
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
             Page<PembimbingAkademikResDto> data = service.getAllPaginated(
-                    programStudiId, periodeAkademikId, dosenId, namaMahasiswa,
+                    programStudi, periodeAkademik, dosenId, keyword,
                     angkatan, statusMahasiswa, statusKrs, hasPembimbing, pageable);
 
             return ResponseEntity.ok(
@@ -109,18 +106,42 @@ public class DosenPembimbingAkademikController {
         }
     }
 
-    @Operation(summary = "Kembali Krs Mahasiswa")
-    @PostMapping("/kembali")
-    public ResponseEntity<ApiResDto<KrsResDto>> kembaliKrs(
+    @Operation(summary = "Tolak Krs Mahasiswa")
+    @PostMapping("/tolak")
+    public ResponseEntity<ApiResDto<KrsResDto>> tolakKrs(
             @Valid @RequestBody UpdateStatusKrsReqDto request,
             HttpServletRequest servletRequest
     ){
         try {
-            krsService.updateStatusKrsKembalikan(request, servletRequest);
+            krsService.updateStatusKrsTolak(request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiResDto.<KrsResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.UPDATED.getMessage())
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get Detail KRS Mahasiswa")
+    @GetMapping("/detail-krs/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<KrsMenungguResDto>> getDetailKRSMahasiswa(
+            @PathVariable UUID mahasiswaId
+    ) {
+        try {
+            KrsMenungguResDto result = krsService.getDetailKrsMahasiswa(mahasiswaId);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<KrsMenungguResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(result)
                             .build()
             );
         }

@@ -41,10 +41,10 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
 
      @Query("SELECT kr FROM KrsRincianMahasiswa kr JOIN FETCH kr.siakKelasKuliah skk JOIN FETCH skk.siakMataKuliah " +
             "WHERE kr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
-            "AND kr.siakKrsMahasiswa.siakPeriodeAkademik.id = :periodeId " +
+            "AND kr.siakKrsMahasiswa.siakPeriodeAkademik.namaPeriode = :namaPeriode " +
             "AND kr.isDeleted = false")
      List<KrsRincianMahasiswa> findBySiakKrsMahasiswaSiakMahasiswaIdAndSiakKrsMahasiswaSiakPeriodeAkademikIdAndIsDeletedFalse(
-            @Param("mahasiswaId") UUID mahasiswaId, @Param("periodeId") UUID periodeId);
+            @Param("mahasiswaId") UUID mahasiswaId, @Param("namaPeriode") String namaPeriode);
 
     @Query(value = """
     SELECT j.* FROM siak_jadwal_kuliah j
@@ -90,6 +90,10 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
     List<KrsRincianMahasiswa> findAllByIsDeletedFalse();
 
     List<KrsRincianMahasiswa> findAllBySiakKrsMahasiswa_SiakMahasiswa_IdAndSiakKrsMahasiswa_SiakPeriodeAkademik_IdAndIsDeletedFalse(UUID mahasiswaId, UUID kelasId);
+
+    @Query("SELECT krm FROM KrsRincianMahasiswa as krm where krm.siakKrsMahasiswa.siakMahasiswa.id = :id and krm.siakKrsMahasiswa.siakPeriodeAkademik.namaPeriode = :namaPeriode")
+    List<KrsRincianMahasiswa> findByMahasiswaAndByNamaPeriode(@Param("id") UUID id, @Param("namaPeriode") String namaPeriode);
+
     @Query("""
         SELECT krm
         FROM KrsRincianMahasiswa krm
@@ -122,9 +126,9 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
             "JOIN FETCH kk.siakMataKuliah mk " +
             "JOIN FETCH mk.siakTahunKurikulum tk " +
             "WHERE krr.siakKrsMahasiswa.siakMahasiswa.id = :mahasiswaId " +
-            "AND krr.siakKrsMahasiswa.siakPeriodeAkademik.id = :periodeAkademikId " +
+            "AND krr.siakKrsMahasiswa.siakPeriodeAkademik.namaPeriode = :namaPeriode " +
             "AND krr.isDeleted = false")
-    List<KrsRincianMahasiswa> findAllByMahasiswaAndPeriodeWithDetails(UUID mahasiswaId, UUID periodeAkademikId);
+    List<KrsRincianMahasiswa> findAllByMahasiswaAndPeriodeWithDetails(UUID mahasiswaId, String namaPeriode);
 
 
     @Query("SELECT krr.hurufMutu, SUM(kk.siakMataKuliah.sksTatapMuka + kk.siakMataKuliah.sksPraktikum) " +
@@ -134,4 +138,77 @@ public interface KrsRincianMahasiswaRepository extends JpaRepository<KrsRincianM
             "AND krr.hurufMutu IS NOT NULL " +
             "GROUP BY krr.hurufMutu")
     List<Object[]> findGradeDistributionBySks(UUID mahasiswaId);
+
+    @Query(value = """
+        SELECT
+            tk.tahun,
+            mk.kode_mata_kuliah,
+            mk.nama_mata_kuliah,
+            mk.nilai_min AS course_min_grade_letter,
+            kk.nama,
+            mk.sks_tatap_muka,
+            mk.sks_praktikum,
+            rkm.nilai AS student_raw_score,
+            sp_student.huruf_mutu AS student_letter_grade,
+            sp_student.angka_mutu AS student_grade_point,
+            sp_course_min.angka_mutu AS course_min_grade_point,
+        
+            CASE
+                WHEN sp_student.angka_mutu IS NULL THEN NULL
+                WHEN sp_course_min.angka_mutu IS NULL THEN NULL
+                WHEN sp_student.angka_mutu >= sp_course_min.angka_mutu THEN TRUE
+                ELSE FALSE
+            END AS is_passed,
+        
+            CASE
+                WHEN sp_student.angka_mutu IS NULL THEN 'No student grade assigned'
+                WHEN sp_course_min.angka_mutu IS NULL THEN 'No course minimum grade defined for course min letter'
+                WHEN sp_student.angka_mutu >= sp_course_min.angka_mutu THEN 'Passed'
+                ELSE 'Failed'
+            END AS pass_fail_message
+        FROM
+            siak_rincian_krs_mahasiswa AS rkm
+        INNER JOIN
+            siak_krs_mahasiswa AS km ON rkm.siak_krs_mahasiswa_id = km.id
+        INNER JOIN
+            siak_periode_akademik AS pa ON km.siak_periode_akademik_id = pa.id
+        INNER JOIN
+            siak_kelas_kuliah AS kk ON rkm.siak_kelas_kuliah_id = kk.id
+        INNER JOIN
+            siak_mata_kuliah AS mk ON kk.siak_mata_kuliah_id = mk.id
+        INNER JOIN
+            siak_tahun_kurikulum AS tk ON mk.siak_tahun_kurikulum_id = tk.id
+        
+        LEFT JOIN LATERAL (
+            SELECT
+                sp_inner.huruf_mutu,
+                sp_inner.angka_mutu
+            FROM
+                siak_skala_penilaian AS sp_inner
+            WHERE
+                rkm.nilai BETWEEN sp_inner.nilai_min AND sp_inner.nilai_max
+            ORDER BY
+                sp_inner.nilai_min ASC, sp_inner.nilai_max DESC
+            LIMIT 1
+        ) AS sp_student ON TRUE
+        
+        
+        LEFT JOIN LATERAL (
+            SELECT
+                sp_inner.huruf_mutu,
+                sp_inner.angka_mutu
+            FROM
+                siak_skala_penilaian AS sp_inner
+            WHERE
+                sp_inner.huruf_mutu = mk.nilai_min
+            ORDER BY
+                sp_inner.nilai_min ASC
+            LIMIT 1
+        ) AS sp_course_min ON TRUE
+        
+        WHERE
+            km.siak_mahasiswa_id = :id
+            AND pa.nama_periode = :namaPeriode;
+    """, nativeQuery = true)
+    List<Object[]> getSuntingFindByMahasiswaIdAndNamaPeriode(@Param("id") UUID id, @Param("namaPeriode") String namaPeriode);
 }

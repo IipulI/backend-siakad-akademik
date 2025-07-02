@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface HasilStudiService {
-    HasilStudiDto getHasilStudi(UUID periodeAkademikId);
+    HasilStudiDto getHasilStudi(String namaPeriode);
     HasilStudiDto getMkMengulang(UUID periodeAkademikId);
     TranskipDto buildTranskip(List<KrsRincianMahasiswa> rincianList);
 

@@ -105,12 +105,12 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
 
     @Override
     public Page<PembimbingAkademikResDto> getAllPaginated(
-            UUID programStudiId, UUID periodeAkademikId, UUID dosenId, String namaMahasiswa,
+            String programStudi, String periodeAkademik, UUID dosenId, String namaMahasiswa,
             String angkatan, String statusMahasiswa, String statusKrs,
             Boolean hasPembimbing, Pageable pageable) {
 
         // Build the dynamic specification with the new consolidated filter
-        Specification<Mahasiswa> spec = MahasiswaPembimbingAkademikSpecification.build(programStudiId, periodeAkademikId, dosenId,
+        Specification<Mahasiswa> spec = MahasiswaPembimbingAkademikSpecification.build(programStudi, periodeAkademik, dosenId,
                 namaMahasiswa, angkatan, statusMahasiswa, statusKrs, hasPembimbing);
 
         Page<Mahasiswa> mahasiswaPage = mahasiswaRepository.findAll(spec, pageable);
@@ -132,11 +132,11 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
             }
         }
 
-        Map<UUID, KrsMahasiswa> krsMap = krsMahasiswaRepository.findByMahasiswaIdsAndPeriodeId(mahasiswaIds, periodeAkademikId)
+        Map<UUID, KrsMahasiswa> krsMap = krsMahasiswaRepository.findByMahasiswaIdsAndPeriodeId(mahasiswaIds, periodeAkademik)
                 .stream()
                 .collect(Collectors.toMap(krs -> krs.getSiakMahasiswa().getId(), Function.identity()));
 
-        Map<UUID, PembimbingAkademik> paMap = pembimbingAkademikRepository.findBySiakMahasiswaIdInAndSiakPeriodeAkademikId(mahasiswaIds, periodeAkademikId)
+        Map<UUID, PembimbingAkademik> paMap = pembimbingAkademikRepository.findBySiakMahasiswaIdInAndSiakPeriodeAkademikNamaPeriode(mahasiswaIds, periodeAkademik)
                 .stream()
                 .collect(Collectors.toMap(pa -> pa.getSiakMahasiswa().getId(), Function.identity()));
 
@@ -146,6 +146,7 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
 
         List<PembimbingAkademikResDto> dtoList = mahasiswaList.stream().map(mahasiswa -> {
             PembimbingAkademikResDto dto = new PembimbingAkademikResDto();
+            dto.setId(mahasiswa.getId());
             dto.setMahasiswa(mahasiswa.getNama());
             dto.setAngkatan(mahasiswa.getAngkatan());
             dto.setStatusMahasiswa(mahasiswa.getStatusMahasiswa());
@@ -169,12 +170,12 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
             }
 
             KrsMahasiswa krs = krsMap.get(mahasiswa.getId());
-            dto.setStatusDiajukan(krs != null && !"Diajukan".equalsIgnoreCase(krs.getStatus()));
+            dto.setStatusDiajukan(krs != null && "Diajukan".equalsIgnoreCase(krs.getStatus()));
             dto.setStatusDisetujui(krs != null && "Disetujui".equalsIgnoreCase(krs.getStatus()));
 
             PembimbingAkademik pa = paMap.get(mahasiswa.getId());
             Dosen dosen = (pa != null) ? pa.getSiakDosen() : null;
-            dto.setPembimbingAkademik((dosen != null) ? String.format("%s - %s", dosen.getNidn(), dosen.getNama()) : "Belum Ditentukan");
+            dto.setPembimbingAkademik((dosen != null) ? String.format("%s - %s", dosen.getNidn(), dosen.getNama()) : null);
 
             return dto;
         }).collect(Collectors.toList());

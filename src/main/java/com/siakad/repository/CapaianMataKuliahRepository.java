@@ -4,6 +4,7 @@ import com.siakad.entity.CapaianMataKuliah;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,4 +20,11 @@ public interface CapaianMataKuliahRepository extends JpaRepository<CapaianMataKu
     Set<UUID> findProdiIdsWithRelations(List<UUID> prodiIds);
 
     List<CapaianMataKuliah> findBySiakMataKuliahIdAndIsDeletedFalse(UUID mataKuliahId);
+
+
+    // query relasi untuk satu prodi
+    @Query("SELECT CASE WHEN COUNT(cpmk) > 0 THEN true ELSE false END " +
+            "FROM CapaianMataKuliah cpmk " +
+            "WHERE cpmk.siakMataKuliah.siakProgramStudi.id = :prodiId")
+    boolean existsCpmkByProdiId(@Param("prodiId") UUID prodiId);
 }

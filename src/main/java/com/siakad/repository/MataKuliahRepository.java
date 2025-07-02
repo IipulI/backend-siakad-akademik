@@ -2,10 +2,14 @@ package com.siakad.repository;
 
 import com.siakad.dto.response.MataKuliahCpmkMappingDto;
 import com.siakad.entity.MataKuliah;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -49,5 +53,16 @@ public interface MataKuliahRepository extends JpaRepository<MataKuliah, UUID>,
     );
 
     List<MataKuliah> findBySiakProgramStudiIdAndSiakTahunKurikulumId(UUID siakProgramStudiId, UUID siakTahunKurikulumId);
+
+    @Query(value = """
+        SELECT mk.*
+        FROM siak_mata_kuliah mk
+        LEFT JOIN siak_kelas_kuliah kk 
+            on mk.id=kk.siak_mata_kuliah_id
+        LEFT JOIN siak_jadwal_kuliah jk 
+            on kk.id=jk.siak_kelas_kuliah_id
+        WHERE jk.siak_dosen_id = :dosenId
+    """, nativeQuery = true)
+    List<MataKuliah> findRelatedtoDosen(@Param("dosenId") UUID dosenId);
 
 }

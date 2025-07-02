@@ -31,6 +31,7 @@ public abstract class KrsTransform {
     @Mapping(source = "siakKelasKuliah.siakMataKuliah", target = "mataKuliah")
     @Mapping(source = "hurufMutu", target = "riwayatMatakuliah")
     @Mapping(source = "siakKelasKuliah.nama", target = "namaKelas")
+    @Mapping(source = "siakKelasKuliah.id", target = "id")
     @Mapping(target = "hari", ignore = true)
     @Mapping(target = "jamMulai", ignore = true)
     @Mapping(target = "jamSelesai", ignore = true)

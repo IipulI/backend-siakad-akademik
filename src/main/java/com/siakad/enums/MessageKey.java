@@ -104,7 +104,7 @@ public enum MessageKey {
     DELETE_KRS("Menghapus data krs mahasiswa"),
 
     APPROVE_KRS("Menyetujui status krs mahasiswa"),
-    RETURN_KRS("Mengembalikan status krs mahasiswa"),
+    RETURN_KRS("Menolak status krs mahasiswa"),
 
     ;
 
