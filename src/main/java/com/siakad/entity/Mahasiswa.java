@@ -86,6 +86,29 @@ public class Mahasiswa {
     private String teleponSekolah;
     private String noIjazahSekolah;
 
+    private String dusunRt;
+    private String kotaRt;
+    private String kecamatanRt;
+    private String dusunDomisili;
+    private String kotaDomisili;
+    private String kecamatanDomisili;
+    private String agama;
+    private String beratBadan;
+    private String tinggiBadan;
+    private String golonganDarah;
+    private String transportasi;
+    private String kewarganegaraan;
+    private String paspor;
+    private String statusNikah;
+    private String ukuranJasAlmamater;
+    private String pekerjaan;
+    private String instansiPekerjaan;
+    private String penghasilan;
+    private String noRekening;
+    private String namaRekening;
+    private String namaBank;
+    private String nisn;
+
     @Column(columnDefinition = "bytea")
     private byte[] ijazahSekolah;
 

@@ -66,7 +66,9 @@ public class RpsServiceImpl implements RpsService {
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tahun Kurikulum tidak ditemukan : " + reqDto.getSiakTahunKurikulumId()));
 
         Rps entity = mapper.toEntity(reqDto);
-        entity.setDokumenRps(FileUtils.compress(dokumenRps.getBytes()));
+        if (dokumenRps != null && !dokumenRps.isEmpty()) {
+            entity.setDokumenRps(FileUtils.compress(dokumenRps.getBytes()));
+        }
         entity.setSiakMataKuliah(mataKuliah);
         entity.setSiakProgramStudi(programStudi);
         entity.setSiakPeriodeAkademik(periodeAkademik);
@@ -125,7 +127,9 @@ public class RpsServiceImpl implements RpsService {
 
         mapper.toEntity(reqDto, entity);
         entity.setId(id);
-        entity.setDokumenRps(FileUtils.compress(dokumenRps.getBytes()));
+        if (dokumenRps != null && !dokumenRps.isEmpty()) {
+            entity.setDokumenRps(FileUtils.compress(dokumenRps.getBytes()));
+        }
         entity.setSiakMataKuliah(mataKuliah);
         entity.setSiakProgramStudi(programStudi);
         entity.setSiakPeriodeAkademik(periodeAkademik);
