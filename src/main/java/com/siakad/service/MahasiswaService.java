@@ -7,6 +7,7 @@ import com.siakad.dto.response.ProfileInfo;
 import com.siakad.entity.User;
 import com.siakad.enums.RoleType;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,4 +41,7 @@ public interface MahasiswaService {
 
     MahasiswaChartDto getDashboardAkademik(UUID mahasiswaId);
     ProfileInfo getProfileInfo();
-}   
+
+    @Transactional
+    ProfileInfo getProfileInfoByMahasiswa(UUID mahasiswaId);
+}

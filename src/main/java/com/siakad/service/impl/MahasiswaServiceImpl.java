@@ -30,6 +30,7 @@
 
     import java.io.IOException;
     import java.math.BigDecimal;
+    import java.math.RoundingMode;
     import java.time.LocalDateTime;
     import java.util.List;
     import java.util.Map;
@@ -260,7 +261,6 @@
             PembimbingAkademik pembimbingAkademik =
                     pembimbingList.isEmpty() ? null : pembimbingList.get(0);
 
-            // Ambil semua KrsMahasiswa
             List<KrsMahasiswa> daftarKrs = krsMahasiswaRepository
                     .findAllBySiakMahasiswa_IdAndIsDeletedFalse(mahasiswaId);
 
@@ -296,8 +296,8 @@
                 }
             }
 
-            double ipk = totalSks == 0 ? 0 : totalBobot.doubleValue() / totalSks;
-            double ipkLulus = sksLulus == 0 ? 0 : totalBobotLulus.doubleValue() / sksLulus;
+            double ipk = totalSks == 0 ? 0 : totalBobot.divide(BigDecimal.valueOf(totalSks), 2, RoundingMode.HALF_UP).doubleValue();
+            double ipkLulus = sksLulus == 0 ? 0 : totalBobotLulus.divide(BigDecimal.valueOf(sksLulus), 2, RoundingMode.HALF_UP).doubleValue();
 
             ProfileInfo profileInfo = new ProfileInfo();
             profileInfo.setNim(currentUser.getSiakMahasiswa().getNpm());
@@ -319,7 +319,79 @@
             return profileInfo;
         }
 
+        @Transactional
+        @Override
+        public ProfileInfo getProfileInfoByMahasiswa(UUID mahasiswaId) {
 
+            PeriodeAkademik periodeAktif = periodeAkademikRepository.findByStatusActive();
+
+            Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(mahasiswaId)
+                    .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Mahasiswa tidak ditemukkan"));
+
+            List<PembimbingAkademik> pembimbingList =
+                    pembimbingAkademikRepository
+                            .findAllBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(
+                                    mahasiswaId, periodeAktif.getId());
+            PembimbingAkademik pembimbingAkademik =
+                    pembimbingList.isEmpty() ? null : pembimbingList.get(0);
+
+            List<KrsMahasiswa> daftarKrs = krsMahasiswaRepository
+                    .findAllBySiakMahasiswa_IdAndIsDeletedFalse(mahasiswaId);
+
+            int totalSks = 0;
+            int sksLulus = 0;
+            BigDecimal totalBobot = BigDecimal.ZERO;
+            BigDecimal totalBobotLulus = BigDecimal.ZERO;
+
+            for (KrsMahasiswa krs : daftarKrs) {
+                List<KrsRincianMahasiswa> rincianList =
+                        krsRincianRepository.findAllBySiakKrsMahasiswa_IdAndIsDeletedFalse(krs.getId());
+
+                for (KrsRincianMahasiswa rincian : rincianList) {
+                    Integer sksPraktikum = rincian.getSiakKelasKuliah().getSiakMataKuliah().getSksPraktikum();
+                    Integer sksTatapMuka = rincian.getSiakKelasKuliah().getSiakMataKuliah().getSksTatapMuka();
+
+                    int sks = (sksPraktikum != null ? sksPraktikum : 0) + (sksTatapMuka != null ? sksTatapMuka : 0);
+                    if (sks == 0) continue;
+
+                    totalSks += sks;
+                    BigDecimal angkaMutu = rincian.getAngkaMutu();
+
+                    if (angkaMutu != null) {
+                        BigDecimal bobot = angkaMutu.multiply(BigDecimal.valueOf(sks));
+                        totalBobot = totalBobot.add(bobot);
+
+                        if (rincian.getHurufMutu() != null &&
+                                !rincian.getHurufMutu().equalsIgnoreCase("E")) {
+                            sksLulus += sks;
+                            totalBobotLulus = totalBobotLulus.add(bobot);
+                        }
+                    }
+                }
+            }
+
+            double ipk = totalSks == 0 ? 0 : totalBobot.divide(BigDecimal.valueOf(totalSks), 2, RoundingMode.HALF_UP).doubleValue();
+            double ipkLulus = sksLulus == 0 ? 0 : totalBobotLulus.divide(BigDecimal.valueOf(sksLulus), 2, RoundingMode.HALF_UP).doubleValue();
+
+            ProfileInfo profileInfo = new ProfileInfo();
+            profileInfo.setNim(mahasiswa.getNpm());
+            profileInfo.setNamaMahasiswa(mahasiswa.getNama());
+            profileInfo.setProgramStudi(mahasiswa.getSiakProgramStudi().getNamaProgramStudi());
+            profileInfo.setStatusMahasiwa(mahasiswa.getStatusMahasiswa());
+            profileInfo.setAngkatan(mahasiswa.getAngkatan());
+            profileInfo.setTahunKurikulum(mahasiswa.getKurikulum());
+            profileInfo.setSemester(mahasiswa.getSemester());
+            profileInfo.setPembimbingAkademik(
+                    pembimbingAkademik != null ? pembimbingAkademik.getSiakDosen().getNama() : "-"
+            );
+
+            profileInfo.setTotalSks(totalSks);
+            profileInfo.setSksLulus(sksLulus);
+            profileInfo.setIpkLulus(ipkLulus);
+            profileInfo.setIpk(ipk);
+
+            return profileInfo;
+        }
 
         private PerkuliahanChartDto buildPerkuliahanChart(List<Object[]> sksDiambilData) {
             List<SksPerSemesterDto> sksList = sksDiambilData.stream()
