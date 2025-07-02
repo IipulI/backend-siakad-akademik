@@ -46,7 +46,7 @@ public class DosenPembimbingAkademikController {
             @RequestParam(required = false) String programStudi,
             @RequestParam(required = false) String angkatan,
             @RequestParam(required = false) String statusKrs,
-            @RequestParam(required = false) String namaMahasiswa,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Boolean hasPembimbing,
             @RequestParam(required = false) String statusMahasiswa,
             @RequestParam(defaultValue = "1") @Min(1) int page,
@@ -65,7 +65,7 @@ public class DosenPembimbingAkademikController {
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
             Page<PembimbingAkademikResDto> data = service.getAllPaginated(
-                    programStudi, periodeAkademik, dosenId, namaMahasiswa,
+                    programStudi, periodeAkademik, dosenId, keyword,
                     angkatan, statusMahasiswa, statusKrs, hasPembimbing, pageable);
 
             return ResponseEntity.ok(

@@ -42,9 +42,9 @@ public class MahasiswaJadwalKuliahController {
     private final JadwalKuliahService jadwalKuliahService;
 
     @Operation(summary = "get jadwal semester")
-    @GetMapping("/{periodeAkademikId}")
+    @GetMapping("")
     public ResponseEntity<ApiResDto<?>> jadwalMingguan(
-            @PathVariable UUID periodeAkademikId,
+            @RequestParam String namaPeriode,
             @RequestParam(required = false) String hari
     ) {
         try {
@@ -54,7 +54,7 @@ public class MahasiswaJadwalKuliahController {
             if (hari != null && !hari.trim().isEmpty()) {
                 // Call the daily schedule service method
                 List<JadwalMingguanResDto> jadwalHarian =
-                        jadwalKuliahService.getJadwalHarianMahasiswa(mahasiswaId, periodeAkademikId, hari);
+                        jadwalKuliahService.getJadwalHarianMahasiswa(mahasiswaId, namaPeriode, hari);
 
                 ApiResDto<List<JadwalMingguanResDto>> response =
                         ApiResDto.<List<JadwalMingguanResDto>>builder()
@@ -67,7 +67,7 @@ public class MahasiswaJadwalKuliahController {
             } else {
                 // Call the weekly schedule service method
                 Map<String, List<JadwalMingguanResDto>> jadwalMingguan =
-                        jadwalKuliahService.getJadwalMingguanMahasiswa(mahasiswaId, periodeAkademikId);
+                        jadwalKuliahService.getJadwalMingguanMahasiswa(mahasiswaId, namaPeriode);
 
                 ApiResDto<Map<String, List<JadwalMingguanResDto>>> response =
                         ApiResDto.<Map<String, List<JadwalMingguanResDto>>>builder()

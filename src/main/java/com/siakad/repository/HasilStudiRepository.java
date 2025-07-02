@@ -3,6 +3,7 @@ package com.siakad.repository;
 import com.siakad.entity.HasilStudi;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -17,10 +18,13 @@ import java.util.stream.Collectors;
 public interface HasilStudiRepository extends JpaRepository<HasilStudi, UUID> {
     Optional<HasilStudi> findByIdAndIsDeletedFalse(UUID id);
 
-    Optional<HasilStudi> findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(UUID siakMahasiswaId);
+    Optional<HasilStudi> findHasilStudiBySiakMahasiswa_IdOrderBySemesterDesc(UUID siakMahasiswaId);
     Optional<HasilStudi> findBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(UUID siakMahasiswaId, UUID periodeAkademik);
     Optional<HasilStudi> findBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswaId);
     List<HasilStudi> findAllBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswaId);
+
+    @Query("SELECT h from HasilStudi as h where h.siakMahasiswa.id = :id AND h.siakPeriodeAkademik.namaPeriode = :namaPeriode")
+    Optional<HasilStudi> findBySiakMahasiswaAndByNamaPeriode(@Param("id") UUID id, @Param("namaPeriode") String namaPeriode);
 
     @Query("""
         SELECT m.ips FROM HasilStudi m WHERE m.isDeleted = false

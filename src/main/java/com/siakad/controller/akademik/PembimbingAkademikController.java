@@ -103,7 +103,7 @@ public class PembimbingAkademikController {
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
             Page<PembimbingAkademikResDto> data = service.getAllPaginated(
-                    periodeAkademik, programStudi, null, namaMahasiswa,
+                    programStudi, periodeAkademik, null, namaMahasiswa,
                     angkatan, statusMahasiswa, statusKrs, hasPembimbing, pageable);
 
             return ResponseEntity.ok(

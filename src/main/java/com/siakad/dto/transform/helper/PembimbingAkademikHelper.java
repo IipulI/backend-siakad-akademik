@@ -26,7 +26,7 @@ public class PembimbingAkademikHelper {
 
     public Integer getBatasSks(UUID mahasiswaId) {
         BigDecimal ipsTerakhir = hasilStudiRepository
-                .findTopBySiakMahasiswa_IdOrderByCreatedAtDesc(mahasiswaId)
+                .findHasilStudiBySiakMahasiswa_IdOrderBySemesterDesc(mahasiswaId)
                 .map(HasilStudi::getIps)
                 .orElse(BigDecimal.ZERO);
 

@@ -28,13 +28,15 @@ public class HasilStudiController {
 
     @Operation(summary = "Get KHS by Periode Akademik ID")
     @GetMapping("/khs")
-    public ResponseEntity<ApiResDto<HasilStudiDto>> getHasilStudi(@RequestParam UUID periodeAkademikId) {
+    public ResponseEntity<ApiResDto<HasilStudiDto>> getHasilStudi(
+            @RequestParam String namaPeriode
+    ) {
         try {
-            HasilStudiDto hasilStudi = hasilStudiService.getHasilStudi(periodeAkademikId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(
+            HasilStudiDto hasilStudi = hasilStudiService.getHasilStudi(namaPeriode);
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<HasilStudiDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.UPDATED.getMessage())
+                            .message(MessageKey.READ.getMessage())
                             .data(hasilStudi)
                             .build()
             );
@@ -52,10 +54,10 @@ public class HasilStudiController {
             List<KrsRincianMahasiswa> rincianMahasiswa = hasilStudiService.getRincianMahasiswa();
 
             TranskipDto transkipDto = hasilStudiService.buildTranskip(rincianMahasiswa);
-            return ResponseEntity.status(HttpStatus.CREATED).body(
+            return ResponseEntity.status(HttpStatus.OK).body(
                     ApiResDto.<TranskipDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.UPDATED.getMessage())
+                            .message(MessageKey.READ.getMessage())
                             .data(transkipDto)
                             .build()
             );
