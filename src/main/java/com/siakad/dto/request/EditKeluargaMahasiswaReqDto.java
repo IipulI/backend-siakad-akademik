@@ -20,4 +20,5 @@ public class EditKeluargaMahasiswaReqDto {
     private String alamat;
     private String noTelepon;
     private String email;
+    private Boolean isDeleted;
 }

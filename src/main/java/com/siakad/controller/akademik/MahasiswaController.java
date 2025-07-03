@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siakad.dto.request.EditMahasiswaReqDto;
+import com.siakad.dto.request.EditSuntingDto;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
 import com.siakad.dto.response.*;
@@ -28,10 +29,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 
 @Slf4j
@@ -58,18 +56,21 @@ public class MahasiswaController {
             @RequestPart(value = "fotoProfil", required = false) MultipartFile fotoProfil,
             @RequestPart(value = "ijazahSekolah", required = false) MultipartFile ijazahSekolah,
             @RequestPart("request") String requestJson,
-            @RequestPart("requestKeluarga") String requestJsonKeluarga,
+            @RequestPart(value = "requestKeluarga", required = false) String requestJsonKeluarga,
             HttpServletRequest servletRequest) {
 
         try {
             MahasiswaReqDto request = objectMapper.readValue(requestJson, MahasiswaReqDto.class);
 
-            List<KeluargaMahasiswaReqDto> requestKeluarga = objectMapper.readValue(
-                    requestJsonKeluarga,
-                    new TypeReference<List<KeluargaMahasiswaReqDto>>() {}
-            );
+            List<KeluargaMahasiswaReqDto> requestKeluarga = new ArrayList<>();
 
-            log.debug("RAW requestKeluarga: {}", requestJsonKeluarga);
+            if (requestJsonKeluarga != null && !requestJsonKeluarga.isBlank()) {
+                log.debug("RAW requestKeluarga: {}", requestJsonKeluarga);
+                requestKeluarga = objectMapper.readValue(
+                        requestJsonKeluarga,
+                        new TypeReference<List<KeluargaMahasiswaReqDto>>() {}
+                );
+            }
 
 
             service.create(request, requestKeluarga, fotoProfil, ijazahSekolah, servletRequest);
@@ -501,6 +502,31 @@ public class MahasiswaController {
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(suntingKrs)
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get data sunting KRS")
+    @PutMapping("/sunting-krs/update/{krsId}")
+    public ResponseEntity<ApiResDto<Objects>> getSuntingKrs(
+            @PathVariable("krsId") UUID krsId,
+            EditSuntingDto reqDto,
+            HttpServletRequest servletRequest
+    ) {
+        try {
+            krsService.updateSuntingKrs(krsId, reqDto, servletRequest);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<Objects>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
                             .build()
             );
         }
