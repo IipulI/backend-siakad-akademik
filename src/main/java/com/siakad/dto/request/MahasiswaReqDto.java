@@ -77,5 +77,5 @@
         private String noRekening;
         private String namaRekening;
         private String namaBank;
-        private String nisn;
+        private String  nisn;
     }

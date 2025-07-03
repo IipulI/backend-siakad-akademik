@@ -65,10 +65,10 @@
         private static final BigDecimal IP_MINIMUM = new BigDecimal("2.50");
         private final KeluargaMahasiswaRepository keluargaMahasiswaRepository;
 
-        @Override
         @Transactional
+        @Override
         public MahasiswaResDto create(MahasiswaReqDto request,
-                                      KeluargaMahasiswaReqDto requestKeluarga,
+                                      List<KeluargaMahasiswaReqDto> requestKeluarga,
                                       MultipartFile fotoProfil,
                                       MultipartFile ijazahSekolah,
                                       HttpServletRequest servletRequest) throws IOException {
@@ -88,6 +88,7 @@
             User user = createUserWithRole(request.getNpm(), request.getEmailPribadi(), password, RoleType.MAHASISWA);
 
             Mahasiswa mahasiswa = mapper.toEntity(request);
+
             if (fotoProfil != null && !fotoProfil.isEmpty()) {
                 mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
             }
@@ -96,23 +97,26 @@
                 mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
             }
 
-
             mahasiswa.setEmailPribadi(user.getEmail());
             mahasiswa.setSiakProgramStudi(programStudi);
             mahasiswa.setKurikulum(request.getKurikulum());
             mahasiswa.setSiakUser(user);
             mahasiswa.setIsDeleted(false);
+
             mahasiswaRepository.save(mahasiswa);
 
-            KeluargaMahasiswa keluargaMahasiswa = mapper.toEntity(requestKeluarga);
-            keluargaMahasiswa.setIsDeleted(false);
-            keluargaMahasiswa.setSiakMahasiswa(mahasiswa);
-            keluargaMahasiswaRepository.save(keluargaMahasiswa);
+            for (KeluargaMahasiswaReqDto keluargaDto : requestKeluarga) {
+                KeluargaMahasiswa keluargaMahasiswa = mapper.toEntity(keluargaDto);
+                keluargaMahasiswa.setIsDeleted(false);
+                keluargaMahasiswa.setSiakMahasiswa(mahasiswa);
+                keluargaMahasiswaRepository.save(keluargaMahasiswa);
+            }
 
             service.saveUserActivity(servletRequest, MessageKey.CREATE_MAHASISWA);
 
             return mapper.toDto(mahasiswa);
         }
+
 
 
         @Override
