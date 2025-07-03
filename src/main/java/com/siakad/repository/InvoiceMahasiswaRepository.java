@@ -61,4 +61,38 @@ public interface InvoiceMahasiswaRepository extends JpaRepository<InvoiceMahasis
         where siak_mahasiswa_id = :id
     """, nativeQuery = true)
     Optional<Object[]> findInfoTagihanByMahasiswaId(@Param("id") UUID id);
+
+
+    @Query(value = """
+        select
+            im.kode_invoice,
+            im.metode_bayar,
+            pa.nama_periode,
+            im.tanggal_tenggat,
+            im.tanggal_bayar,
+            ikm.kode_komponen,
+            ikm.nama,
+            ipk.tagihan,
+            im.status
+        from siak_invoice_pembayaran_komponen as ipk
+            inner join siak_invoice_mahasiswa as im on ipk.siak_invoice_mahasiswa_id=im.id
+            inner join siak_invoice_komponen_mahasiswa as ikm on ipk.siak_invoice_komponen_mahasiswa_id=ikm.id
+            inner join siak_periode_akademik as pa on im.siak_periode_akademik_id = pa.id
+        where im.siak_mahasiswa_id = :mahasiswaId
+            and (:status IS NULL OR :status = '' OR lower(im.status) = lower(:status))
+    
+            and (:namaPeriode IS NULL OR :namaPeriode = '' OR lower(pa.nama_periode) = lower(:namaPeriode))
+    
+            and (:keyword IS NULL OR :keyword = '' OR
+                    lower(ikm.nama) like lower(concat('%', :keyword, '%')) OR\s
+                    lower(ikm.kode_komponen) like lower(concat('%', :keyword, '%')) OR\s
+                    lower(im.kode_invoice) like lower(concat('%', :keyword, '%'))
+                )
+        """, nativeQuery = true)
+    List<Object[]> findAllTagihanByMahasiswaId(
+            @Param("mahasiswaId") UUID mahasiswaId,
+            @Param("status") String status,
+            @Param("namaPeriode") String namaPeriode,
+            @Param("keyword") String keyword
+    );
 }

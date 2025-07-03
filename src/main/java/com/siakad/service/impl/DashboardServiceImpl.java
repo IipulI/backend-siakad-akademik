@@ -159,27 +159,39 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public TagihanMhsDto getTagihanMhs(UUID mahasiswaId) {
+    public List<TagihanMhsDto> getTagihanMhs(UUID mahasiswaId, String status, String namaPeriode, String keyword) {
+        // The repository returns a List of Object arrays
+        List<Object[]> rawResult = invoiceMahasiswaRepository.findAllTagihanByMahasiswaId(mahasiswaId, status, namaPeriode, keyword);
 
-        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository
-                .findBySiakMahasiswa_IdAndIsDeletedFalse(mahasiswaId)
-                .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
+        List<TagihanMhsDto> tagihanMhsDtos = new ArrayList<>();
 
-        InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository
-                .findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
-                .orElseThrow(() -> new RuntimeException("Invoice Mahasiswa tidak ditemukan"));
+        for (Object[] row : rawResult) {
 
+            TagihanMhsDto newObj = new TagihanMhsDto();
 
-        TagihanMhsDto dto = new TagihanMhsDto();
-        dto.setKodeInvoice(invoiceMahasiswa.getKodeInvoice());
-        dto.setTanggalTenggat(invoiceMahasiswa.getTanggalTenggat());
-        dto.setTanggalBayar(invoiceMahasiswa.getTanggalBayar());
-        dto.setKodeKomponen(invoicePembayaranKomponenMahasiswa.getInvoiceKomponen().getKodeKomponen());
-        dto.setNamaTagihan(invoicePembayaranKomponenMahasiswa.getInvoiceKomponen().getNama());
-        dto.setNominalTagihan(invoicePembayaranKomponenMahasiswa.getTagihan());
-        dto.setLunas(invoiceMahasiswa.getStatus());
+            // Map each column by its index from the SELECT statement
+            newObj.setKodeInvoice((String) row[0]);
+            newObj.setMetodeBayar((String) row[1]);
+            newObj.setNamaPeriode((String) row[2]);
 
-        return dto;
+            // Handle date/timestamp and numeric types
+            if (row[3] != null) {
+                // Converts java.sql.Timestamp or java.sql.Date to LocalDate
+                newObj.setTanggalTenggat(((java.sql.Date) row[3]).toLocalDate());
+            }
+            if (row[4] != null) {
+                newObj.setTanggalBayar(((java.sql.Date) row[4]).toLocalDate());
+            }
+
+            newObj.setKodeKomponen((String) row[5]);
+            newObj.setNamaTagihan((String) row[6]); // Mapped from ikm.nama
+            newObj.setNominalTagihan((java.math.BigDecimal) row[7]); // Mapped from ipk.tagihan
+            newObj.setLunas((String) row[8]); // Mapped from im.status
+
+            tagihanMhsDtos.add(newObj);
+        }
+
+        return tagihanMhsDtos;
     }
 
     @Override

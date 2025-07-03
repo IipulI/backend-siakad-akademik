@@ -1,5 +1,6 @@
 package com.siakad.service;
 
+import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
 import com.siakad.dto.response.MahasiswaChartDto;
 import com.siakad.dto.response.MahasiswaResDto;
@@ -15,7 +16,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 public interface MahasiswaService {
-    MahasiswaResDto create(MahasiswaReqDto request, MultipartFile fotoProfil, MultipartFile ijazahSekolah, HttpServletRequest servletRequest) throws IOException;
+    MahasiswaResDto create(MahasiswaReqDto request, KeluargaMahasiswaReqDto requestKeluarga, MultipartFile fotoProfil, MultipartFile ijazahSekolah, HttpServletRequest servletRequest) throws IOException;
     Page<MahasiswaResDto> getPaginated(
             String keyword,
             String programStudi,

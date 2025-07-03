@@ -25,7 +25,6 @@ public class MahasiswaPembimbingAkademikSpecification {
             query.distinct(true);
             List<Predicate> predicates = new ArrayList<>();
 
-            // Mandatory enrollment filter
             if (periodeAkademik != null) {
                 Subquery<String> periodeSubquery = query.subquery(String.class);
                 Root<PeriodeAkademik> periodeRoot = periodeSubquery.from(PeriodeAkademik.class);
@@ -41,7 +40,6 @@ public class MahasiswaPembimbingAkademikSpecification {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("periodeMasuk"), periodeSubquery));
             }
 
-            // Optional filters
             if (programStudi != null) {
                 predicates.add(criteriaBuilder.equal(root.get("siakProgramStudi").get("namaProgramStudi"), programStudi));
             }
@@ -66,7 +64,6 @@ public class MahasiswaPembimbingAkademikSpecification {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nama")), "%" + namaMahasiswa.toLowerCase() + "%"));
             }
 
-            // --- NEW LOGIC BLOCK for statusKrs ---
             if (StringUtils.hasText(statusKrs)) {
                 Subquery<Integer> krsSubquery = query.subquery(Integer.class);
                 krsSubquery.select(criteriaBuilder.literal(1));
@@ -75,26 +72,39 @@ public class MahasiswaPembimbingAkademikSpecification {
                         criteriaBuilder.equal(krsSubquery.from(KrsMahasiswa.class).get("siakPeriodeAkademik").get("namaPeriode"), periodeAkademik)
                 );
 
-                // If statusKrs is "Diajukan", it means any status that is NOT "Draft".
                 if ("Diajukan".equalsIgnoreCase(statusKrs)) {
                     krsSubquery.where(krsSubquery.getRestriction(), criteriaBuilder.notEqual(krsSubquery.from(KrsMahasiswa.class).get("status"), "Diajukan"));
                     predicates.add(criteriaBuilder.exists(krsSubquery));
                 }
-                // If statusKrs is "Disetujui", it means the status must be exactly that.
                 else if ("Disetujui".equalsIgnoreCase(statusKrs)) {
                     krsSubquery.where(krsSubquery.getRestriction(), criteriaBuilder.equal(krsSubquery.from(KrsMahasiswa.class).get("status"), "Disetujui"));
                     predicates.add(criteriaBuilder.exists(krsSubquery));
                 }
             }
-            // --- END OF NEW LOGIC BLOCK ---
 
             if (hasPembimbing != null) {
                 Subquery<Integer> paSubquery = query.subquery(Integer.class);
+                Root<PembimbingAkademik> paRoot = paSubquery.from(PembimbingAkademik.class);
                 paSubquery.select(criteriaBuilder.literal(1));
-                paSubquery.where(
-                        criteriaBuilder.equal(paSubquery.from(PembimbingAkademik.class).get("siakMahasiswa"), root),
-                        criteriaBuilder.equal(paSubquery.from(PembimbingAkademik.class).get("siakPeriodeAkademik").get("periodeAkademik"), periodeAkademik)
-                );
+
+                List<Predicate> subqueryPredicates = new ArrayList<>();
+
+                subqueryPredicates.add(criteriaBuilder.equal(paRoot.get("siakMahasiswa"), root));
+
+                if (periodeAkademikId != null) {
+                    subqueryPredicates.add(criteriaBuilder.equal(
+                            paRoot.get("siakPeriodeAkademik").get("id"),
+                            periodeAkademikId
+                    ));
+                } else if (StringUtils.hasText(periodeAkademik)) {
+                    subqueryPredicates.add(criteriaBuilder.equal(
+                            paRoot.get("siakPeriodeAkademik").get("namaPeriode"),
+                            periodeAkademik
+                    ));
+                }
+
+                paSubquery.where(criteriaBuilder.and(subqueryPredicates.toArray(new Predicate[0])));
+
                 predicates.add(hasPembimbing ? criteriaBuilder.exists(paSubquery) : criteriaBuilder.not(criteriaBuilder.exists(paSubquery)));
             }
 

@@ -1,5 +1,6 @@
     package com.siakad.service.impl;
 
+    import com.siakad.dto.request.KeluargaMahasiswaReqDto;
     import com.siakad.dto.request.MahasiswaReqDto;
     import com.siakad.dto.response.MahasiswaChartDto;
     import com.siakad.dto.response.MahasiswaResDto;
@@ -62,10 +63,12 @@
         // In a real app, these would come from the database (e.g., from ProgramStudi)
         private static final int SKS_BATAS_LULUS = 144;
         private static final BigDecimal IP_MINIMUM = new BigDecimal("2.50");
+        private final KeluargaMahasiswaRepository keluargaMahasiswaRepository;
 
         @Override
         @Transactional
         public MahasiswaResDto create(MahasiswaReqDto request,
+                                      KeluargaMahasiswaReqDto requestKeluarga,
                                       MultipartFile fotoProfil,
                                       MultipartFile ijazahSekolah,
                                       HttpServletRequest servletRequest) throws IOException {
@@ -100,6 +103,11 @@
             mahasiswa.setSiakUser(user);
             mahasiswa.setIsDeleted(false);
             mahasiswaRepository.save(mahasiswa);
+
+            KeluargaMahasiswa keluargaMahasiswa = mapper.toEntity(requestKeluarga);
+            keluargaMahasiswa.setIsDeleted(false);
+            keluargaMahasiswa.setSiakMahasiswa(mahasiswa);
+            keluargaMahasiswaRepository.save(keluargaMahasiswa);
 
             service.saveUserActivity(servletRequest, MessageKey.CREATE_MAHASISWA);
 
