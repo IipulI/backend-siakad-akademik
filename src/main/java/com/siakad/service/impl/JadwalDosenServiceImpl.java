@@ -2,7 +2,6 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.request.*;
 import com.siakad.dto.response.GetDosenDto;
-//import com.siakad.dto.response.JadwalDsnDto;
 import com.siakad.dto.response.JadwalDto;
 import com.siakad.dto.response.RuanganResDto;
 import com.siakad.dto.response.JadwalUjianResDto;
@@ -171,5 +170,20 @@ public class JadwalDosenServiceImpl implements JadwalDosenService {
         jadwalUjian.setJamSelesai(request.getJamSelesai());
         jadwalUjian.setTanggal(request.getTanggalJadwal());
         jadwalUjianRepository.save(jadwalUjian);
+    }
+
+    @Override
+    public boolean deleteJadwalUjian(UUID kelasId, UUID id, HttpServletRequest servletRequest) {
+        kelasKuliahRepository.findByIdAndIsDeletedFalse(kelasId)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
+
+        JadwalUjian jadwalUjian = jadwalUjianRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Jadwal ujian tidak ditemukkan"));
+
+        jadwalUjian.setIsDeleted(false);
+        jadwalUjianRepository.save(jadwalUjian);
+
+        service.saveUserActivity(servletRequest, MessageKey.DELETE_JADWAL_KULIAH);
+        return true;
     }
 }

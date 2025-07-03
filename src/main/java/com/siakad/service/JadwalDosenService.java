@@ -19,4 +19,5 @@ public interface JadwalDosenService {
 
     List<JadwalUjianResDto> getAllJadwalUjian(UUID id);
     void saveJadwalUjian(UUID id, JadwalUjianReqDto request, HttpServletRequest servletRequest);
+    boolean deleteJadwalUjian(UUID kelasId, UUID id, HttpServletRequest servletRequest);
 }

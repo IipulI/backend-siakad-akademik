@@ -404,7 +404,31 @@ public class KelasKuliahController {
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiResDto.<JadwalUjianResDto>builder()
                             .status(MessageKey.SUCCESS.getMessage())
-                            .status(MessageKey.CREATED.getMessage())
+                            .message(MessageKey.CREATED.getMessage())
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e){
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Hapus jadwal ujian kelas")
+    @DeleteMapping("{id}/jadwal-ujian/{jadwalId}")
+    public ResponseEntity<ApiResDto<Objects>> delete(
+            @PathVariable UUID id,
+            @PathVariable UUID jadwalId,
+            HttpServletRequest servletRequest
+    ){
+        try {
+            jadwalDosenService.deleteJadwalUjian(id, jadwalId, servletRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<Objects>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.DELETED.getMessage())
                             .build()
             );
         }
