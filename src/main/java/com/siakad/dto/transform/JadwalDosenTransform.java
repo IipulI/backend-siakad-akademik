@@ -18,6 +18,7 @@ import java.util.List;
 public interface JadwalDosenTransform {
     JadwalKuliah toEntity(JadwalDosenReqDto dto);
 
+
     List<JadwalDto> toDto(List<JadwalKuliah> jadwalKuliahList);
 
     void toEntity(JadwalDosenReqDto dto, @MappingTarget JadwalKuliah entity);

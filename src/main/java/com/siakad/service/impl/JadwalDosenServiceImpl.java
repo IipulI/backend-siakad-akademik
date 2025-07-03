@@ -1,9 +1,16 @@
 package com.siakad.service.impl;
 
 import com.siakad.dto.request.*;
+import com.siakad.dto.response.GetDosenDto;
+//import com.siakad.dto.response.JadwalDsnDto;
 import com.siakad.dto.response.JadwalDto;
+import com.siakad.dto.response.RuanganResDto;
 import com.siakad.dto.response.JadwalUjianResDto;
 import com.siakad.dto.transform.JadwalDosenTransform;
+import com.siakad.entity.Dosen;
+import com.siakad.entity.JadwalKuliah;
+import com.siakad.entity.KelasKuliah;
+import com.siakad.entity.Ruangan;
 import com.siakad.dto.transform.KelasKuliahTranform;
 import com.siakad.entity.*;
 import com.siakad.enums.ExceptionType;
@@ -71,12 +78,50 @@ public class JadwalDosenServiceImpl implements JadwalDosenService {
 
     @Override
     public List<JadwalDto> getAll(UUID id) {
+        // Validasi kelas kuliah
         kelasKuliahRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
 
+        // Ambil semua jadwal berdasarkan kelas
         List<JadwalKuliah> all = jadwalKuliahRepository.findAllByKelasKuliahIdAndIsDeletedFalse(id);
-        return mapper.toDto(all);
+
+        // Manual mapping ke JadwalDto
+        return all.stream().map(jadwal -> {
+            return JadwalDto.builder()
+                    .id(jadwal.getId())
+                    .hari(jadwal.getHari())
+                    .jamMulai(jadwal.getJamMulai().toString())
+                    .jamSelesai(jadwal.getJamSelesai().toString())
+                    .jenisPertemuan(jadwal.getJenisPertemuan())
+                    .metodePembelajaran(jadwal.getMetodePembelajaran())
+                    .siakRuangan(mapRuangan(jadwal.getSiakRuangan()))
+                    .siakDosen(mapDosen(jadwal.getSiakDosen()))
+                    .build();
+        }).toList();
     }
+
+    private RuanganResDto mapRuangan(Ruangan ruangan) {
+        if (ruangan == null) return null;
+
+        RuanganResDto dto = new RuanganResDto();
+        dto.setId(ruangan.getId());
+        dto.setNamaRuangan(ruangan.getNamaRuangan());
+        dto.setKapasitas(ruangan.getKapasitas());
+        dto.setLantai(ruangan.getLantai());
+        return dto;
+    }
+
+    private GetDosenDto mapDosen(Dosen dosen) {
+        if (dosen == null) return null;
+
+        GetDosenDto dto = new GetDosenDto();
+        dto.setId(dosen.getId());
+        dto.setNamaDosen(dosen.getNama());
+        dto.setNidn(dosen.getNidn());
+        return dto;
+    }
+
+
 
     @Override
     public List<JadwalDto> getByDosenId(UUID id, UUID dosenId) {

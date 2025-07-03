@@ -787,6 +787,7 @@ public class KrsServiceImpl implements KrsService {
             String jam = jadwalKuliah.getJamMulai() + " - " + jadwalKuliah.getJamSelesai();
             krsDto.setJam(jam);
             krsDto.setRuangan(jadwalKuliah.getSiakRuangan().getNamaRuangan());
+            krsDto.setHari(jadwalKuliah.getHari());
 
             Dosen dosen = jadwalKuliah.getSiakDosen();
             String namaDosen = (dosen != null) ? dosen.getNama() : "-";

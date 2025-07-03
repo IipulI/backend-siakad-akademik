@@ -11,7 +11,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface JadwalKuliahTransform {
@@ -24,12 +23,15 @@ public interface JadwalKuliahTransform {
 
     void toEntity(JadwalKuliahReqDto dto, @MappingTarget JadwalKuliah entity);
 
+
+
     JadwalDto toJadwalDto(JadwalKuliah jadwal);
+
 
     default DosenDto toDosenPengajarDto(Dosen dosen, List<JadwalKuliah> jadwalList) {
         List<JadwalDto> jadwalDtoList = jadwalList.stream()
                 .map(this::toJadwalDto)
-                .collect(Collectors.toList());
+                .toList();
 
         return new DosenDto(
                 dosen.getId(),
