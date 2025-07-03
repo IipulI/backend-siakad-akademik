@@ -1,6 +1,7 @@
 package com.siakad.controller.akademik;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -25,10 +27,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+
+@Slf4j
 @Tag(name = "Mahasiswa")
 @RestController
 @RequestMapping("/akademik/mahasiswa")
@@ -57,7 +62,14 @@ public class MahasiswaController {
 
         try {
             MahasiswaReqDto request = objectMapper.readValue(requestJson, MahasiswaReqDto.class);
-            KeluargaMahasiswaReqDto requestKeluarga = objectMapper.readValue(requestJsonKeluarga, KeluargaMahasiswaReqDto.class);
+
+            List<KeluargaMahasiswaReqDto> requestKeluarga = objectMapper.readValue(
+                    requestJsonKeluarga,
+                    new TypeReference<List<KeluargaMahasiswaReqDto>>() {}
+            );
+
+            log.debug("RAW requestKeluarga: {}", requestJsonKeluarga);
+
 
             service.create(request, requestKeluarga, fotoProfil, ijazahSekolah, servletRequest);
 
@@ -67,13 +79,14 @@ public class MahasiswaController {
                             .message(MessageKey.CREATED.getMessage())
                             .build());
         } catch (JsonProcessingException e) {
-            throw new ApplicationException(ExceptionType.BAD_REQUEST, "Invalid JSON format in 'request'");
+            throw new ApplicationException(ExceptionType.BAD_REQUEST, "Invalid JSON format in 'requestKeluarga'");
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR,e.getMessage());
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
 
     @Operation(summary = "Get Foto Profil")
     @GetMapping("/{id}/foto-profil")
@@ -196,6 +209,7 @@ public class MahasiswaController {
             @RequestPart(value = "fotoProfil", required = false) MultipartFile fotoProfil,
             @RequestPart(value = "ijazahSekolah", required = false) MultipartFile ijazahSekolah,
             @RequestPart("request") String requestJson,
+            @RequestPart("requestKeluarga") String requestJsonKeluarga,
             HttpServletRequest servletRequest
             ) {
         try {
