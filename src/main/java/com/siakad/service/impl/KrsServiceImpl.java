@@ -1,16 +1,12 @@
 package com.siakad.service.impl;
 
-import com.siakad.dto.request.KrsReqDto;
-import com.siakad.dto.request.PesertaKelasReqDto;
-import com.siakad.dto.request.UpdateStatusKrsReqDto;
+import com.siakad.dto.request.*;
 import com.siakad.dto.response.*;
-import com.siakad.dto.request.PindahKelasReqDto;
 import com.siakad.dto.transform.helper.EligibleMahasiswaMapper;
 import com.siakad.dto.transform.KrsTransform;
 import com.siakad.dto.transform.PesertaKelasTransform;
 import com.siakad.entity.*;
 import com.siakad.entity.service.KelasKuliahSpecification;
-import com.siakad.entity.service.KrsSpecification;
 import com.siakad.entity.service.MahasiswaSpecification;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.KrsKey;
@@ -29,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -55,6 +52,7 @@ public class KrsServiceImpl implements KrsService {
     private final HasilStudiRepository hasilStudiRepository;
     private final PembimbingAkademikRepository pembimbingAkademikRepository;
     private final JadwalKuliahRepository jadwalKuliahRepository;
+    private final SkalaPenilaianRepository skalaPenilaianRepository;
     private final JenjangRepository jenjangRepository;
     private final KrsTransform krsTransform;
     private final EligibleMahasiswaMapper eligibleMahasiswaMapper;
@@ -856,6 +854,46 @@ public class KrsServiceImpl implements KrsService {
         }
 
         return dtoList;
+    }
+
+    @Override
+    public void updateSuntingKrs(UUID krsId, EditSuntingDto dto, HttpServletRequest servletRequest) {
+
+        KrsRincianMahasiswa rincian = krsRincianMahasiswaRepository
+                .findByIdAndIsDeletedFalse(krsId)
+                .orElseThrow(() -> new RuntimeException("Rincian KRS tidak ditemukan"));
+
+        // Set nilai input langsung dari dosen
+        BigDecimal nilai = dto.getNilaiNumerik();
+        rincian.setNilai(nilai);
+
+        // Hitung nilai final (dibulatkan)
+        int nilaiFinal = nilai.setScale(0, RoundingMode.HALF_UP).intValue();
+
+        // Ambil total SKS
+        int sks = rincian.getSiakKelasKuliah().getSiakMataKuliah().getSksTatapMuka()
+                + rincian.getSiakKelasKuliah().getSiakMataKuliah().getSksPraktikum();
+
+        // Cari skala penilaian berdasarkan nilai
+        SkalaPenilaian skala = skalaPenilaianRepository.findAll().stream()
+                .filter(s -> !s.getIsDeleted()
+                        && s.getNilaiMin().compareTo(BigDecimal.valueOf(nilaiFinal)) <= 0
+                        && s.getNilaiMax().compareTo(BigDecimal.valueOf(nilaiFinal)) >= 0)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Skala penilaian tidak ditemukan untuk nilai: " + nilaiFinal));
+
+        // Set otomatis nilai lain
+        rincian.setHurufMutu(skala.getHurufMutu());
+        rincian.setAngkaMutu(skala.getAngkaMutu());
+        rincian.setNilaiAkhir(skala.getAngkaMutu().multiply(BigDecimal.valueOf(sks)));
+        rincian.setStatus(nilaiFinal >= 50 ? KrsKey.LULUS.getLabel() : KrsKey.GAGAL.getLabel());
+        rincian.setUpdatedAt(LocalDateTime.now());
+
+        // Simpan
+        krsRincianMahasiswaRepository.save(rincian);
+
+        // Simpan aktivitas user
+        service.saveUserActivity(servletRequest, MessageKey.UPDATE_KRS);
     }
 
 

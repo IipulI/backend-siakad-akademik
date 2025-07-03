@@ -1,5 +1,6 @@
 package com.siakad.service;
 
+import com.siakad.dto.request.EditMahasiswaReqDto;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
 import com.siakad.dto.response.MahasiswaChartDto;
@@ -44,7 +45,7 @@ public interface MahasiswaService {
     byte[] getFotoProfil(UUID id);
     byte[] getIjazahSekolah(UUID id);
     MahasiswaResDto getOne(UUID id);
-    MahasiswaResDto update(UUID id, MultipartFile fotoProfil, MultipartFile ijazahSekolah, MahasiswaReqDto request, HttpServletRequest servletRequest) throws IOException;
+    MahasiswaResDto update(UUID id, MultipartFile fotoProfil, MultipartFile ijazahSekolah, EditMahasiswaReqDto request, HttpServletRequest servletRequest) throws IOException;
     void delete(UUID id, HttpServletRequest servletRequest);
     User createUserWithRole(String username, String email, String password, RoleType roleType);
 

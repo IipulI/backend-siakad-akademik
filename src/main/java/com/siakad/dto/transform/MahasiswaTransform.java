@@ -1,5 +1,7 @@
 package com.siakad.dto.transform;
 
+import com.siakad.dto.request.EditKeluargaMahasiswaReqDto;
+import com.siakad.dto.request.EditMahasiswaReqDto;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
 import com.siakad.dto.response.KeluargaMahasiswaResDto;
@@ -12,22 +14,33 @@ import org.mapstruct.MappingTarget;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MahasiswaTransform {
-    Mahasiswa toEntity(MahasiswaReqDto dto);
+    Mahasiswa toEntity(MahasiswaReqDto reqDto);
+
+    Mahasiswa toEntity(EditKeluargaMahasiswaReqDto dto);
 
     @Mapping(source = "siakProgramStudi.namaProgramStudi", target = "namaProgramStudi")
     @Mapping(source = "siakProgramStudi.siakJenjang.nama", target = "jenjang")
     @Mapping(source = "keluarga", target = "keluargaMahasiswaList")
     MahasiswaResDto toDto(Mahasiswa mahasiswa);
 
-    void toEntity(MahasiswaReqDto dto, @MappingTarget Mahasiswa entity);
+    void toEntity(EditKeluargaMahasiswaReqDto dto, @MappingTarget KeluargaMahasiswa entity);
 
+    // Tambahan untuk edit
+    void toEntity(EditMahasiswaReqDto dto, @MappingTarget Mahasiswa entity);
+
+    KeluargaMahasiswa toEntityKeluarga(EditKeluargaMahasiswaReqDto dto);
 
     KeluargaMahasiswa toEntity(KeluargaMahasiswaReqDto dto);
     KeluargaMahasiswaResDto toDto(KeluargaMahasiswa entity);
-    void toEntity(KeluargaMahasiswaReqDto dto,  @MappingTarget KeluargaMahasiswa entity);
+    void toEntity(KeluargaMahasiswaReqDto dto, @MappingTarget KeluargaMahasiswa entity);
+
+    // Mapping list
+    List<KeluargaMahasiswa> toEntityList(List<KeluargaMahasiswaReqDto> dtoList);
+    List<KeluargaMahasiswaResDto> toDtoList(List<KeluargaMahasiswa> entityList);
 
     default byte[] map(MultipartFile file) {
         try {
@@ -37,3 +50,4 @@ public interface MahasiswaTransform {
         }
     }
 }
+

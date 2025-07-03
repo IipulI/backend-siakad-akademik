@@ -1,5 +1,7 @@
     package com.siakad.service.impl;
 
+    import com.siakad.dto.request.EditKeluargaMahasiswaReqDto;
+    import com.siakad.dto.request.EditMahasiswaReqDto;
     import com.siakad.dto.request.KeluargaMahasiswaReqDto;
     import com.siakad.dto.request.MahasiswaReqDto;
     import com.siakad.dto.response.MahasiswaChartDto;
@@ -105,11 +107,13 @@
 
             mahasiswaRepository.save(mahasiswa);
 
-            for (KeluargaMahasiswaReqDto keluargaDto : requestKeluarga) {
-                KeluargaMahasiswa keluargaMahasiswa = mapper.toEntity(keluargaDto);
-                keluargaMahasiswa.setIsDeleted(false);
-                keluargaMahasiswa.setSiakMahasiswa(mahasiswa);
-                keluargaMahasiswaRepository.save(keluargaMahasiswa);
+            if (requestKeluarga != null && !requestKeluarga.isEmpty()) {
+                for (KeluargaMahasiswaReqDto keluargaDto : requestKeluarga) {
+                    KeluargaMahasiswa keluargaMahasiswa = mapper.toEntity(keluargaDto);
+                    keluargaMahasiswa.setIsDeleted(false);
+                    keluargaMahasiswa.setSiakMahasiswa(mahasiswa);
+                    keluargaMahasiswaRepository.save(keluargaMahasiswa);
+                }
             }
 
             service.saveUserActivity(servletRequest, MessageKey.CREATE_MAHASISWA);
@@ -172,15 +176,23 @@
         public MahasiswaResDto getOne(UUID id) {
             Mahasiswa mahasiswa = mahasiswaRepository.findByIdAndIsDeletedFalse(id)
                     .orElseThrow(() -> new ApplicationException(ExceptionType.USER_NOT_FOUND, ExceptionType.USER_NOT_FOUND.getFormattedMessage("With id: " + id)));
+
+            List<KeluargaMahasiswa> keluargaAktif = mahasiswa.getKeluarga()
+                    .stream()
+                    .filter(k -> !Boolean.TRUE.equals(k.getIsDeleted()))
+                    .toList();
+            mahasiswa.setKeluarga(keluargaAktif);
+
             return mapper.toDto(mahasiswa);
         }
+
 
         @Override
         @Transactional
         public MahasiswaResDto update(UUID id,
                                       MultipartFile fotoProfil,
                                       MultipartFile ijazahSekolah,
-                                      MahasiswaReqDto request,
+                                      EditMahasiswaReqDto request,
                                       HttpServletRequest servletRequest) throws IOException {
 
             var programStudi = programStudiRepository.findByIdAndIsDeletedFalse(request.getSiakProgramStudiId())
@@ -208,6 +220,7 @@
 
             mapper.toEntity(request, mahasiswa);
             mahasiswa.setUpdatedAt(LocalDateTime.now());
+
             if (fotoProfil != null && !fotoProfil.isEmpty()) {
                 mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
             }
@@ -215,13 +228,51 @@
             if (ijazahSekolah != null && !ijazahSekolah.isEmpty()) {
                 mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
             }
+
             mahasiswa.setSiakProgramStudi(programStudi);
             mahasiswa.setKurikulum(request.getKurikulum());
+
+            // ========== PERLAKUAN UNTUK DATA KELUARGA ==========
+            List<EditKeluargaMahasiswaReqDto> keluargaList = request.getKeluargaMahasiswaList();
+
+            if (keluargaList == null || keluargaList.isEmpty()) {
+                // ❌ Tidak ada yang dikirim → soft delete semua keluarga
+                List<KeluargaMahasiswa> existingKeluarga = keluargaMahasiswaRepository.findAllBySiakMahasiswaIdAndIsDeletedFalse(mahasiswa.getId());
+                for (KeluargaMahasiswa keluarga : existingKeluarga) {
+                    keluarga.setIsDeleted(true);
+                    keluargaMahasiswaRepository.save(keluarga);
+                }
+            } else {
+                for (EditKeluargaMahasiswaReqDto keluargaDto : keluargaList) {
+                    if (keluargaDto.getId() != null) {
+                        KeluargaMahasiswa keluarga = keluargaMahasiswaRepository.findByIdAndIsDeletedFalse(keluargaDto.getId())
+                                .orElseThrow(() -> new RuntimeException("Keluarga tidak ditemukan dengan ID: " + keluargaDto.getId()));
+
+                        if (Boolean.TRUE.equals(keluargaDto.getIsDeleted())) {
+                            // ✅ Soft delete per item
+                            keluarga.setIsDeleted(true);
+                        } else {
+                            // ✅ Update data
+                            mapper.toEntity(keluargaDto, keluarga);
+                        }
+                        keluargaMahasiswaRepository.save(keluarga);
+                    } else {
+                        // ✅ Tambah baru
+                        KeluargaMahasiswa keluargaBaru = mapper.toEntityKeluarga(keluargaDto);
+                        keluargaBaru.setSiakMahasiswa(mahasiswa);
+                        keluargaBaru.setIsDeleted(false);
+                        keluargaMahasiswaRepository.save(keluargaBaru);
+                    }
+                }
+            }
+
             mahasiswaRepository.save(mahasiswa);
             service.saveUserActivity(servletRequest, MessageKey.UPDATE_MAHASISWA);
 
             return mapper.toDto(mahasiswa);
         }
+
+
 
         @Override
         public void delete(UUID id, HttpServletRequest servletRequest) {
