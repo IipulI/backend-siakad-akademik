@@ -9,6 +9,7 @@ import com.siakad.dto.transform.helper.EligibleMahasiswaMapper;
 import com.siakad.dto.transform.KrsTransform;
 import com.siakad.dto.transform.PesertaKelasTransform;
 import com.siakad.entity.*;
+import com.siakad.entity.service.KelasKuliahSpecification;
 import com.siakad.entity.service.KrsSpecification;
 import com.siakad.entity.service.MahasiswaSpecification;
 import com.siakad.enums.ExceptionType;
@@ -55,8 +56,7 @@ public class KrsServiceImpl implements KrsService {
     private final PembimbingAkademikRepository pembimbingAkademikRepository;
     private final JadwalKuliahRepository jadwalKuliahRepository;
     private final JenjangRepository jenjangRepository;
-    private final KrsTransform krsTransform; // Inject your MapStruct mapper
-
+    private final KrsTransform krsTransform;
     private final EligibleMahasiswaMapper eligibleMahasiswaMapper;
     private final UserActivityService userActivityService;
 
@@ -106,13 +106,20 @@ public class KrsServiceImpl implements KrsService {
     public void save(KrsReqDto dto, HttpServletRequest servletRequest) {
         User user = service.getCurrentUser();
 
+        UUID mahasiswaId = user.getSiakMahasiswa().getId();
+
         PeriodeAkademik activePeriode = periodeAkademikRepository.findFirstByStatusActive()
                 .orElseThrow(() -> new RuntimeException("Tidak ada periode aktif"));
 
         KrsMahasiswa entity;
 
-        if (krsMahasiswaRepository.existsBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId(), activePeriode.getId())) {
-            entity = krsMahasiswaRepository.findBySiakMahasiswa_IdAndSiakPeriodeAkademik_Id(user.getSiakMahasiswa().getId(), activePeriode.getId())
+        krsMahasiswaRepository
+                .findBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(mahasiswaId, activePeriode.getId()).orElseThrow(
+                         ()-> new ApplicationException(ExceptionType.BAD_REQUEST, "Kamu sudah mengisi untuk periode ini")
+                 );
+
+        if (krsMahasiswaRepository.existsBySiakMahasiswa_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId())) {
+            entity = krsMahasiswaRepository.findBySiakMahasiswa_IdAndIsDeletedFalse(user.getSiakMahasiswa().getId())
                     .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan: " + user.getSiakMahasiswa().getId()));
         } else {
             entity = new KrsMahasiswa();
@@ -284,25 +291,6 @@ public class KrsServiceImpl implements KrsService {
     }
 
 
-//    @Override
-//    public Page<KrsResDto> getPaginated(String keyword, Pageable pageable) {
-//        KrsSpecification specBuilder = new KrsSpecification();
-//
-//        User user = service.getCurrentUser();
-//        Mahasiswa mahasiswa = user.getSiakMahasiswa();
-//
-//        List<String> semesters = switch (mahasiswa.getSemester()) {
-//            case 1, 3, 5, 7, 9, 11, 13 -> Arrays.asList("1", "3", "5", "7", "9", "11", "13");
-//            case 2, 4, 6, 8, 10, 12, 14 -> Arrays.asList("2", "4", "6", "8", "10", "12");
-//            default -> Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
-//        };
-//
-//        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(keyword, semesters, mahasiswa.getId());
-//        Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
-//        return all.map(mapper::toDto);
-//    }
-
-
     @Override
     public Page<KrsResDto> getPaginated(String keyword, Pageable pageable) {
         User user = userActivityService.getCurrentUser();
@@ -332,6 +320,37 @@ public class KrsServiceImpl implements KrsService {
         return new PageImpl<>(finalResponseDtoList, pageable, projectionPage.getTotalElements());
 
     }
+
+    //@Override
+    //    public Page<KrsResDto> getPaginated(String mataKuliah, Pageable pageable) {
+    //        KrsSpecification specBuilder = new KrsSpecification();
+    //
+    //        User user = service.getCurrentUser();
+    //        Mahasiswa mahasiswa = user.getSiakMahasiswa();
+    //
+    //        List<String> semesters = switch (mahasiswa.getSemester()) {
+    //            case 1, 3, 5, 7, 9, 11, 13 -> Arrays.asList("1", "3", "5", "7", "9", "11", "13");
+    //            case 2, 4, 6, 8, 10, 12, 14 -> Arrays.asList("2", "4", "6", "8", "10", "12");
+    //            default -> Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
+    //        };
+    //
+    //        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(mataKuliah, semesters, mahasiswa.getId());
+    //        Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
+    //        return all.map(mapper::toDto);
+    //    }
+
+    @Override
+    public Page<KrsResDto> getPaginatedKelas(String mataKuliah, Pageable pageable) {
+
+        String programStudi = service.getCurrentUser().getSiakMahasiswa().getSiakProgramStudi().getNamaProgramStudi();
+
+        PeriodeAkademik periodeAktif = periodeAkademikRepository.findFirstByStatusActive().orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Tidak ada periode Aktif"));
+        KelasKuliahSpecification specBuilder = new KelasKuliahSpecification();
+        Specification<KelasKuliah> spec = specBuilder.entitySearchKelas(mataKuliah, programStudi, periodeAktif.getNamaPeriode());
+        Page<KelasKuliah> all = kelasKuliahRepository.findAll(spec, pageable);
+        return all.map(mapper::toDtoKelas);
+    }
+
 
     @Override
     public KrsMenungguResDto getAllKrsByStatusMenunggu() {

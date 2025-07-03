@@ -5,7 +5,9 @@ import com.siakad.dto.request.JadwalDosenReqDto;
 import com.siakad.dto.response.JadwalDosenResDto;
 import com.siakad.dto.response.JadwalDto;
 import com.siakad.dto.response.JadwalKuliahResDto;
+import com.siakad.dto.response.JadwalUjianResDto;
 import com.siakad.entity.JadwalKuliah;
+import com.siakad.entity.JadwalUjian;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -24,4 +26,7 @@ public interface JadwalDosenTransform {
     @Mapping(source = "siakKelasKuliah.nama", target = "kelas")
     GetJadwalResDto toGetJadwalResDto(JadwalKuliah jadwalKuliah);
     List<GetJadwalResDto> toGetJadwalResDtoList(List<JadwalKuliah> entities);
+
+    // Jadwal ujian
+    List<JadwalUjianResDto> toJadwalUjianDto(List<JadwalUjian> jadwalUjianList);
 }

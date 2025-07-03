@@ -25,12 +25,12 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
 
     Optional<KrsMahasiswa> findBySiakMahasiswa_IdAndSiakPeriodeAkademikIdAndIsDeletedFalse(UUID siakMahasiswaId, UUID periodeAkademikId);
 
-    boolean existsBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(UUID siakMahasiswa_id, UUID siakPeriodeAkademik_id);
+    boolean existsBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswa_id);
 
     @Query("""
     SELECT krm FROM KrsRincianMahasiswa krm 
     JOIN krm.siakKrsMahasiswa km 
-    WHERE (km.status = 'Diajukan' OR km.status = 'Draft')  
+    WHERE (km.status = 'Diajukan' OR km.status = 'Draft' OR km.status = 'Disetujui')  
       AND km.siakPeriodeAkademik.status = 'ACTIVE' 
       AND km.siakMahasiswa.id = :mahasiswaId
     """)
@@ -79,4 +79,6 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
     List<Object[]> findSksDiambilPerSemester(UUID mahasiswaId);
 
     Optional<KrsMahasiswa> findBySiakMahasiswaAndSiakPeriodeAkademik(Mahasiswa mahasiswa, PeriodeAkademik periodeAkademik);
+
+    Optional<KrsMahasiswa> findBySiakMahasiswa_IdAndSiakPeriodeAkademik_IdAndIsDeletedFalse(UUID mahasiswaId, UUID periodeId);
 }

@@ -1,6 +1,7 @@
 package com.siakad.service.impl;
 
 import com.siakad.dto.response.JadwalMingguanResDto; // Your DTO
+import com.siakad.dto.response.JadwalUjianResDto;
 import com.siakad.entity.*;
 import com.siakad.repository.JadwalKuliahRepository;
 import com.siakad.repository.KrsRincianMahasiswaRepository;
@@ -75,7 +76,7 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
     }
 
     @Override
-    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanDosen(UUID dosenId, String namaPeriode){
+    public Map<String, List<JadwalMingguanResDto>> getJadwalMingguanDosen(UUID dosenId, UUID periodeAkademikId){
         List<String> daysOfWeek = Arrays.asList("senin", "selasa", "rabu", "kamis", "jumat", "sabtu");
 
         Map<String, List<JadwalMingguanResDto>> jadwalByDay = new LinkedHashMap<>();
@@ -84,7 +85,7 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
         }
 
         List<JadwalKuliah> semuaJadwalRelevant = jadwalKuliahRepository
-                .getjadwalKuliahDosenMingguan(dosenId, namaPeriode);
+                .getjadwalKuliahDosenMingguan(dosenId, periodeAkademikId);
 
         for (JadwalKuliah jadwal : semuaJadwalRelevant) {
             JadwalMingguanResDto itemDto = mapToJadwalDto(jadwal);
@@ -100,10 +101,15 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
         return jadwalByDay;
     }
 
+//    @Override
+//    public List<JadwalUjianResDto> getJadwalUjianMahasiswa(UUID mahasiswaId){
+//
+//    }
+
     @Override
-    public List<JadwalMingguanResDto> getJadwalHarianDosen(UUID dosenId, String namaPeriode, String hari) {
+    public List<JadwalMingguanResDto> getJadwalHarianDosen(UUID dosenId, UUID periodeAkademikId, String hari) {
         List<JadwalKuliah> jadwalHarianList = jadwalKuliahRepository
-                .getjadwalKuliahDosenHarian(dosenId, namaPeriode, hari);
+                .getjadwalKuliahDosenHarian(dosenId, periodeAkademikId, hari);
 
         return jadwalHarianList.stream()
                 .map(this::mapToJadwalDto)

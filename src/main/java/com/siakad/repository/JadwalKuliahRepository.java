@@ -81,35 +81,35 @@ public interface JadwalKuliahRepository extends JpaRepository<JadwalKuliah, UUID
      * Finds all schedule entries on current Dosen id.
      * Also uses JOIN FETCH for performance and compares the day case-insensitively.
      * @param dosenId ID of Dosen
-     * @param namaPeriode Name of Periode Akademik
+     * @param periodeId ID of Periode Akademik
      * @return A list of JadwalKuliah entities for that day.
      */
     @Query("SELECT j FROM JadwalKuliah j " +
             "JOIN j.siakKelasKuliah kk " +
             "WHERE j.siakDosen.id = :dosenId " +
-            "AND kk.siakPeriodeAkademik.namaPeriode = :namaPeriode " +
+            "AND kk.siakPeriodeAkademik.id = :periodeId " +
             "AND j.isDeleted = false")
     List<JadwalKuliah> getjadwalKuliahDosenMingguan(
             @Param("dosenId") UUID dosenId,
-            @Param("namaPeriode") String namaPeriode);
+            @Param("periodeId") UUID periodeId);
 
     /**
      * Finds all schedule entries on a specific day and current Dosen id.
      * Also uses JOIN FETCH for performance and compares the day case-insensitively.
      * @param dosenId ID of Dosen
-     * @param namaPeriode Name of Periode Akademik
+     * @param periodeId ID of Periode Akademik
      * @param hari The day of the week to filter by (e.g., "Senin").
      * @return A list of JadwalKuliah entities for that day.
      */
     @Query("SELECT j FROM JadwalKuliah j " +
             "JOIN j.siakKelasKuliah kk " +
             "WHERE j.siakDosen.id = :dosenId " +
-            "AND kk.siakPeriodeAkademik.namaPeriode = :namaPeriode " +
+            "AND kk.siakPeriodeAkademik.id = :periodeId " +
             "AND lower(j.hari) = lower(:hari) " +
             "AND j.isDeleted = false")
     List<JadwalKuliah> getjadwalKuliahDosenHarian(
             @Param("dosenId") UUID dosenId,
-            @Param("namaPeriode") String namaPeriode,
+            @Param("periodeId") UUID periodeId,
             @Param("hari") String hari
     );
 

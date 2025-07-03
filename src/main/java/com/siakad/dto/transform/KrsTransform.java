@@ -77,17 +77,14 @@ package com.siakad.dto.transform;
 
 import com.siakad.dto.request.KrsReqDto;
 import com.siakad.dto.request.PesertaKelasReqDto;
-import com.siakad.dto.request.PindahKelasReqDto; // Keep if this is used by toEntityRincianPeserta
+import com.siakad.dto.request.PindahKelasReqDto;
 import com.siakad.dto.response.KrsMenungguResDto;
 import com.siakad.dto.response.KrsResDto;
 import com.siakad.dto.response.MataKuliahResDto;
-import com.siakad.dto.response.KelasKuliahWithTakenStatusDto; // Import internal projection DTO
-import com.siakad.dto.response.PrasyaratMataKuliahDto; // NEW: Import PrasyaratMataKuliahDto
+import com.siakad.dto.response.KelasKuliahWithTakenStatusDto;
+import com.siakad.dto.response.PrasyaratMataKuliahDto;
 import com.siakad.dto.transform.helper.JadwalKuliahMapperHelper;
-import com.siakad.entity.JadwalKuliah;
-import com.siakad.entity.KrsMahasiswa;
-import com.siakad.entity.KrsRincianMahasiswa;
-import com.siakad.entity.MataKuliah;
+import com.siakad.entity.*;
 import com.siakad.repository.MataKuliahRepository; // NEW: Import MataKuliahRepository
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
@@ -98,7 +95,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional; // NEW: For Optional from repository
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -153,6 +150,20 @@ public abstract class KrsTransform {
     }
 
     // This method is concrete, so it should NOT be 'abstract'.
+    @Mapping(source = "siakMataKuliah", target = "mataKuliah")
+    @Mapping(source = "nama", target = "namaKelas")
+    @Mapping(target = "hari", ignore = true)
+    @Mapping(target = "jamMulai", ignore = true)
+    @Mapping(target = "jamSelesai", ignore = true)
+    @Mapping(target = "dosenPengajar", ignore = true)
+    public abstract KrsResDto toDtoKelas(KelasKuliah entity);
+
+
+    @AfterMapping
+    protected void afterMapping(@MappingTarget KrsResDto dto, KelasKuliah entity) {
+        jadwalKuliahHelper.mapJadwalKuliahKelasToDto(dto, entity);
+    }
+
     public KrsMenungguResDto toDtoMenunggu(List<KrsRincianMahasiswa> rincianList) {
         KrsMenungguResDto dto = new KrsMenungguResDto();
 

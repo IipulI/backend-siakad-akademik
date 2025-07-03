@@ -31,7 +31,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -251,7 +250,7 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
                     );
                 })
                 .sorted(Comparator.comparingDouble(StatistikTagihanFakultasDto::getPersentase).reversed())
-                .collect(Collectors.toList());
+                .toList();
     }
     private static class KomponenInfo {
         InvoiceKomponen komponen;

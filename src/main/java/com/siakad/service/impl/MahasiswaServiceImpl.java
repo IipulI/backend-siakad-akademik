@@ -85,8 +85,14 @@
             User user = createUserWithRole(request.getNpm(), request.getEmailPribadi(), password, RoleType.MAHASISWA);
 
             Mahasiswa mahasiswa = mapper.toEntity(request);
-            mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
-            mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
+            if (fotoProfil != null && !fotoProfil.isEmpty()) {
+                mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
+            }
+
+            if (ijazahSekolah != null && !ijazahSekolah.isEmpty()) {
+                mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
+            }
+
 
             mahasiswa.setEmailPribadi(user.getEmail());
             mahasiswa.setSiakProgramStudi(programStudi);
@@ -117,15 +123,26 @@
                 String periodeMasuk,
                 String periodeKeluar,
                 int page, int size) {
+
             MahasiswaSpecification specBuilder = new MahasiswaSpecification();
             Specification<Mahasiswa> spec = specBuilder.entitySearch(
-                    keyword, null, periodeMasuk, sistemKuliah, angkatan, null, programStudi, jenisPendaftaran, jalurPendaftaran, statusMahasiswa, gelombang, jenisKelamin, kurikulum, periodeKeluar
+                    keyword, null, periodeMasuk, sistemKuliah, angkatan, null, programStudi, jenisPendaftaran, jalurPendaftaran,
+                    statusMahasiswa, gelombang, jenisKelamin, kurikulum, periodeKeluar
             );
 
-            Pageable pageable = PageRequest.of(page - 1, 10);
+            Pageable pageable = PageRequest.of(page - 1, size);
             Page<Mahasiswa> all = mahasiswaRepository.findAll(spec, pageable);
-            return all.map(mapper::toDto);
+
+            return all.map(mahasiswa -> {
+                MahasiswaResDto dto = mapper.toDto(mahasiswa);
+                ProfileInfo profileInfo = getProfileInfoByMahasiswa(mahasiswa.getId());
+                dto.setSks(profileInfo.getTotalSks());
+                dto.setIpk(profileInfo.getIpk());
+
+                return dto;
+            });
         }
+
 
         @Override
         public byte[] getFotoProfil(UUID id) {
@@ -179,8 +196,13 @@
 
             mapper.toEntity(request, mahasiswa);
             mahasiswa.setUpdatedAt(LocalDateTime.now());
-            mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
-            mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
+            if (fotoProfil != null && !fotoProfil.isEmpty()) {
+                mahasiswa.setFotoProfil(FileUtils.compress(fotoProfil.getBytes()));
+            }
+
+            if (ijazahSekolah != null && !ijazahSekolah.isEmpty()) {
+                mahasiswa.setIjazahSekolah(FileUtils.compress(ijazahSekolah.getBytes()));
+            }
             mahasiswa.setSiakProgramStudi(programStudi);
             mahasiswa.setKurikulum(request.getKurikulum());
             mahasiswaRepository.save(mahasiswa);

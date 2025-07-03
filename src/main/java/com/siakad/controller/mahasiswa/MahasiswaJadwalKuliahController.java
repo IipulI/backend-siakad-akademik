@@ -84,4 +84,27 @@ public class MahasiswaJadwalKuliahController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
+//    @Operation(summary = "Get jadwal ujian")
+//    @GetMapping("/ujian")
+//    public ResponseEntity<ApiResDto<?>> ujian(){
+//        try {
+//            User user = userActivityService.getCurrentUser();
+//            UUID mahasiswaId = user.getSiakMahasiswa().getId();
+//
+//            JadwalUjianResDto jadwalUjian = jadwalKuliahService.getJadwalUjianMahasiswa(mahasiswaId);
+//
+//            ApiResDto<List<JadwalUjianResDto>> response =
+//                    ApiResDto.<List<JadwalUjianResDto>>builder()
+//                            .status(MessageKey.SUCCESS.getMessage())
+//                            .message(MessageKey.READ.getMessage())
+//                            .build();
+//        }
+//        catch (ApplicationException e) {
+//            throw e;
+//        }
+//        catch (Exception e) {
+//            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+//        }
+//    }
 }

@@ -48,7 +48,9 @@ public class PengumumanServiceImpl implements PengumumanService {
         Pengumuman entity = mapper.toEntity(dto);
         entity.setSiakUser(currentUser);
         entity.setIsDeleted(false);
-        entity.setBanner(FileUtils.compress(file.getBytes()));
+        if (file != null && !file.isEmpty()) {
+            entity.setBanner(FileUtils.compress(file.getBytes()));
+        }
 
         Pengumuman saved = pengumumanRepository.save(entity);
         service.saveUserActivity(servletRequest, MessageKey.CREATE_PENGUMUMAN);
@@ -81,7 +83,10 @@ public class PengumumanServiceImpl implements PengumumanService {
         entity.setId(id);
         entity.setSiakUser(currentUser);
         entity.setUpdatedAt(LocalDateTime.now());
-        entity.setBanner(FileUtils.compress(file.getBytes()));
+
+        if (file != null && !file.isEmpty()) {
+            entity.setBanner(FileUtils.compress(file.getBytes()));
+        }
 
         Pengumuman saved = pengumumanRepository.save(entity);
 

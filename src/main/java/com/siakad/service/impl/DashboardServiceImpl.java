@@ -9,6 +9,7 @@ import com.siakad.service.UserActivityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -155,6 +156,54 @@ public class DashboardServiceImpl implements DashboardService {
         dto.setTagihan(invoicePembayaranKomponenMahasiswa.getTagihan());
 
         return dto;
+    }
+
+    @Override
+    public TagihanMhsDto getTagihanMhs(UUID mahasiswaId) {
+
+        InvoiceMahasiswa invoiceMahasiswa = invoiceMahasiswaRepository
+                .findBySiakMahasiswa_IdAndIsDeletedFalse(mahasiswaId)
+                .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
+
+        InvoicePembayaranKomponenMahasiswa invoicePembayaranKomponenMahasiswa = invoicePembayaranKomponenMahasiswaRepository
+                .findByInvoiceMahasiswa_IdAndIsDeletedFalse(invoiceMahasiswa.getId())
+                .orElseThrow(() -> new RuntimeException("Invoice Mahasiswa tidak ditemukan"));
+
+
+        TagihanMhsDto dto = new TagihanMhsDto();
+        dto.setKodeInvoice(invoiceMahasiswa.getKodeInvoice());
+        dto.setTanggalTenggat(invoiceMahasiswa.getTanggalTenggat());
+        dto.setTanggalBayar(invoiceMahasiswa.getTanggalBayar());
+        dto.setKodeKomponen(invoicePembayaranKomponenMahasiswa.getInvoiceKomponen().getKodeKomponen());
+        dto.setNamaTagihan(invoicePembayaranKomponenMahasiswa.getInvoiceKomponen().getNama());
+        dto.setNominalTagihan(invoicePembayaranKomponenMahasiswa.getTagihan());
+        dto.setLunas(invoiceMahasiswa.getStatus());
+
+        return dto;
+    }
+
+    @Override
+    public InfoTagihanResDto getTagihanInfo(UUID mahasiswaId){
+
+        Object[] rawResult = invoiceMahasiswaRepository.findInfoTagihanByMahasiswaId(mahasiswaId)
+                .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
+
+        Object[] actualResult = (Object[]) rawResult[0];
+
+        InfoTagihanResDto resDto = new InfoTagihanResDto();
+        resDto.setTotalTagihan((BigDecimal) actualResult[0]);
+        resDto.setTotalLunas((BigDecimal) actualResult[1]);
+        resDto.setSisaTagihan((BigDecimal) actualResult[2]);
+
+
+        java.sql.Date sqlDate = (java.sql.Date) actualResult[3];
+        if (sqlDate != null) {
+            resDto.setTanggalTenggat(sqlDate.toLocalDate());
+        } else {
+            resDto.setTanggalTenggat(null);
+        }
+
+        return resDto;
     }
 
     @Override

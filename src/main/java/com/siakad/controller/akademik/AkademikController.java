@@ -43,7 +43,7 @@ public class AkademikController {
             return ResponseEntity.ok(
                     ApiResDto.<Objects>builder()
                             .status(MessageKey.SUCCESS.getMessage())
-                            .message(MessageKey.READ.getMessage())
+                            .message(MessageKey.UPDATED.getMessage())
                             .build()
             );
         } catch (ApplicationException e) {
