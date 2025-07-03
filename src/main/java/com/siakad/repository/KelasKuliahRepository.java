@@ -1,6 +1,5 @@
 package com.siakad.repository;
 
-import com.siakad.entity.Dosen;
 import com.siakad.entity.KelasKuliah;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

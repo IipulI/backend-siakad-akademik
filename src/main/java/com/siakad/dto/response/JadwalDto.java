@@ -15,5 +15,5 @@ public class JadwalDto {
     private String jenisPertemuan;
     private String metodePembelajaran;
     private RuanganResDto siakRuangan;
-    private DosenDto siakDosen;
+    private GetDosenDto siakDosen;
 }

@@ -1,6 +1,5 @@
 package com.siakad.repository;
 
-import com.siakad.entity.JadwalKuliah;
 import com.siakad.entity.JadwalUjian;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +15,7 @@ public interface JadwalUjianRepository extends JpaRepository<JadwalUjian, UUID> 
 
     @Query("SELECT j FROM JadwalUjian j WHERE j.siakKelasKuliah.id = :id and j.isDeleted = false")
     List<JadwalUjian> findAllByKelasKuliahIdAndIsDeletedFalse(@Param("id") UUID id);
+
+    Optional<JadwalUjian> findByIdAndIsDeletedFalse(UUID id);
+
 }
