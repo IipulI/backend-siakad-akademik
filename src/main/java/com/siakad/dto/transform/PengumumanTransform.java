@@ -11,6 +11,7 @@ import org.mapstruct.MappingTarget;
 public interface PengumumanTransform {
     Pengumuman toEntity(PengumumanReqDto dto);
     @Mapping(source = "siakUser.username", target = "user")
+    @Mapping(source = "createdAt", target = "tanggal")
     PengumumanResDto toDto(Pengumuman entity);
     void toEntity(PengumumanReqDto dto, @MappingTarget Pengumuman entity);
 }
