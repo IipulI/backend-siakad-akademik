@@ -92,10 +92,12 @@ public class InvoiceMahasiwaServiceImpl implements InvoiceMahasiwaService {
 
         BigDecimal totalTagihan = data.stream()
                 .map(InvoicePembayaranKomponenMahasiswa::getTagihan)
+                .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalTerbayar = data.stream()
                 .map(e -> e.getInvoiceMahasiswa().getTotalBayar())
+                .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         RingkasanTagihanSourceDto source = new RingkasanTagihanSourceDto();

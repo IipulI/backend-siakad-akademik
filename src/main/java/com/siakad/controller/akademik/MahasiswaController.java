@@ -52,11 +52,14 @@ public class MahasiswaController {
             @RequestPart(value = "fotoProfil", required = false) MultipartFile fotoProfil,
             @RequestPart(value = "ijazahSekolah", required = false) MultipartFile ijazahSekolah,
             @RequestPart("request") String requestJson,
+            @RequestPart("requestKeluarga") String requestJsonKeluarga,
             HttpServletRequest servletRequest) {
 
         try {
             MahasiswaReqDto request = objectMapper.readValue(requestJson, MahasiswaReqDto.class);
-            service.create(request, fotoProfil, ijazahSekolah, servletRequest);
+            KeluargaMahasiswaReqDto requestKeluarga = objectMapper.readValue(requestJsonKeluarga, KeluargaMahasiswaReqDto.class);
+
+            service.create(request, requestKeluarga, fotoProfil, ijazahSekolah, servletRequest);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResDto.<MahasiswaResDto>builder()
@@ -535,12 +538,15 @@ public class MahasiswaController {
     }
 
     @Operation(summary = "Get tagihan komponen mahasiswa")
-    @GetMapping("/tagihan/{mahasiswaId}")
-    public ResponseEntity<ApiResDto<TagihanMhsDto>> getTagihanMhs(@PathVariable("mahasiswaId") UUID id) {
+    @GetMapping("/tagihan-aktif/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<List<TagihanMhsDto>>> getTagihanMhsAktif(
+            @PathVariable("mahasiswaId") UUID id,
+            @RequestParam(required = false) String namaPeriode
+    ) {
         try {
-            TagihanMhsDto tagihanMhsDto = dashboardService.getTagihanMhs(id);
+            List<TagihanMhsDto> tagihanMhsDto = dashboardService.getTagihanMhs(id, "belum lunas", namaPeriode, null);
             return ResponseEntity.status(HttpStatus.OK).body(
-                    ApiResDto.<TagihanMhsDto>builder()
+                    ApiResDto.<List<TagihanMhsDto>>builder()
                             .status(MessageKey.SUCCESS.getMessage())
                             .message(MessageKey.READ.getMessage())
                             .data(tagihanMhsDto)
@@ -552,6 +558,29 @@ public class MahasiswaController {
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
+    @Operation(summary = "Get tagihan komponen mahasiswa")
+    @GetMapping("/histori-tagihan/{mahasiswaId}")
+    public ResponseEntity<ApiResDto<List<TagihanMhsDto>>> getTagihanMhsHistori(
+            @PathVariable("mahasiswaId") UUID id,
+            @RequestParam(required = false) String namaPeriode
+    ) {
+        try {
+            List<TagihanMhsDto> tagihanMhsDto = dashboardService.getTagihanMhs(id, "lunas", namaPeriode, null);
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<TagihanMhsDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(tagihanMhsDto)
+                            .build()
+            );
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
 
     @Operation(summary = "Get Profile Info")
     @GetMapping("/{id}/info")
