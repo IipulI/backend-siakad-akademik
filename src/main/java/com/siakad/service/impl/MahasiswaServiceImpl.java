@@ -1,5 +1,7 @@
     package com.siakad.service.impl;
 
+    import com.siakad.dto.request.EditKeluargaMahasiswaReqDto;
+    import com.siakad.dto.request.EditMahasiswaReqDto;
     import com.siakad.dto.request.KeluargaMahasiswaReqDto;
     import com.siakad.dto.request.MahasiswaReqDto;
     import com.siakad.dto.response.MahasiswaChartDto;
@@ -180,7 +182,7 @@
         public MahasiswaResDto update(UUID id,
                                       MultipartFile fotoProfil,
                                       MultipartFile ijazahSekolah,
-                                      MahasiswaReqDto request,
+                                      EditMahasiswaReqDto request,
                                       HttpServletRequest servletRequest) throws IOException {
 
             var programStudi = programStudiRepository.findByIdAndIsDeletedFalse(request.getSiakProgramStudiId())
@@ -217,7 +219,25 @@
             }
             mahasiswa.setSiakProgramStudi(programStudi);
             mahasiswa.setKurikulum(request.getKurikulum());
+
+
+            for (EditKeluargaMahasiswaReqDto keluargaDto : request.getKeluargaMahasiswaList()) {
+                if (keluargaDto.getId() != null) {
+                    KeluargaMahasiswa keluarga = keluargaMahasiswaRepository.findByIdAndIsDeletedFalse(keluargaDto.getId())
+                            .orElseThrow(() -> new RuntimeException("Keluarga tidak ditemukan"));
+                    mapper.toEntity(keluargaDto, keluarga);
+                    keluargaMahasiswaRepository.save(keluarga);
+                } else {
+                    KeluargaMahasiswa keluargaBaru = mapper.toEntityKeluarga(keluargaDto);
+                    keluargaBaru.setSiakMahasiswa(mahasiswa);
+                    keluargaBaru.setIsDeleted(false);
+                    keluargaMahasiswaRepository.save(keluargaBaru);
+                }
+            }
+
+
             mahasiswaRepository.save(mahasiswa);
+
             service.saveUserActivity(servletRequest, MessageKey.UPDATE_MAHASISWA);
 
             return mapper.toDto(mahasiswa);

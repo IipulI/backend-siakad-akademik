@@ -3,6 +3,7 @@ package com.siakad.controller.akademik;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.siakad.dto.request.EditMahasiswaReqDto;
 import com.siakad.dto.request.KeluargaMahasiswaReqDto;
 import com.siakad.dto.request.MahasiswaReqDto;
 import com.siakad.dto.response.*;
@@ -209,11 +210,10 @@ public class MahasiswaController {
             @RequestPart(value = "fotoProfil", required = false) MultipartFile fotoProfil,
             @RequestPart(value = "ijazahSekolah", required = false) MultipartFile ijazahSekolah,
             @RequestPart("request") String requestJson,
-            @RequestPart("requestKeluarga") String requestJsonKeluarga,
             HttpServletRequest servletRequest
             ) {
         try {
-            MahasiswaReqDto request = objectMapper.readValue(requestJson, MahasiswaReqDto.class);
+            EditMahasiswaReqDto request = objectMapper.readValue(requestJson, EditMahasiswaReqDto.class);
             service.update(id,fotoProfil, ijazahSekolah, request, servletRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ApiResDto.<MahasiswaResDto>builder()
