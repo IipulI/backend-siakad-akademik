@@ -1,9 +1,6 @@
 package com.siakad.entity.service;
 
-import com.siakad.entity.Dosen;
-import com.siakad.entity.JadwalKuliah;
-import com.siakad.entity.KelasKuliah;
-import com.siakad.entity.MataKuliah;
+import com.siakad.entity.*;
 import com.siakad.util.QuerySpecification;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
@@ -12,11 +9,19 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.UUID;
 
 public class KelasKuliahSpecification extends QuerySpecification<KelasKuliah> {
 
     private Specification<KelasKuliah> byPeriodeAkademik(String param) {
         return attributeContains("siakPeriodeAkademik.namaPeriode", param);
+    }
+
+    private Specification<KelasKuliah> byPeriodeAkademikId(UUID param){
+        return (root, query, criteriaBuilder) -> {
+            Join<KelasKuliah, PeriodeAkademik> join = root.join("siakPeriodeAkademik", JoinType.LEFT);
+            return criteriaBuilder.equal(join.get("id"), param);
+        };
     }
 
     private Specification<KelasKuliah> byKurikulum(String param) {
@@ -67,6 +72,7 @@ public class KelasKuliahSpecification extends QuerySpecification<KelasKuliah> {
 
     public  Specification<KelasKuliah> entitySearch(String keyword,
                                                     String periodeAkademik,
+                                                    UUID periodeAkademikId,
                                                     String tahunKuriKulum,
                                                     String programStudi,
                                                     String dosen,
@@ -80,6 +86,10 @@ public class KelasKuliahSpecification extends QuerySpecification<KelasKuliah> {
 
         if (!Strings.isBlank(periodeAkademik)){
             spec = spec.and(byPeriodeAkademik(periodeAkademik));
+        }
+
+        if (periodeAkademikId != null){
+            spec = spec.and(byPeriodeAkademikId(periodeAkademikId));
         }
 
         if (!Strings.isBlank(sistemKuliah)){

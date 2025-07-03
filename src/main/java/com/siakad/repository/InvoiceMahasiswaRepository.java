@@ -51,5 +51,14 @@ public interface InvoiceMahasiswaRepository extends JpaRepository<InvoiceMahasis
 
     List<InvoiceMahasiswa> findAllBySiakMahasiswa_IdAndIsDeletedFalseOrderByCreatedAtDesc(UUID mahasiswaId);
 
-
+    @Query(value = """
+        select
+            SUM(total_tagihan) as total_tagihan,
+            SUM(total_bayar) as total_bayar,
+            (SUM(total_tagihan) - SUM(total_bayar)) as sisaTagihan,
+            MIN(tanggal_tenggat) as tanggal_tenggat
+            from siak_invoice_mahasiswa
+        where siak_mahasiswa_id = :id
+    """, nativeQuery = true)
+    Optional<Object[]> findInfoTagihanByMahasiswaId(@Param("id") UUID id);
 }

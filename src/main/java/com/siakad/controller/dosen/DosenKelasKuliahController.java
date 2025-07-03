@@ -39,7 +39,7 @@ public class DosenKelasKuliahController {
     @GetMapping
     public ResponseEntity<ApiResDto<List<KelasKuliahResDto>>> getPaginated(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String periodeAkademik,
+            @RequestParam(required = false) UUID periodeAkademikId,
             @RequestParam(required = false) String tahunKuriKulum,
             @RequestParam(required = false) String programStudi,
             @RequestParam(required = false) String sistemKuliah,
@@ -59,7 +59,7 @@ public class DosenKelasKuliahController {
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
             var dosen = user.getSiakDosen().getNama();
 
-            Page<KelasKuliahResDto> search = service.search(keyword, periodeAkademik, tahunKuriKulum, programStudi, sistemKuliah, dosen, pageable);
+            Page<KelasKuliahResDto> search = service.search(keyword, null, periodeAkademikId, tahunKuriKulum, programStudi, sistemKuliah, dosen, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<KelasKuliahResDto>>builder()

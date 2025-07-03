@@ -5,6 +5,7 @@ import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
 import com.siakad.service.DashboardService;
+import com.siakad.service.UserActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.util.UUID;
 public class DashboardMahasiswaController {
 
     private final DashboardService service;
+    private final UserActivityService userActivityService;
 
     @Operation(summary = "Get Tagihan")
     @GetMapping("/tagihan")
@@ -62,6 +64,31 @@ public class DashboardMahasiswaController {
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get ")
+    @GetMapping("/info-tagihan")
+    public ResponseEntity<ApiResDto<InfoTagihanResDto>> getInfoTagihan(){
+        try{
+
+            UUID mahasiswaId = userActivityService.getCurrentUser().getSiakMahasiswa().getId();
+
+            InfoTagihanResDto result = service.getTagihanInfo(mahasiswaId);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<InfoTagihanResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(result)
+                            .build()
+            );
+        }
+        catch (ApplicationException e){
+            throw e;
+        }
+        catch (Exception e){
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }

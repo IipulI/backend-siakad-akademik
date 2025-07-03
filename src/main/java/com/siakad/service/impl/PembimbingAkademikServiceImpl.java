@@ -105,12 +105,12 @@ public class PembimbingAkademikServiceImpl implements PembimbingAkademikService 
 
     @Override
     public Page<PembimbingAkademikResDto> getAllPaginated(
-            String programStudi, String periodeAkademik, UUID dosenId, String namaMahasiswa,
+            String programStudi, String periodeAkademik, UUID periodeAkademikId, UUID dosenId, String namaMahasiswa,
             String angkatan, String statusMahasiswa, String statusKrs,
             Boolean hasPembimbing, Pageable pageable) {
 
         // Build the dynamic specification with the new consolidated filter
-        Specification<Mahasiswa> spec = MahasiswaPembimbingAkademikSpecification.build(programStudi, periodeAkademik, dosenId,
+        Specification<Mahasiswa> spec = MahasiswaPembimbingAkademikSpecification.build(programStudi, periodeAkademik, periodeAkademikId, dosenId,
                 namaMahasiswa, angkatan, statusMahasiswa, statusKrs, hasPembimbing);
 
         Page<Mahasiswa> mahasiswaPage = mahasiswaRepository.findAll(spec, pageable);

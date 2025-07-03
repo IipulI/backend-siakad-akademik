@@ -21,6 +21,8 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
 
     Optional<KrsMahasiswa> findBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswa_id);
 
+    Optional<KrsMahasiswa> findBySiakMahasiswa_IdAndSiakPeriodeAkademik_Id(UUID siakMahasiswaId, UUID siakPeriodeAkademikId);
+
     Optional<KrsMahasiswa> findBySiakMahasiswa_IdAndSiakPeriodeAkademikIdAndIsDeletedFalse(UUID siakMahasiswaId, UUID periodeAkademikId);
 
     boolean existsBySiakMahasiswa_IdAndIsDeletedFalse(UUID siakMahasiswa_id);
@@ -28,7 +30,7 @@ public interface KrsMahasiswaRepository extends JpaRepository<KrsMahasiswa, UUID
     @Query("""
     SELECT krm FROM KrsRincianMahasiswa krm 
     JOIN krm.siakKrsMahasiswa km 
-    WHERE (km.status = 'Diajukan' OR km.status = 'Draft')  
+    WHERE (km.status = 'Diajukan' OR km.status = 'Draft' OR km.status = 'Disetujui')  
       AND km.siakPeriodeAkademik.status = 'ACTIVE' 
       AND km.siakMahasiswa.id = :mahasiswaId
     """)

@@ -24,6 +24,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -55,8 +56,9 @@ public class KrsServiceImpl implements KrsService {
     private final PembimbingAkademikRepository pembimbingAkademikRepository;
     private final JadwalKuliahRepository jadwalKuliahRepository;
     private final JenjangRepository jenjangRepository;
-
+    private final KrsTransform krsTransform;
     private final EligibleMahasiswaMapper eligibleMahasiswaMapper;
+    private final UserActivityService userActivityService;
 
     // Mahasiswa
     @Override
@@ -65,6 +67,7 @@ public class KrsServiceImpl implements KrsService {
                 .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "RPS detail not found for given mataKuliah and dosen."));
 
         Object[] actualDataRow = (Object[]) rawResult[0];
+        KrsInfoResDto krsInfoResDto = new KrsInfoResDto();
 
         String statusKrs;
         Integer semester;
@@ -89,7 +92,6 @@ public class KrsServiceImpl implements KrsService {
         periodeAkademik = (String) actualDataRow[6];
         pembimbingAkademik = (String) actualDataRow[3];
 
-        KrsInfoResDto krsInfoResDto = new KrsInfoResDto();
         krsInfoResDto.setStatusKrs(statusKrs);
         krsInfoResDto.setSemester(semester);
         krsInfoResDto.setBatasSks(batasSks);
@@ -290,22 +292,52 @@ public class KrsServiceImpl implements KrsService {
 
 
     @Override
-    public Page<KrsResDto> getPaginated(String mataKuliah, Pageable pageable) {
-        KrsSpecification specBuilder = new KrsSpecification();
-
-        User user = service.getCurrentUser();
+    public Page<KrsResDto> getPaginated(String keyword, Pageable pageable) {
+        User user = userActivityService.getCurrentUser();
         Mahasiswa mahasiswa = user.getSiakMahasiswa();
 
-        List<String> semesters = switch (mahasiswa.getSemester()) {
-            case 1, 3, 5, 7, 9, 11, 13 -> Arrays.asList("1", "3", "5", "7", "9", "11", "13");
-            case 2, 4, 6, 8, 10, 12, 14 -> Arrays.asList("2", "4", "6", "8", "10", "12");
-            default -> Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
-        };
+        if (mahasiswa == null || mahasiswa.getId() == null) {
+            return Page.empty(pageable);
+        }
 
-        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(mataKuliah, semesters, mahasiswa.getId());
-        Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
-        return all.map(mapper::toDto);
+        List<Integer> semesters;
+        switch (mahasiswa.getSemester()) {
+            case 1, 3, 5, 7, 9, 11, 13 -> semesters = Arrays.asList(1, 3, 5, 7, 9, 11, 13);
+            case 2, 4, 6, 8, 10, 12, 14 -> semesters = Arrays.asList(2, 4, 6, 8, 10, 12);
+            default -> semesters = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+        }
+
+        Page<KelasKuliahWithTakenStatusDto> projectionPage = krsRincianMahasiswaRepository.findKelasKuliahWithTakenStatusAndLastNilai(
+                keyword, semesters, mahasiswa.getId(), pageable
+        );
+
+        // This stream operation (which calls krsTransform.toKrsResDtoFromKelasKuliahProjection)
+        // now runs within the same transaction initiated by @Transactional.
+        List<KrsResDto> finalResponseDtoList = projectionPage.getContent().stream()
+                .map(krsTransform::toKrsResDtoFromKelasKuliahProjection)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(finalResponseDtoList, pageable, projectionPage.getTotalElements());
+
     }
+
+    //@Override
+    //    public Page<KrsResDto> getPaginated(String mataKuliah, Pageable pageable) {
+    //        KrsSpecification specBuilder = new KrsSpecification();
+    //
+    //        User user = service.getCurrentUser();
+    //        Mahasiswa mahasiswa = user.getSiakMahasiswa();
+    //
+    //        List<String> semesters = switch (mahasiswa.getSemester()) {
+    //            case 1, 3, 5, 7, 9, 11, 13 -> Arrays.asList("1", "3", "5", "7", "9", "11", "13");
+    //            case 2, 4, 6, 8, 10, 12, 14 -> Arrays.asList("2", "4", "6", "8", "10", "12");
+    //            default -> Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
+    //        };
+    //
+    //        Specification<KrsRincianMahasiswa> spec = specBuilder.entitySearch(mataKuliah, semesters, mahasiswa.getId());
+    //        Page<KrsRincianMahasiswa> all = krsRincianMahasiswaRepository.findAll(spec, pageable);
+    //        return all.map(mapper::toDto);
+    //    }
 
     @Override
     public Page<KrsResDto> getPaginatedKelas(String mataKuliah, Pageable pageable) {

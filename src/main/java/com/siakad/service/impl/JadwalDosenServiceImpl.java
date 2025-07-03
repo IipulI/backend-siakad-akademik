@@ -2,20 +2,21 @@ package com.siakad.service.impl;
 
 import com.siakad.dto.request.*;
 import com.siakad.dto.response.GetDosenDto;
-import com.siakad.dto.response.JadwalDsnDto;
+//import com.siakad.dto.response.JadwalDsnDto;
 import com.siakad.dto.response.JadwalDto;
 import com.siakad.dto.response.RuanganResDto;
+import com.siakad.dto.response.JadwalUjianResDto;
 import com.siakad.dto.transform.JadwalDosenTransform;
 import com.siakad.entity.Dosen;
 import com.siakad.entity.JadwalKuliah;
 import com.siakad.entity.KelasKuliah;
 import com.siakad.entity.Ruangan;
+import com.siakad.dto.transform.KelasKuliahTranform;
+import com.siakad.entity.*;
 import com.siakad.enums.ExceptionType;
 import com.siakad.enums.MessageKey;
 import com.siakad.exception.ApplicationException;
-import com.siakad.repository.DosenRepository;
-import com.siakad.repository.JadwalKuliahRepository;
-import com.siakad.repository.KelasKuliahRepository;
+import com.siakad.repository.*;
 import com.siakad.service.JadwalDosenService;
 import com.siakad.service.UserActivityService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,6 +40,9 @@ public class JadwalDosenServiceImpl implements JadwalDosenService {
     private final KelasKuliahRepository kelasKuliahRepository;
     private final UserActivityService service;
     private final JadwalDosenTransform mapper;
+    private final JadwalUjianRepository jadwalUjianRepository;
+    private final RuanganRepository ruanganRepository;
+    private final KelasKuliahTranform kelasKuliahTranform;
 
     @Override
     public void save(UUID id, JadwalDosenReqDto request, HttpServletRequest servletRequest) {
@@ -138,5 +142,34 @@ public class JadwalDosenServiceImpl implements JadwalDosenService {
         return mapper.toGetJadwalResDtoList(jadwalKuliahList);
     }
 
+    @Override
+    public List<JadwalUjianResDto> getAllJadwalUjian(UUID id) {
+        kelasKuliahRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
 
+        List<JadwalUjian> jadwalUjians = jadwalUjianRepository.findAllByKelasKuliahIdAndIsDeletedFalse(id);
+        return mapper.toJadwalUjianDto(jadwalUjians);
+    }
+
+    @Override
+    public void saveJadwalUjian(UUID id, JadwalUjianReqDto request, HttpServletRequest servletRequest){
+        KelasKuliah kelasKuliah = kelasKuliahRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Kelas Kuliah tidak ditemukan"));
+
+        Ruangan ruangan = ruanganRepository.findByIdAndIsDeletedFalse(request.getSiakRuanganId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Ruangan tidak ditemukan"));
+
+        Dosen dosen = dosenRepository.findByIdAndIsDeletedFalse(request.getSiakDosenId())
+                .orElseThrow(() -> new ApplicationException(ExceptionType.RESOURCE_NOT_FOUND, "Dosen tidak ditemukan"));
+
+        JadwalUjian jadwalUjian = new JadwalUjian();
+        jadwalUjian.setSiakKelasKuliah(kelasKuliah);
+        jadwalUjian.setSiakRuangan(ruangan);
+        jadwalUjian.setSiakDosen(dosen);
+        jadwalUjian.setJenisUjian(request.getJenisUjian());
+        jadwalUjian.setJamMulai(request.getJamMulai());
+        jadwalUjian.setJamSelesai(request.getJamSelesai());
+        jadwalUjian.setTanggal(request.getTanggalJadwal());
+        jadwalUjianRepository.save(jadwalUjian);
+    }
 }

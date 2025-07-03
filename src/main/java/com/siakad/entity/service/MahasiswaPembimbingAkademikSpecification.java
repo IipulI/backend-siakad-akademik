@@ -10,13 +10,14 @@ import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class MahasiswaPembimbingAkademikSpecification {
 
-    public static Specification<Mahasiswa> build(String programStudi, String periodeAkademik, UUID dosenId, String namaMahasiswa,
+    public static Specification<Mahasiswa> build(String programStudi, String periodeAkademik, UUID periodeAkademikId, UUID dosenId, String namaMahasiswa,
                                                  String angkatan, String statusMahasiswa, String statusKrs,
                                                  Boolean hasPembimbing) {
 
@@ -25,11 +26,20 @@ public class MahasiswaPembimbingAkademikSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             // Mandatory enrollment filter
-            Subquery<String> periodeSubquery = query.subquery(String.class);
-            Root<PeriodeAkademik> periodeRoot = periodeSubquery.from(PeriodeAkademik.class);
-            periodeSubquery.select(periodeRoot.get("kodePeriode"));
-            periodeSubquery.where(criteriaBuilder.equal(periodeRoot.get("namaPeriode"), periodeAkademik));
-            predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("periodeMasuk"), periodeSubquery));
+            if (periodeAkademik != null) {
+                Subquery<String> periodeSubquery = query.subquery(String.class);
+                Root<PeriodeAkademik> periodeRoot = periodeSubquery.from(PeriodeAkademik.class);
+                periodeSubquery.select(periodeRoot.get("kodePeriode"));
+                periodeSubquery.where(criteriaBuilder.equal(periodeRoot.get("namaPeriode"), periodeAkademik));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("periodeMasuk"), periodeSubquery));
+            }
+            else if (periodeAkademikId != null) {
+                Subquery<String> periodeSubquery = query.subquery(String.class);
+                Root<PeriodeAkademik> periodeRoot = periodeSubquery.from(PeriodeAkademik.class);
+                periodeSubquery.select(periodeRoot.get("kodePeriode"));
+                periodeSubquery.where(criteriaBuilder.equal(periodeRoot.get("id"), periodeAkademikId));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("periodeMasuk"), periodeSubquery));
+            }
 
             // Optional filters
             if (programStudi != null) {

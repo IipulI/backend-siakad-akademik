@@ -143,7 +143,7 @@ public class KelasKuliahController {
 
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
-            Page<KelasKuliahResDto> search = service.search(keyword, periodeAkademik, tahunKuriKulum, programStudi, sistemKuliah, null, pageable);
+            Page<KelasKuliahResDto> search = service.search(keyword, periodeAkademik, null, tahunKuriKulum, programStudi, sistemKuliah, null, pageable);
 
             return ResponseEntity.ok(
                     ApiResDto.<List<KelasKuliahResDto>>builder()
@@ -388,6 +388,52 @@ public class KelasKuliahController {
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Save jadwal ujian kelas")
+    @PostMapping("{id}/jadwal-ujian")
+    public ResponseEntity<ApiResDto<JadwalUjianResDto>> save(
+            @PathVariable UUID id,
+            @Valid @RequestBody JadwalUjianReqDto request,
+            HttpServletRequest servletRequest
+    ){
+        try {
+            jadwalDosenService.saveJadwalUjian(id, request, servletRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResDto.<JadwalUjianResDto>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .status(MessageKey.CREATED.getMessage())
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e){
+            throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Get jadwal ujian kelas")
+    @GetMapping("/{id}/jadwal-ujian")
+    public ResponseEntity<ApiResDto<List<JadwalUjianResDto>>> getJadwalUjian(@PathVariable UUID id){
+        try {
+            List<JadwalUjianResDto> result = jadwalDosenService.getAllJadwalUjian(id);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApiResDto.<List<JadwalUjianResDto>>builder()
+                            .status(MessageKey.SUCCESS.getMessage())
+                            .message(MessageKey.READ.getMessage())
+                            .data(result)
+                            .build()
+            );
+        }
+        catch (ApplicationException e) {
+            throw e;
+        }
+        catch (Exception e){
             throw new ApplicationException(ExceptionType.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }

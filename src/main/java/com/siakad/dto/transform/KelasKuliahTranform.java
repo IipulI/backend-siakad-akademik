@@ -1,6 +1,7 @@
 package com.siakad.dto.transform;
 
 import com.siakad.dto.request.JadwalKuliahReqDto;
+import com.siakad.dto.request.JadwalUjianReqDto;
 import com.siakad.dto.request.KelasKuliahReqDto;
 import com.siakad.dto.response.*;
 import com.siakad.dto.transform.helper.KelasKuliahMapperHelper;
@@ -17,6 +18,7 @@ public interface KelasKuliahTranform {
 
     KelasKuliah toEntity(KelasKuliahReqDto dto);
     JadwalKuliah toEntity(JadwalKuliahReqDto dto);
+    JadwalUjian toEntity(JadwalUjianReqDto dto);
 
     @Mapping(source = "siakProgramStudi", target = "programStudi")
     @Mapping(source = "siakPeriodeAkademik.namaPeriode", target = "periodeAkademik")
@@ -34,6 +36,7 @@ public interface KelasKuliahTranform {
 
     void toEntity(JadwalKuliahReqDto dto, @MappingTarget JadwalKuliah entity);
     void toEntity(KelasKuliahReqDto dto, @MappingTarget KelasKuliah entity);
+    void toEntity(JadwalUjianReqDto dto, @MappingTarget JadwalUjian entity);
 
     @Mapping(source = "siakJenjang", target = "jenjang")
     ProgramStudiResDto programStudiToDto(ProgramStudi entity);

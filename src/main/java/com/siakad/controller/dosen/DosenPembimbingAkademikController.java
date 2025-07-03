@@ -42,7 +42,7 @@ public class DosenPembimbingAkademikController {
     @Operation(summary = "Get Pembimbing Akademik By Pagination")
     @GetMapping("/all")
     public ResponseEntity<ApiResDto<List<PembimbingAkademikResDto>>> getPaginated(
-            @RequestParam() String periodeAkademik,
+            @RequestParam() UUID periodeAkademikId,
             @RequestParam(required = false) String programStudi,
             @RequestParam(required = false) String angkatan,
             @RequestParam(required = false) String statusKrs,
@@ -65,7 +65,7 @@ public class DosenPembimbingAkademikController {
             Pageable pageable = PageRequest.of(page - 1, size, sortObj); // page dikurangi 1 karena UI biasanya mulai dari 1
 
             Page<PembimbingAkademikResDto> data = service.getAllPaginated(
-                    programStudi, periodeAkademik, dosenId, keyword,
+                    programStudi, null, periodeAkademikId, dosenId, keyword,
                     angkatan, statusMahasiswa, statusKrs, hasPembimbing, pageable);
 
             return ResponseEntity.ok(

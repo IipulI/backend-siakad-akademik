@@ -1,6 +1,7 @@
 package com.siakad.service.impl;
 
 import com.siakad.dto.response.JadwalMingguanResDto; // Your DTO
+import com.siakad.dto.response.JadwalUjianResDto;
 import com.siakad.entity.*;
 import com.siakad.repository.JadwalKuliahRepository;
 import com.siakad.repository.KrsRincianMahasiswaRepository;
@@ -99,6 +100,11 @@ public class JadwalKuliahServiceImpl implements JadwalKuliahService {
 
         return jadwalByDay;
     }
+
+//    @Override
+//    public List<JadwalUjianResDto> getJadwalUjianMahasiswa(UUID mahasiswaId){
+//
+//    }
 
     @Override
     public List<JadwalMingguanResDto> getJadwalHarianDosen(UUID dosenId, UUID periodeAkademikId, String hari) {

@@ -9,6 +9,7 @@ import com.siakad.service.UserActivityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -179,6 +180,30 @@ public class DashboardServiceImpl implements DashboardService {
         dto.setLunas(invoiceMahasiswa.getStatus());
 
         return dto;
+    }
+
+    @Override
+    public InfoTagihanResDto getTagihanInfo(UUID mahasiswaId){
+
+        Object[] rawResult = invoiceMahasiswaRepository.findInfoTagihanByMahasiswaId(mahasiswaId)
+                .orElseThrow(() -> new RuntimeException("Mahasiswa tidak ditemukan"));
+
+        Object[] actualResult = (Object[]) rawResult[0];
+
+        InfoTagihanResDto resDto = new InfoTagihanResDto();
+        resDto.setTotalTagihan((BigDecimal) actualResult[0]);
+        resDto.setTotalLunas((BigDecimal) actualResult[1]);
+        resDto.setSisaTagihan((BigDecimal) actualResult[2]);
+
+
+        java.sql.Date sqlDate = (java.sql.Date) actualResult[3];
+        if (sqlDate != null) {
+            resDto.setTanggalTenggat(sqlDate.toLocalDate());
+        } else {
+            resDto.setTanggalTenggat(null);
+        }
+
+        return resDto;
     }
 
     @Override
