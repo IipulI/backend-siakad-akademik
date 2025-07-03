@@ -2,12 +2,11 @@ package com.siakad.dto.transform;
 
 import com.siakad.dto.request.GetJadwalResDto;
 import com.siakad.dto.request.JadwalDosenReqDto;
-import com.siakad.dto.response.JadwalDosenResDto;
-import com.siakad.dto.response.JadwalDto;
-import com.siakad.dto.response.JadwalKuliahResDto;
-import com.siakad.dto.response.JadwalUjianResDto;
+import com.siakad.dto.response.*;
+import com.siakad.entity.Dosen;
 import com.siakad.entity.JadwalKuliah;
 import com.siakad.entity.JadwalUjian;
+import com.siakad.entity.MataKuliah;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -28,6 +27,9 @@ public interface JadwalDosenTransform {
     GetJadwalResDto toGetJadwalResDto(JadwalKuliah jadwalKuliah);
     List<GetJadwalResDto> toGetJadwalResDtoList(List<JadwalKuliah> entities);
 
-    // Jadwal ujian
     List<JadwalUjianResDto> toJadwalUjianDto(List<JadwalUjian> jadwalUjianList);
+
+    GetDosenDto getDosenDto(Dosen entity);
+
+    List<GetDosenDto> getDosenDtoList(List<Dosen> entityList);
 }

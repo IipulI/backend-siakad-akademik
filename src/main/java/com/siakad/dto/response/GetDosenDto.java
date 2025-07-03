@@ -8,5 +8,5 @@ import java.util.UUID;
 public class GetDosenDto {
     private UUID id;
     private String nidn;
-    private String namaDosen;
+    private String nama;
 }

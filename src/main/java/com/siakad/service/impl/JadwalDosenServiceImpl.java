@@ -115,7 +115,7 @@ public class JadwalDosenServiceImpl implements JadwalDosenService {
 
         GetDosenDto dto = new GetDosenDto();
         dto.setId(dosen.getId());
-        dto.setNamaDosen(dosen.getNama());
+        dto.setNama(dosen.getNama());
         dto.setNidn(dosen.getNidn());
         return dto;
     }

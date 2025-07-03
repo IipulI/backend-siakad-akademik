@@ -14,4 +14,5 @@ public class JadwalUjianResDto {
     private LocalDate tanggal;
     private String jenisUjian;
     private RuanganResDto siakRuangan;
+    private GetDosenDto siakDosen;
 }
